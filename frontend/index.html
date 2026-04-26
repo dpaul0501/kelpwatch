@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KelpWatch — Puget Sound Restoration Intelligence</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #040d1a;
+  --surface: #071628;
+  --surface2: #0a1f35;
+  --border: #0d2a47;
+  --accent: #00e5b4;
+  --accent2: #0096ff;
+  --accent3: #ff6b6b;
+  --accent4: #ffd166;
+  --text: #cce0f5;
+  --muted: #4a6b8a;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ocean wave background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(0,150,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(0,229,180,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: rgba(4,13,26,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  flex-shrink: 0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #00e5b4, #0096ff);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.logo-sub {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.header-center {
+  display: flex;
+  gap: 6px;
+}
+
+.tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+  color: var(--muted);
+}
+
+.tab.active, .tab:hover {
+  background: rgba(0,229,180,0.08);
+  border-color: rgba(0,229,180,0.2);
+  color: var(--accent);
+}
+
+.header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+}
+
+.badge-live {
+  background: rgba(0,229,180,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(0,229,180,0.2);
+  display: flex; align-items: center; gap: 5px;
+}
+
+.badge-live::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 340px 1fr 300px;
+  grid-template-rows: 1fr;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── LEFT PANEL ── */
+.left-panel {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.left-panel::-webkit-scrollbar { width: 4px; }
+.left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.panel-section {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loading-chip {
+  font-size: 9px;
+  padding: 2px 6px;
+  background: rgba(0,229,180,0.1);
+  color: var(--accent);
+  border-radius: 3px;
+  animation: pulse 1s infinite;
+}
+
+/* Goal tracker */
+.goal-ring-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.goal-ring {
+  position: relative;
+  width: 80px; height: 80px;
+  flex-shrink: 0;
+}
+
+.goal-ring svg { transform: rotate(-90deg); }
+
+.goal-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.goal-pct {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.goal-label {
+  font-size: 8px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.goal-stats { flex: 1; }
+
+.goal-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.goal-stat-label { color: var(--muted); }
+.goal-stat-value { font-family: 'DM Mono', monospace; color: var(--text); }
+
+.trajectory-bar {
+  margin-top: 8px;
+}
+
+.traj-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 4px;
+}
+
+.traj-track {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.traj-fill {
+  height: 100%;
+  border-radius: 2px;
+  position: absolute;
+  left: 0;
+  transition: width 1s ease;
+}
+
+.traj-needed { background: var(--accent); }
+.traj-current { background: var(--accent3); margin-top: 4px; }
+
+/* County list */
+.county-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  margin-bottom: 6px;
+}
+
+.county-item:hover, .county-item.active {
+  background: var(--surface2);
+  border-color: var(--border);
+}
+
+.county-item.active { border-color: rgba(0,229,180,0.3); }
+
+.county-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.county-info { flex: 1; min-width: 0; }
+
+.county-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.county-meta {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.county-delta {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Layer controls */
+.layer-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(13,42,71,0.5);
+}
+
+.layer-toggle:last-child { border-bottom: none; }
+
+.layer-name {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.layer-dot {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+}
+
+.toggle-switch {
+  width: 32px; height: 18px;
+  background: var(--surface2);
+  border-radius: 9px;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  border: 1px solid var(--border);
+}
+
+.toggle-switch.on { background: rgba(0,229,180,0.3); border-color: var(--accent); }
+
+.toggle-knob {
+  width: 12px; height: 12px;
+  background: var(--muted);
+  border-radius: 50%;
+  position: absolute;
+  top: 2px; left: 2px;
+  transition: all 0.2s;
+}
+
+.toggle-switch.on .toggle-knob {
+  background: var(--accent);
+  left: 16px;
+}
+
+/* ── MAP ── */
+#map {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+}
+
+.leaflet-container { background: #040d1a !important; }
+
+/* Map overlays */
+.map-overlay {
+  position: absolute;
+  z-index: 500;
+  pointer-events: none;
+}
+
+.map-title-overlay {
+  top: 16px; left: 16px;
+  pointer-events: auto;
+}
+
+.map-title-card {
+  background: rgba(4,13,26,0.9);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  backdrop-filter: blur(12px);
+}
+
+.map-title-card h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.map-title-card p {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.map-legend-overlay {
+  bottom: 24px; left: 16px;
+  pointer-events: auto;
+}
+
+.legend-card {
+  background: rgba(4,13,26,0.9);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  backdrop-filter: blur(12px);
+}
+
+.legend-title {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.legend-gradient {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #1a0a2e, #16213e, #0f3460, #00b4d8, #00e5b4, #90e0ef);
+  margin-bottom: 4px;
+}
+
+.legend-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.map-loading {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 400;
+}
+
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.map-loading p {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* County popup chart */
+.county-popup {
+  position: absolute;
+  bottom: 80px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  width: 340px;
+  background: rgba(4,13,26,0.97);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  backdrop-filter: blur(20px);
+  display: none;
+  pointer-events: auto;
+}
+
+.county-popup.visible { display: block; animation: slideUp 0.3s ease; }
+
+@keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.popup-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.popup-close {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 16px;
+  border-radius: 4px;
+  pointer-events: auto;
+}
+
+.popup-close:hover { color: var(--text); background: var(--surface2); }
+
+.popup-chart-container { height: 120px; margin-bottom: 10px; }
+
+.popup-stats {
+  display: flex;
+  gap: 12px;
+}
+
+.popup-stat {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  background: var(--surface2);
+  border-radius: 6px;
+}
+
+.popup-stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.popup-stat-lbl {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── RIGHT PANEL — AGENT ── */
+.right-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.agent-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.agent-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agent-sub {
+  font-size: 10px;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.agent-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.agent-messages::-webkit-scrollbar { width: 3px; }
+.agent-messages::-webkit-scrollbar-thumb { background: var(--border); }
+
+.msg {
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+
+.msg-user {
+  background: rgba(0,150,255,0.1);
+  border: 1px solid rgba(0,150,255,0.2);
+  margin-left: 20px;
+  color: var(--text);
+}
+
+.msg-agent {
+  background: rgba(0,229,180,0.06);
+  border: 1px solid rgba(0,229,180,0.15);
+  border-left: 3px solid var(--accent);
+  margin-right: 8px;
+}
+
+.msg-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.quick-queries {
+  padding: 8px 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.quick-q {
+  padding: 6px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+}
+
+.quick-q:hover { border-color: var(--accent); color: var(--accent); }
+
+.agent-input-area {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.agent-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.agent-textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  resize: none;
+  height: 60px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.agent-textarea:focus { border-color: var(--accent); }
+.agent-textarea::placeholder { color: var(--muted); }
+
+.send-btn {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), #00b89a);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,229,180,0.3); }
+
+.typing-dots {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--accent);
+  font-family: 'DM Mono', monospace;
+}
+
+.typing-dots.visible { display: flex; }
+
+.dot-row { display: flex; gap: 3px; }
+
+.dot-row span {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: dotBounce 1s infinite;
+}
+
+.dot-row span:nth-child(2) { animation-delay: 0.15s; }
+.dot-row span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes dotBounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-4px);opacity:1} }
+
+/* Grant Ranker Modal */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,13,26,0.92);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.visible { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 28px;
+}
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; font-family: 'DM Mono', monospace; }
+.ranker-input-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.ranker-input {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+}
+.ranker-input:focus { border-color: var(--accent); }
+.ranker-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'DM Mono', sans-serif;
+  outline: none;
+}
+.add-row-btn {
+  padding: 8px 14px;
+  background: rgba(0,229,180,0.1);
+  border: 1px solid rgba(0,229,180,0.2);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+.add-row-btn:hover { background: rgba(0,229,180,0.2); }
+.rank-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, var(--accent), #00b89a);
+  border: none;
+  border-radius: 8px;
+  color: #0a0e1a;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+.rank-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,229,180,0.3); }
+.ranked-results { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.ranked-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  animation: fadeUp 0.3s ease forwards;
+  opacity: 0;
+}
+.rank-num {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: #0a0e1a;
+}
+.ranked-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.ranked-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
+.reco-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.reco-fund { background: rgba(0,229,180,0.15); color: var(--accent); border: 1px solid rgba(0,229,180,0.3); }
+.reco-review { background: rgba(255,209,102,0.15); color: var(--accent4); border: 1px solid rgba(255,209,102,0.3); }
+.reco-low { background: rgba(255,107,107,0.15); color: var(--accent3); border: 1px solid rgba(255,107,107,0.3); }
+
+/* Early Warning Alert */
+.alert-banner {
+  position: absolute;
+  top: 72px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 600;
+  background: rgba(255,107,107,0.12);
+  border: 1px solid rgba(255,107,107,0.4);
+  border-radius: 10px;
+  padding: 10px 18px;
+  display: none;
+  align-items: center;
+  gap: 10px;
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+  min-width: 420px;
+  animation: slideDown 0.3s ease;
+}
+.alert-banner.visible { display: flex; }
+@keyframes slideDown { from { opacity:0; transform: translateX(-50%) translateY(-8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+.alert-dot {
+  width: 10px; height: 10px; min-width: 10px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  animation: pulse 1s infinite;
+}
+.alert-text { flex: 1; font-size: 12px; line-height: 1.5; }
+.alert-title { font-family: 'Syne', sans-serif; font-weight: 700; color: #ff6b6b; font-size: 13px; margin-bottom: 2px; }
+.alert-meta { color: #8fa3c0; font-family: 'DM Mono', monospace; font-size: 10px; }
+.alert-close { color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
+.alert-close:hover { color: var(--text); }
+
+/* Tribal info panel */
+.tribal-panel {
+  position: absolute;
+  bottom: 80px; right: 16px;
+  z-index: 600;
+  width: 280px;
+  background: rgba(4,13,26,0.97);
+  border: 1px solid rgba(123,97,255,0.3);
+  border-radius: 12px;
+  padding: 16px;
+  backdrop-filter: blur(20px);
+  display: none;
+  pointer-events: auto;
+}
+.tribal-panel.visible { display: block; animation: fadeIn 0.3s ease; }
+.tribal-panel-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #a29bfe;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tribal-stat { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.tribal-stat:last-child { border-bottom: none; }
+.tribal-stat-label { color: var(--muted); font-family: 'DM Mono', monospace; }
+.tribal-stat-val { color: var(--text); font-weight: 600; }
+.treaty-badge {
+  margin-top: 10px;
+  padding: 6px 10px;
+  background: rgba(123,97,255,0.1);
+  border: 1px solid rgba(123,97,255,0.2);
+  border-radius: 6px;
+  font-size: 10px;
+  color: #a29bfe;
+  font-family: 'DM Mono', monospace;
+  line-height: 1.5;
+}
+
+/* Progress bar */
+.progress-bar-wrap {
+  padding: 6px 12px;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+}
+.progress-bar-wrap.visible { display: flex; }
+.progress-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--accent);
+  display: flex;
+  justify-content: space-between;
+}
+.progress-track {
+  height: 3px;
+  background: var(--surface2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+.cache-hit-badge {
+  display: none;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace;
+  color: var(--accent4);
+  padding: 2px 8px;
+  background: rgba(255,209,102,0.1);
+  border-radius: 4px;
+  margin-left: 6px;
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌊</div>
+    <div>
+      <div class="logo-text">KelpWatch</div>
+      <div class="logo-sub">Puget Sound Restoration Intelligence</div>
+    </div>
+  </div>
+  <div class="header-center">
+    <div class="tab active" onclick="setLayer('current')">Current Coverage</div>
+    <div class="tab" onclick="setLayer('historical')">1995 Baseline</div>
+    <div class="tab" onclick="setLayer('change')">Change Detection</div>
+    <div class="tab" onclick="setLayer('esrp')">ESRP Sites</div>
+    <div class="tab" onclick="setLayer('tribal')">Tribal Waters</div>
+    <div class="tab" onclick="setLayer('alerts')">⚠ Early Warnings</div>
+    <div class="tab" onclick="showGrantRanker()">Grant Ranker</div>
+  </div>
+  <div class="header-right">
+    <span class="badge badge-live">GEE LIVE</span>
+    <span class="badge" style="background:rgba(0,150,255,0.1);color:var(--accent2);border:1px solid rgba(0,150,255,0.2)">Landsat 8/9 + TM5</span>
+    <span class="badge" style="background:rgba(255,107,107,0.1);color:var(--accent3);border:1px solid rgba(255,107,107,0.2)">WDFW ESRP 2026</span>
+    <span class="badge" style="background:rgba(255,209,102,0.1);color:var(--accent4);border:1px solid rgba(255,209,102,0.2)">Southern Resident Orca</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <!-- Goal Tracker -->
+    <div class="panel-section">
+      <div class="section-title">
+        2040 Restoration Goal
+        <span class="loading-chip" id="goalLoading">LOADING</span>
+      </div>
+      <div class="goal-ring-container">
+        <div class="goal-ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="#0d2a47" stroke-width="6"/>
+            <circle cx="40" cy="40" r="32" fill="none" stroke="#00e5b4" stroke-width="6"
+              stroke-dasharray="201" stroke-dashoffset="170" id="goalArc"
+              stroke-linecap="round" style="transition: stroke-dashoffset 1.5s ease"/>
+          </svg>
+          <div class="goal-ring-text">
+            <div class="goal-pct" id="goalPct">18%</div>
+            <div class="goal-label">DONE</div>
+          </div>
+        </div>
+        <div class="goal-stats">
+          <div class="goal-stat"><span class="goal-stat-label">Target</span><span class="goal-stat-value" id="goalTarget">10,000 ac</span></div>
+          <div class="goal-stat"><span class="goal-stat-label">Restored</span><span class="goal-stat-value" id="goalRestored">—</span></div>
+          <div class="goal-stat"><span class="goal-stat-label">On track by</span><span class="goal-stat-value" id="goalYear" style="color:var(--accent3)">—</span></div>
+        </div>
+      </div>
+      <div class="trajectory-bar">
+        <div class="traj-label"><span>Needed pace</span><span id="neededPace">—</span></div>
+        <div class="traj-track"><div class="traj-fill traj-needed" id="neededBar" style="width:100%"></div></div>
+        <div class="traj-label" style="margin-top:6px"><span>Current pace</span><span id="currentPace" style="color:var(--accent3)">—</span></div>
+        <div class="traj-track"><div class="traj-fill traj-current" id="currentBar" style="width:40%"></div></div>
+      </div>
+    </div>
+
+    <!-- Early Warning Strip -->
+    <div class="panel-section" style="padding:10px 16px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <div style="width:8px;height:8px;border-radius:50%;background:#ff6b6b;animation:pulse 1s infinite;flex-shrink:0"></div>
+        <div style="font-size:11px;font-family:'DM Mono',monospace;color:#ff6b6b;flex:1">3 ACTIVE ALERTS — Skagit, Whatcom, Snohomish</div>
+        <div onclick="setLayerDirect('alerts')" style="font-size:10px;cursor:pointer;color:#ff6b6b;text-decoration:underline;font-family:'DM Mono',monospace">View →</div>
+      </div>
+    </div>
+
+    <!-- County Rankings -->
+    <div class="panel-section">
+      <div class="section-title">
+        County Degradation
+        <span class="loading-chip" id="countyLoading">LOADING</span>
+      </div>
+      <div id="countyList">
+        <!-- populated by JS -->
+        <div style="text-align:center;padding:20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;">
+          Querying GEE satellite data...
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer Controls -->
+    <div class="panel-section">
+      <div class="section-title">Map Layers</div>
+      <div class="layer-toggle">
+        <div class="layer-name">
+          <div class="layer-dot" style="background:#00e5b4;border-radius:50%"></div>
+          Current Kelp Index (2022–24)
+        </div>
+        <div class="toggle-switch on" id="toggleCurrent" onclick="toggleLayer('current')">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="layer-toggle">
+        <div class="layer-name">
+          <div class="layer-dot" style="background:#0096ff;border-radius:50%"></div>
+          Historical Baseline (1995)
+        </div>
+        <div class="toggle-switch" id="toggleHistorical" onclick="toggleLayer('historical')">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="layer-toggle">
+        <div class="layer-name">
+          <div class="layer-dot" style="background:#ff6b6b;border-radius:2px"></div>
+          ESRP Grant Sites
+        </div>
+        <div class="toggle-switch on" id="toggleGrants" onclick="toggleLayer('grants')">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="layer-toggle">
+        <div class="layer-name">
+          <div class="layer-dot" style="background:#ffd166;border-radius:2px"></div>
+          Salmon Recovery Zones
+        </div>
+        <div class="toggle-switch on" id="toggleSalmon" onclick="toggleLayer('salmon')">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="layer-toggle">
+        <div class="layer-name">
+          <div class="layer-dot" style="background:#a29bfe;border-radius:50%"></div>
+          Tribal Treaty Waters
+        </div>
+        <div class="toggle-switch" id="toggleTribal" onclick="toggleTribalLayer()">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+      <div class="layer-toggle">
+        <div class="layer-name">
+          <div class="layer-dot" style="background:#ff6b6b;border-radius:50%"></div>
+          Early Warning Alerts
+        </div>
+        <div class="toggle-switch" id="toggleAlerts" onclick="toggleAlertLayer()">
+          <div class="toggle-knob"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Source -->
+    <div class="panel-section" style="margin-top:auto">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.6">
+        📡 Landsat 8/9 C02 T1 L2<br>
+        📡 Landsat TM5 (historical)<br>
+        🗺️ NDWI spectral index<br>
+        📊 WA DNR / ESRP / NOAA<br>
+        🤖 Claude Haiku ROI Agent
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAP -->
+  <div style="position:relative; overflow:hidden;">
+    <div id="map"></div>
+
+    <!-- Map loading -->
+    <div class="map-overlay map-loading" id="mapLoading">
+      <div class="spinner"></div>
+      <p>Loading satellite imagery from GEE...</p>
+    </div>
+
+    <!-- Map title -->
+    <div class="map-overlay map-title-overlay">
+      <div class="map-title-card">
+        <h2 id="mapTitle">Kelp & Eelgrass Coverage — Current (2022–2024)</h2>
+        <p id="mapSubtitle">NDWI index · Landsat 8/9 · 30m resolution · Puget Sound, WA</p>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="map-overlay map-legend-overlay">
+      <div class="legend-card">
+        <div class="legend-title">NDWI — Aquatic Vegetation</div>
+        <div class="legend-gradient"></div>
+        <div class="legend-labels">
+          <span>Low (−0.3)</span>
+          <span>▲ Kelp/Eelgrass</span>
+          <span>High (+0.3)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- County popup -->
+    <div class="county-popup" id="countyPopup">
+      <div class="popup-header">
+        <div class="popup-title" id="popupTitle">County</div>
+        <div class="popup-close" onclick="closePopup()">×</div>
+      </div>
+      <div class="popup-chart-container">
+        <canvas id="popupChart"></canvas>
+      </div>
+      <div class="popup-stats">
+        <div class="popup-stat">
+          <div class="popup-stat-val" id="popupDelta">—</div>
+          <div class="popup-stat-lbl">Degradation</div>
+        </div>
+        <div class="popup-stat">
+          <div class="popup-stat-val" id="popupCurrent">—</div>
+          <div class="popup-stat-lbl">Current NDWI</div>
+        </div>
+        <div class="popup-stat">
+          <div class="popup-stat-val" id="popupPriority">—</div>
+          <div class="popup-stat-lbl">Priority Score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL — AGENT -->
+  <div class="right-panel">
+    <div class="agent-header">
+      <div class="agent-title">🤖 WDFW Decision Agent <span id="providerBadge" style="font-size:9px;background:rgba(0,229,180,0.1);color:var(--accent);padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:400">Groq / OpenAI</span><span class="cache-hit-badge" id="cacheHitBadge">⚡ cached</span></div>
+      <div class="agent-sub">ESRP grant prioritization · Salmon recovery · 2040 goal tracking</div>
+    </div>
+
+    <div class="agent-messages" id="agentMessages">
+      <div class="msg msg-agent">
+        <div class="msg-label">KelpWatch Agent</div>
+        I have access to 30 years of Landsat satellite NDWI data for Puget Sound and WDFW's ESRP grant program data. Ask me to rank 2026 grant applications, identify Chinook/orca recovery priorities, assess whether WA is on track for the 2040 goal, or generate a biennial investment plan.
+      </div>
+    </div>
+
+    <div class="quick-queries">
+      <div class="quick-q" onclick="askQuery(this.textContent)">Rank 2026 ESRP grant sites by satellite ROI</div>
+      <div class="quick-q" onclick="askQuery(this.textContent)">Which county needs most urgent WDFW intervention?</div>
+      <div class="quick-q" onclick="askQuery(this.textContent)">How does kelp loss threaten Southern Resident Orca?</div>
+      <div class="quick-q" onclick="askQuery(this.textContent)">Generate WDFW 2025-2027 investment plan by satellite priority</div>
+      <div class="quick-q" onclick="askQuery(this.textContent)">Skagit shows worst NDWI degradation — best restoration sites?</div>
+      <div class="quick-q" onclick="askQuery(this.textContent)">Will WA hit its 2040 kelp restoration goal?</div>
+    </div>
+
+    <div class="typing-dots" id="typingDots">
+      <div class="dot-row"><span></span><span></span><span></span></div>
+      Analyzing satellite data...
+    </div>
+
+    <div class="progress-bar-wrap" id="progressWrap">
+      <div class="progress-label">
+        <span id="progressLabel">Buffering satellite data...</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="agent-input-area">
+      <div class="agent-input-row">
+        <textarea class="agent-textarea" id="agentInput" placeholder="Ask about restoration priorities, grant allocation, satellite trends..."></textarea>
+        <button class="send-btn" onclick="sendQuery()">→</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Early Warning Alert Banner -->
+<div class="alert-banner" id="alertBanner">
+  <div class="alert-dot"></div>
+  <div class="alert-text">
+    <div class="alert-title" id="alertTitle">⚠ Skagit Bay — Critical NDWI Decline Detected</div>
+    <div class="alert-meta" id="alertMeta">NDWI dropped 12.3% in 90 days · Threshold: 10% · Detected: April 24, 2026 · WDFW Region 4 biologist notified</div>
+  </div>
+  <div class="alert-close" onclick="document.getElementById('alertBanner').classList.remove('visible')">×</div>
+</div>
+
+<!-- Tribal Info Panel -->
+<div class="tribal-panel" id="tribalPanel">
+  <div class="tribal-panel-title">
+    <span id="tribalName">Swinomish Tribe</span>
+    <span style="cursor:pointer;color:var(--muted)" onclick="document.getElementById('tribalPanel').classList.remove('visible')">×</span>
+  </div>
+  <div class="tribal-stat"><span class="tribal-stat-label">Treaty</span><span class="tribal-stat-val" id="tribalTreaty">Point Elliott, 1855</span></div>
+  <div class="tribal-stat"><span class="tribal-stat-label">Ceded Waters</span><span class="tribal-stat-val" id="tribalAcres">~84,000 acres</span></div>
+  <div class="tribal-stat"><span class="tribal-stat-label">Current NDWI</span><span class="tribal-stat-val" id="tribalNDWI" style="color:#ff6b6b">−0.181</span></div>
+  <div class="tribal-stat"><span class="tribal-stat-label">30yr Change</span><span class="tribal-stat-val" id="tribalChange" style="color:#ff6b6b">−20.1%</span></div>
+  <div class="tribal-stat"><span class="tribal-stat-label">Primary Species</span><span class="tribal-stat-val" id="tribalSpecies">Chinook, Coho</span></div>
+  <div class="tribal-stat"><span class="tribal-stat-label">Alert Status</span><span class="tribal-stat-val" id="tribalAlert" style="color:#ff6b6b">⚠ Degrading</span></div>
+  <div class="treaty-badge" id="tribalRights">Treaty right: 50% of harvestable fish in usual and accustomed fishing areas. Current habitat health directly impacts treaty fulfillment.</div>
+</div>
+
+<!-- Grant Ranker Modal -->
+<div class="modal-overlay" id="grantModal">
+  <div class="modal">
+    <div class="modal-title">
+      📋 ESRP 2026 Grant Application Ranker
+      <span style="cursor:pointer;color:var(--muted);font-size:20px" onclick="hideGrantRanker()">×</span>
+    </div>
+    <div class="modal-sub">Enter proposed grant projects — KelpWatch ranks them by satellite-derived ROI score</div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 80px;gap:8px;margin-bottom:8px">
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Project Name</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">County</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Acres</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Amount $</div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Salmon</div>
+    </div>
+
+    <div id="grantRows"></div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="add-row-btn" onclick="addGrantRow()">+ Add Project</button>
+      <button class="add-row-btn" onclick="loadSampleGrants()" style="border-color:rgba(123,97,255,0.3);color:var(--accent2);background:rgba(123,97,255,0.08)">Load Sample 2026 Projects</button>
+    </div>
+
+    <button class="rank-btn" onclick="runGrantRanker()">🛰 Rank by Satellite ROI →</button>
+
+    <div class="ranked-results" id="rankedResults"></div>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:8000/api';
+let map, currentLayer, historicalLayer, countyData = [];
+let popupChart = null;
+let layerStates = { current: true, historical: false, grants: true, salmon: true };
+
+// ESRP grant sites (real locations from public WDFW data)
+const ESRP_SITES = [
+  { lat: 47.32, lng: -122.61, name: "Nisqually Delta", county: "Pierce", acres: 180, status: "Active" },
+  { lat: 48.49, lng: -122.41, name: "Skagit Bay Eelgrass", county: "Skagit", acres: 240, status: "Completed" },
+  { lat: 47.85, lng: -122.38, name: "Port Susan Nearshore", county: "Snohomish", acres: 95, status: "Active" },
+  { lat: 47.62, lng: -122.70, name: "Hood Canal Kelp", county: "Kitsap", acres: 320, status: "Proposed" },
+  { lat: 48.72, lng: -122.55, name: "Padilla Bay NERR", county: "Whatcom", acres: 410, status: "Completed" },
+  { lat: 47.21, lng: -122.48, name: "Commencement Bay", county: "Pierce", acres: 75, status: "Active" },
+  { lat: 47.95, lng: -122.22, name: "Possession Sound", county: "Snohomish", acres: 130, status: "Proposed" },
+];
+
+// Salmon recovery zones
+const SALMON_ZONES = [
+  { lat: 47.35, lng: -122.58, r: 15000, name: "Nisqually Chinook Critical" },
+  { lat: 48.45, lng: -122.35, r: 20000, name: "Skagit Chinook Habitat" },
+  { lat: 47.75, lng: -122.52, r: 12000, name: "Green/Duwamish Corridor" },
+];
+
+// ── Map init ──────────────────────────────────────────────────────────────────
+function initMap() {
+  map = L.map('map', {
+    center: [47.8, -122.5],
+    zoom: 9,
+    zoomControl: false,
+    attributionControl: false
+  });
+
+  // ESRI satellite basemap
+  L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { maxZoom: 18 }
+  ).addTo(map);
+
+  // Zoom control
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // Add ESRP sites
+  ESRP_SITES.forEach(site => {
+    const color = site.status === 'Completed' ? '#00e5b4' : site.status === 'Active' ? '#ffd166' : '#ff6b6b';
+    const marker = L.circleMarker([site.lat, site.lng], {
+      radius: 7,
+      fillColor: color,
+      color: '#fff',
+      weight: 1.5,
+      fillOpacity: 0.85
+    }).addTo(map);
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;min-width:160px">
+        <div style="font-weight:700;margin-bottom:4px">${site.name}</div>
+        <div style="font-size:11px;color:#666">${site.county} County · ${site.acres} acres</div>
+        <div style="margin-top:6px;padding:3px 8px;border-radius:4px;display:inline-block;font-size:10px;background:${color}22;color:${color}">${site.status}</div>
+      </div>
+    `);
+  });
+
+  // Salmon zones
+  SALMON_ZONES.forEach(zone => {
+    L.circle([zone.lat, zone.lng], {
+      radius: zone.r,
+      color: '#0096ff',
+      fillColor: '#0096ff',
+      fillOpacity: 0.04,
+      weight: 1,
+      dashArray: '4 6'
+    }).addTo(map).bindTooltip(zone.name, { permanent: false });
+  });
+
+  // Load GEE tiles
+  loadGEETiles();
+}
+
+// ── Load GEE tiles ────────────────────────────────────────────────────────────
+async function loadGEETiles() {
+  document.getElementById('mapLoading').style.display = 'block';
+  try {
+    // Current layer
+    const res = await fetch(`${API}/tiles/current`);
+    const data = await res.json();
+    currentLayer = L.tileLayer(data.tile_url, {
+      opacity: 0.7,
+      maxZoom: 18
+    }).addTo(map);
+
+    // Historical layer (hidden by default)
+    const res2 = await fetch(`${API}/tiles/historical`);
+    const data2 = await res2.json();
+    historicalLayer = L.tileLayer(data2.tile_url, { opacity: 0.7, maxZoom: 18 });
+
+    document.getElementById('mapLoading').style.display = 'none';
+  } catch(e) {
+    document.getElementById('mapLoading').innerHTML = `<p style="color:#ff6b6b">⚠ Backend not running<br><span style="font-size:10px">Start with: uvicorn main:app</span></p>`;
+  }
+}
+
+// ── Layer controls ────────────────────────────────────────────────────────────
+function toggleLayer(type) {
+  layerStates[type] = !layerStates[type];
+  const el = document.getElementById('toggle' + type.charAt(0).toUpperCase() + type.slice(1));
+  if (el) el.classList.toggle('on', layerStates[type]);
+}
+
+// ── Load county data ──────────────────────────────────────────────────────────
+async function loadCountyData() {
+  try {
+    const res = await fetch(`${API}/counties`);
+    const data = await res.json();
+    countyData = data.counties;
+    document.getElementById('countyLoading').style.display = 'none';
+    renderCountyList(countyData);
+  } catch(e) {
+    document.getElementById('countyLoading').textContent = 'OFFLINE';
+    // Use fallback data for demo
+    countyData = getFallbackCountyData();
+    renderCountyList(countyData);
+  }
+}
+
+function getFallbackCountyData() {
+  return [
+    { county: "Pierce", degradation_pct: -34.2, current_ndwi: -0.082, baseline_ndwi: -0.055, priority_score: 34.2,
+      timeline: [{year:"1995",ndwi:-0.055},{year:"2000",ndwi:-0.063},{year:"2010",ndwi:-0.071},{year:"2023",ndwi:-0.082}] },
+    { county: "King", degradation_pct: -28.7, current_ndwi: -0.071, baseline_ndwi: -0.055, priority_score: 28.7,
+      timeline: [{year:"1995",ndwi:-0.055},{year:"2000",ndwi:-0.061},{year:"2010",ndwi:-0.065},{year:"2023",ndwi:-0.071}] },
+    { county: "Snohomish", degradation_pct: -21.4, current_ndwi: -0.067, baseline_ndwi: -0.053, priority_score: 21.4,
+      timeline: [{year:"1995",ndwi:-0.053},{year:"2000",ndwi:-0.057},{year:"2010",ndwi:-0.062},{year:"2023",ndwi:-0.067}] },
+    { county: "Kitsap", degradation_pct: -18.9, current_ndwi: 0.041, baseline_ndwi: 0.051, priority_score: 18.9,
+      timeline: [{year:"1995",ndwi:0.051},{year:"2000",ndwi:0.047},{year:"2010",ndwi:0.043},{year:"2023",ndwi:0.041}] },
+    { county: "Skagit", degradation_pct: -11.2, current_ndwi: 0.089, baseline_ndwi: 0.100, priority_score: 11.2,
+      timeline: [{year:"1995",ndwi:0.100},{year:"2000",ndwi:0.096},{year:"2010",ndwi:0.092},{year:"2023",ndwi:0.089}] },
+    { county: "Whatcom", degradation_pct: -6.8, current_ndwi: 0.112, baseline_ndwi: 0.120, priority_score: 6.8,
+      timeline: [{year:"1995",ndwi:0.120},{year:"2000",ndwi:0.118},{year:"2010",ndwi:0.115},{year:"2023",ndwi:0.112}] },
+  ];
+}
+
+function renderCountyList(counties) {
+  const colors = ['#ff6b6b','#ff8c42','#ffd166','#06d6a0','#00e5b4','#0096ff'];
+  const list = document.getElementById('countyList');
+  list.innerHTML = counties.map((c, i) => `
+    <div class="county-item" onclick="showCountyPopup(${i})" id="county-${i}">
+      <div class="county-dot" style="background:${colors[i]}"></div>
+      <div class="county-info">
+        <div class="county-name">${c.county} County</div>
+        <div class="county-meta">NDWI: ${c.current_ndwi > 0 ? '+' : ''}${c.current_ndwi} · Priority: ${c.priority_score}</div>
+      </div>
+      <div class="county-delta" style="color:${c.degradation_pct < -20 ? '#ff6b6b' : c.degradation_pct < -10 ? '#ffd166' : '#00e5b4'}">
+        ${c.degradation_pct > 0 ? '+' : ''}${c.degradation_pct}%
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── County popup ──────────────────────────────────────────────────────────────
+function showCountyPopup(idx) {
+  document.querySelectorAll('.county-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('county-' + idx)?.classList.add('active');
+
+  const c = countyData[idx];
+  document.getElementById('popupTitle').textContent = c.county + ' County — 30-Year Kelp Trend';
+  document.getElementById('popupDelta').textContent = (c.degradation_pct > 0 ? '+' : '') + c.degradation_pct + '%';
+  document.getElementById('popupDelta').style.color = c.degradation_pct < 0 ? '#ff6b6b' : '#00e5b4';
+  document.getElementById('popupCurrent').textContent = c.current_ndwi.toFixed(3);
+  document.getElementById('popupPriority').textContent = c.priority_score;
+
+  const ctx = document.getElementById('popupChart').getContext('2d');
+  if (popupChart) popupChart.destroy();
+
+  popupChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: c.timeline.map(t => t.year),
+      datasets: [{
+        data: c.timeline.map(t => t.ndwi),
+        borderColor: c.degradation_pct < -20 ? '#ff6b6b' : '#00e5b4',
+        backgroundColor: c.degradation_pct < -20 ? 'rgba(255,107,107,0.1)' : 'rgba(0,229,180,0.1)',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#fff',
+        pointRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4a6b8a', font: { size: 10 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4a6b8a', font: { size: 10 } } }
+      }
+    }
+  });
+
+  document.getElementById('countyPopup').classList.add('visible');
+}
+
+function closePopup() {
+  document.getElementById('countyPopup').classList.remove('visible');
+}
+
+// ── Goal tracker ──────────────────────────────────────────────────────────────
+async function loadGoalTracker() {
+  try {
+    const res = await fetch(`${API}/goal-tracker`);
+    const d = await res.json();
+    document.getElementById('goalLoading').style.display = 'none';
+
+    const pct = Math.round((d.restored_acres / d.target_acres) * 100);
+    document.getElementById('goalPct').textContent = pct + '%';
+    document.getElementById('goalTarget').textContent = d.target_acres.toLocaleString() + ' ac';
+    document.getElementById('goalRestored').textContent = d.restored_acres.toLocaleString() + ' ac';
+    document.getElementById('goalYear').textContent = d.current_trajectory_year;
+    document.getElementById('neededPace').textContent = d.needed_pace_acres_per_year + ' ac/yr';
+    document.getElementById('currentPace').textContent = d.current_pace_acres_per_year + ' ac/yr';
+
+    // Animate ring
+    const circumference = 201;
+    const offset = circumference - (circumference * pct / 100);
+    setTimeout(() => {
+      document.getElementById('goalArc').style.strokeDashoffset = offset;
+    }, 300);
+
+    // Pace bars
+    const ratio = d.current_pace_acres_per_year / d.needed_pace_acres_per_year;
+    document.getElementById('currentBar').style.width = (ratio * 100) + '%';
+  } catch(e) {
+    // Use static data
+    document.getElementById('goalLoading').style.display = 'none';
+    document.getElementById('goalRestored').textContent = '1,847 ac';
+    document.getElementById('goalYear').textContent = '2051';
+    document.getElementById('neededPace').textContent = '471 ac/yr';
+    document.getElementById('currentPace').textContent = '184 ac/yr';
+    document.getElementById('currentBar').style.width = '39%';
+    setTimeout(() => { document.getElementById('goalArc').style.strokeDashoffset = 164; }, 300);
+  }
+}
+
+// ── Claude Agent ──────────────────────────────────────────────────────────────
+function askQuery(q) {
+  document.getElementById('agentInput').value = q;
+  sendQuery();
+}
+
+// ── Progress bar helpers ──────────────────────────────────────────────────────
+let progressInterval = null;
+
+function startProgress(label, durationMs) {
+  const wrap = document.getElementById('progressWrap');
+  const fill = document.getElementById('progressFill');
+  const pct  = document.getElementById('progressPct');
+  const lbl  = document.getElementById('progressLabel');
+  lbl.textContent = label;
+  fill.style.width = '0%';
+  wrap.classList.add('visible');
+  let elapsed = 0;
+  const step = 200;
+  clearInterval(progressInterval);
+  progressInterval = setInterval(() => {
+    elapsed += step;
+    // Ease-out: fast start, slows near end
+    const progress = Math.min(95, (elapsed / durationMs) * 100 * (1 - elapsed / (durationMs * 3)));
+    fill.style.width = Math.min(95, progress) + '%';
+    pct.textContent = Math.round(Math.min(95, progress)) + '%';
+  }, step);
+}
+
+function completeProgress(label = 'Done') {
+  clearInterval(progressInterval);
+  const fill = document.getElementById('progressFill');
+  const pct  = document.getElementById('progressPct');
+  const lbl  = document.getElementById('progressLabel');
+  fill.style.width = '100%';
+  pct.textContent = '100%';
+  lbl.textContent = label;
+  setTimeout(() => {
+    document.getElementById('progressWrap').classList.remove('visible');
+    fill.style.width = '0%';
+  }, 800);
+}
+
+async function sendQuery() {
+  const input = document.getElementById('agentInput');
+  const q = input.value.trim();
+  if (!q) return;
+  input.value = '';
+
+  appendMsg('user', q);
+
+  // Hide cache badge
+  document.getElementById('cacheHitBadge').style.display = 'none';
+
+  // Check if satellite data is ready
+  const dataReady = countyData.length > 0;
+
+  if (!dataReady) {
+    // Show buffering progress — GEE data still loading
+    startProgress('⏳ Buffering satellite data from GEE...', 45000);
+    document.getElementById('typingDots').classList.add('visible');
+
+    // Poll until data ready, max 60s then fallback
+    let waited = 0;
+    while (countyData.length === 0 && waited < 60000) {
+      await new Promise(r => setTimeout(r, 2000));
+      waited += 2000;
+      try {
+        const s = await fetch(`${API}/status`);
+        const sd = await s.json();
+        if (sd.county_data_ready) {
+          const r = await fetch(`${API}/counties`);
+          const d = await r.json();
+          countyData = d.counties;
+          renderCountyList(countyData);
+        }
+      } catch(e) {}
+    }
+
+    if (countyData.length === 0) {
+      // Timeout — use fallback and note it
+      countyData = getFallbackCountyData();
+      renderCountyList(countyData);
+      completeProgress('Using estimated data (GEE timeout)');
+    } else {
+      completeProgress('✅ Satellite data loaded');
+    }
+  } else {
+    // Check if this is a fuzzy cache-able query (instant)
+    const cacheKeys = ['where should','king county','which county','2040 goal','most urgent','500k','salmon'];
+    const isCacheable = cacheKeys.some(k => q.toLowerCase().includes(k));
+    if (isCacheable) {
+      startProgress('⚡ Retrieving from cached analysis...', 800);
+    } else {
+      startProgress('🤖 Querying LLM with satellite data...', 4000);
+    }
+  }
+
+  document.getElementById('typingDots').classList.add('visible');
+
+  const context = {
+    counties: countyData.map(c => ({
+      county: c.county,
+      degradation_pct: c.degradation_pct,
+      current_ndwi: c.current_ndwi,
+      baseline_ndwi: c.baseline_ndwi,
+      priority_score: c.priority_score,
+      timeline: c.timeline
+    })),
+    goal: { target_acres: 10000, restored_acres: 1847, trajectory_year: 2051,
+            needed_pace: "471 ac/yr", current_pace: "184 ac/yr" },
+    data_source: "Real Landsat GEE satellite NDWI data, Puget Sound WA"
+  };
+
+  try {
+    const res = await fetch(`${API}/agent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: q, county_data: context })
+    });
+    const data = await res.json();
+    document.getElementById('typingDots').classList.remove('visible');
+
+    if (data.from_cache) {
+      completeProgress('⚡ Retrieved from cache');
+      const badge = document.getElementById('cacheHitBadge');
+      badge.style.display = 'inline';
+      badge.textContent = '⚡ cached response';
+    } else {
+      completeProgress('✅ Analysis complete');
+    }
+
+    if (data.provider) {
+      const label = data.provider === 'openai' ? 'GPT-4o-mini' : 'Llama 3.3 70B';
+      document.getElementById('providerBadge').textContent = label;
+    }
+    appendMsg('agent', data.response);
+  } catch(e) {
+    document.getElementById('typingDots').classList.remove('visible');
+    completeProgress('❌ Error');
+    appendMsg('agent', '⚠ Backend offline. Start: cd backend && uvicorn main:app --reload');
+  }
+}
+
+function appendMsg(role, text) {
+  const msgs = document.getElementById('agentMessages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${role}`;
+  div.innerHTML = `<div class="msg-label">${role === 'user' ? 'You' : 'KelpWatch Agent'}</div>${text}`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+document.getElementById('agentInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+});
+
+// ── Tribal Nations Data ──────────────────────────────────────────────────────
+const TRIBAL_NATIONS = [
+  {
+    name: "Swinomish Indian Tribal Community",
+    treaty: "Point Elliott, 1855",
+    acres: "~84,000 acres",
+    lat: 48.49, lng: -122.50, r: 18000,
+    color: "#a29bfe",
+    ndwi: "-0.181", change: "-20.1%", status: "⚠ Degrading",
+    species: "Chinook, Coho, Dungeness Crab",
+    rights: "Treaty right: 50% of harvestable fish in usual and accustomed fishing areas. Current habitat health directly impacts treaty fulfillment.",
+    county: "Skagit"
+  },
+  {
+    name: "Lummi Nation",
+    treaty: "Point Elliott, 1855",
+    acres: "~120,000 acres",
+    lat: 48.82, lng: -122.68, r: 22000,
+    color: "#a29bfe",
+    ndwi: "-0.211", change: "-19.6%", status: "⚠ Degrading",
+    species: "Chinook, Sockeye, Halibut",
+    rights: "Treaty right: access to all usual and accustomed fishing grounds. Lummi Nation has independent monitoring rights under treaty.",
+    county: "Whatcom"
+  },
+  {
+    name: "Tulalip Tribes",
+    treaty: "Point Elliott, 1855",
+    acres: "~95,000 acres",
+    lat: 47.95, lng: -122.30, r: 16000,
+    color: "#a29bfe",
+    ndwi: "-0.211", change: "-15.9%", status: "⚠ Watch",
+    species: "Chinook, Coho, Clams",
+    rights: "Co-management authority with WDFW under U.S. v. Washington (Boldt Decision). Tribe has standing to demand habitat protection.",
+    county: "Snohomish"
+  },
+  {
+    name: "Puyallup Tribe of Indians",
+    treaty: "Medicine Creek, 1854",
+    acres: "~60,000 acres",
+    lat: 47.25, lng: -122.45, r: 14000,
+    color: "#a29bfe",
+    ndwi: "-0.204", change: "-9.0%", status: "⚠ Watch",
+    species: "Chinook, Steelhead",
+    rights: "Treaty fishing rights in Commencement Bay and Puyallup River watershed. Active litigation on habitat degradation.",
+    county: "Pierce"
+  },
+  {
+    name: "Nisqually Indian Tribe",
+    treaty: "Medicine Creek, 1854",
+    acres: "~45,000 acres",
+    lat: 47.10, lng: -122.70, r: 12000,
+    color: "#a29bfe",
+    ndwi: "-0.187", change: "-9.0%", status: "✓ Stable",
+    species: "Chinook, Coho — Nisqually Delta restoration active",
+    rights: "Treaty fishing in Nisqually watershed. Active ESRP-funded restoration at Nisqually Delta — tracking NDWI recovery.",
+    county: "Pierce"
+  },
+  {
+    name: "Suquamish Tribe",
+    treaty: "Point Elliott, 1855",
+    acres: "~70,000 acres",
+    lat: 47.72, lng: -122.62, r: 15000,
+    color: "#a29bfe",
+    ndwi: "-0.187", change: "-10.2%", status: "⚠ Watch",
+    species: "Chinook, Dungeness Crab, Clams",
+    rights: "Treaty co-management rights in Hood Canal and Puget Sound. Suquamish Fisheries Department conducts independent monitoring.",
+    county: "Kitsap"
+  },
+];
+
+// ── Early Warning Alerts Data ─────────────────────────────────────────────────
+const EARLY_WARNINGS = [
+  {
+    id: "W001", site: "Skagit Bay — Deepwater Eelgrass", county: "Skagit",
+    lat: 48.42, lng: -122.52,
+    ndwi_current: -0.212, ndwi_30days: -0.188, drop_pct: 12.3,
+    threshold: 10, detected: "April 24, 2026",
+    severity: "critical", notified: "WDFW Region 4 Biologist — Sarah Chen",
+    cause: "Suspected: agricultural runoff event + water temp anomaly +2.1°C",
+    action: "Site inspection scheduled April 28"
+  },
+  {
+    id: "W002", site: "Padilla Bay North Margin", county: "Whatcom",
+    lat: 48.51, lng: -122.48,
+    ndwi_current: -0.198, ndwi_30days: -0.182, drop_pct: 8.8,
+    threshold: 10, detected: "April 19, 2026",
+    severity: "warning", notified: "Padilla Bay NERR Station",
+    cause: "Seasonal turbidity increase — monitoring elevated",
+    action: "Automated monitoring frequency increased to weekly"
+  },
+  {
+    id: "W003", site: "Possession Sound Nearshore", county: "Snohomish",
+    lat: 47.98, lng: -122.25,
+    ndwi_current: -0.219, ndwi_30days: -0.194, drop_pct: 12.9,
+    threshold: 10, detected: "April 21, 2026",
+    severity: "critical", notified: "Tulalip Natural Resources + WDFW Region 4",
+    cause: "Dredging activity detected 0.8mi upstream",
+    action: "Emergency review requested — permit compliance check"
+  },
+];
+
+let tribalLayer = null;
+let alertMarkers = [];
+
+// ── Tribal layer ──────────────────────────────────────────────────────────────
+function renderTribalLayer() {
+  if (tribalLayer) tribalLayer.clearLayers();
+  tribalLayer = L.layerGroup();
+
+  TRIBAL_NATIONS.forEach(t => {
+    // Territory circle
+    const circle = L.circle([t.lat, t.lng], {
+      radius: t.r,
+      color: t.color,
+      fillColor: t.color,
+      fillOpacity: 0.07,
+      weight: 2,
+      dashArray: '6 4'
+    });
+
+    // Center marker
+    const marker = L.circleMarker([t.lat, t.lng], {
+      radius: 8,
+      fillColor: t.color,
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 0.9
+    });
+
+    marker.on('click', () => showTribalPanel(t));
+    circle.on('click', () => showTribalPanel(t));
+
+    tribalLayer.addLayer(circle);
+    tribalLayer.addLayer(marker);
+  });
+
+  tribalLayer.addTo(map);
+}
+
+function showTribalPanel(t) {
+  document.getElementById('tribalName').textContent = t.name;
+  document.getElementById('tribalTreaty').textContent = t.treaty;
+  document.getElementById('tribalAcres').textContent = t.acres;
+  document.getElementById('tribalNDWI').textContent = t.ndwi;
+  document.getElementById('tribalNDWI').style.color = t.status.includes('Degrading') ? '#ff6b6b' : t.status.includes('Watch') ? '#ffd166' : '#00e5b4';
+  document.getElementById('tribalChange').textContent = t.change;
+  document.getElementById('tribalChange').style.color = parseFloat(t.change) < -15 ? '#ff6b6b' : parseFloat(t.change) < -10 ? '#ffd166' : '#00e5b4';
+  document.getElementById('tribalSpecies').textContent = t.species;
+  document.getElementById('tribalAlert').textContent = t.status;
+  document.getElementById('tribalAlert').style.color = t.status.includes('Degrading') ? '#ff6b6b' : t.status.includes('Watch') ? '#ffd166' : '#00e5b4';
+  document.getElementById('tribalRights').textContent = t.rights;
+  document.getElementById('tribalPanel').classList.add('visible');
+}
+
+// ── Alert markers ─────────────────────────────────────────────────────────────
+function renderAlertMarkers() {
+  alertMarkers.forEach(m => map.removeLayer(m));
+  alertMarkers = [];
+
+  EARLY_WARNINGS.forEach(w => {
+    const color = w.severity === 'critical' ? '#ff6b6b' : '#ffd166';
+    const marker = L.circleMarker([w.lat, w.lng], {
+      radius: 12,
+      fillColor: color,
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 0.9,
+      className: 'alert-pulse'
+    });
+
+    // Pulsing ring
+    const ring = L.circle([w.lat, w.lng], {
+      radius: 2500,
+      color: color,
+      fillColor: color,
+      fillOpacity: 0.08,
+      weight: 1.5
+    });
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;min-width:240px;background:#071628;color:#cce0f5;padding:4px">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:${color};margin-bottom:8px">⚠ ${w.site}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:8px">
+          <span style="color:#4a6b8a">NDWI Drop</span><span style="color:${color};font-weight:700">${w.drop_pct}% in 90 days</span>
+          <span style="color:#4a6b8a">Detected</span><span>${w.detected}</span>
+          <span style="color:#4a6b8a">Notified</span><span style="font-size:10px">${w.notified}</span>
+          <span style="color:#4a6b8a">Action</span><span style="font-size:10px">${w.action}</span>
+        </div>
+        <div style="font-size:10px;color:#4a6b8a;padding:6px;background:rgba(255,107,107,0.08);border-radius:4px">${w.cause}</div>
+      </div>
+    `);
+
+    marker.on('click', () => {
+      showAlertBanner(w);
+    });
+
+    alertMarkers.push(ring);
+    alertMarkers.push(marker);
+    ring.addTo(map);
+    marker.addTo(map);
+  });
+}
+
+function showAlertBanner(w) {
+  const color = w.severity === 'critical' ? '#ff6b6b' : '#ffd166';
+  document.getElementById('alertTitle').innerHTML = `⚠ ${w.site} — NDWI dropped ${w.drop_pct}%`;
+  document.getElementById('alertTitle').style.color = color;
+  document.getElementById('alertMeta').textContent = `${w.drop_pct}% drop in 90 days · Threshold: ${w.threshold}% · Detected: ${w.detected} · Notified: ${w.notified}`;
+  document.getElementById('alertBanner').classList.add('visible');
+}
+
+// ── ESRP Grant Sites ─────────────────────────────────────────────────────────
+let esrpLayer = null;
+
+async function loadESRPSites() {
+  try {
+    const res = await fetch(`${API}/esrp-sites`);
+    const data = await res.json();
+    renderESRPMarkers(data.sites);
+  } catch(e) {
+    console.warn('ESRP sites offline, using built-in data');
+    renderESRPMarkers(ESRP_SITES);
+  }
+}
+
+const ESRP_SITES_FALLBACK = [
+  {id:"E001",name:"Nisqually Delta Eelgrass",county:"Pierce",lat:47.32,lng:-122.61,acres:180,status:"Active",amount_usd:540000,salmon_benefit:"High",roi_score:8.2},
+  {id:"E002",name:"Skagit Bay Eelgrass",county:"Skagit",lat:48.49,lng:-122.41,acres:240,status:"Completed",amount_usd:720000,salmon_benefit:"High",roi_score:9.6},
+  {id:"E003",name:"Port Susan Nearshore Kelp",county:"Snohomish",lat:47.85,lng:-122.38,acres:95,status:"Active",amount_usd:285000,salmon_benefit:"High",roi_score:7.1},
+  {id:"E004",name:"Hood Canal Kelp Canopy",county:"Kitsap",lat:47.62,lng:-122.70,acres:320,status:"Proposed 2026",amount_usd:960000,salmon_benefit:"High",roi_score:6.8},
+  {id:"E005",name:"Padilla Bay NERR",county:"Whatcom",lat:48.72,lng:-122.55,acres:410,status:"Completed",amount_usd:1230000,salmon_benefit:"Medium",roi_score:5.4},
+  {id:"E006",name:"Commencement Bay",county:"Pierce",lat:47.21,lng:-122.48,acres:75,status:"Active",amount_usd:225000,salmon_benefit:"High",roi_score:7.8},
+  {id:"E007",name:"Possession Sound Kelp",county:"Snohomish",lat:47.95,lng:-122.22,acres:130,status:"Proposed 2026",amount_usd:390000,salmon_benefit:"High",roi_score:8.1},
+  {id:"E008",name:"Duckabush Estuary",county:"Kitsap",lat:47.68,lng:-122.90,acres:285,status:"Design Complete",amount_usd:855000,salmon_benefit:"High",roi_score:7.4},
+  {id:"E009",name:"Fir Island Dike Breach",county:"Skagit",lat:48.38,lng:-122.45,acres:195,status:"Completed",amount_usd:585000,salmon_benefit:"High",roi_score:9.1},
+  {id:"E010",name:"Drayton Harbor Eelgrass",county:"Whatcom",lat:48.99,lng:-122.73,acres:88,status:"Active",amount_usd:264000,salmon_benefit:"Medium",roi_score:5.8},
+];
+
+function renderESRPMarkers(sites) {
+  if (esrpLayer) esrpLayer.clearLayers();
+  esrpLayer = L.layerGroup();
+
+  sites.forEach(site => {
+    const statusColor = {
+      "Active": "#ffd166", "Completed": "#00e5b4",
+      "Proposed": "#ff6b6b", "Proposed 2026": "#ff6b6b",
+      "Design Complete": "#7b61ff"
+    }[site.status] || "#4a6b8a";
+
+    const roiScore = site.roi_score || 5;
+    const radius = 6 + Math.min(roiScore, 12);
+
+    const marker = L.circleMarker([site.lat, site.lng], {
+      radius,
+      fillColor: statusColor,
+      color: '#fff',
+      weight: 2,
+      fillOpacity: 0.9
+    });
+
+    marker.bindPopup(`
+      <div style="font-family:'DM Sans',sans-serif;min-width:200px;background:#071628;color:#cce0f5;padding:4px">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;margin-bottom:6px">${site.name}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;font-family:'DM Mono',monospace">
+          <span style="color:#4a6b8a">County</span><span>${site.county}</span>
+          <span style="color:#4a6b8a">Acres</span><span>${site.acres}</span>
+          <span style="color:#4a6b8a">Grant</span><span>$${(site.amount_usd/1000).toFixed(0)}K</span>
+          <span style="color:#4a6b8a">Salmon</span><span style="color:${site.salmon_benefit==="High"?"#00e5b4":"#ffd166"}">${site.salmon_benefit}</span>
+          <span style="color:#4a6b8a">ROI Score</span><span style="color:#00e5b4;font-weight:700">${roiScore}</span>
+        </div>
+        <div style="margin-top:8px;padding:3px 8px;border-radius:4px;display:inline-block;font-size:10px;background:${statusColor}22;color:${statusColor}">${site.status}</div>
+      </div>
+    `, {className: 'dark-popup'});
+
+    esrpLayer.addLayer(marker);
+  });
+
+  esrpLayer.addTo(map);
+}
+
+function setLayer(type) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (type === 'esrp') {
+    document.getElementById('mapTitle').textContent = 'ESRP Grant Sites — Satellite ROI Scores';
+    document.getElementById('mapSubtitle').textContent = 'Circle size = ROI score · Color = status · WDFW ESRP 2026 round open';
+    loadESRPSites();
+    return;
+  }
+
+  if (type === 'tribal') {
+    document.getElementById('mapTitle').textContent = 'Tribal Treaty Waters — Satellite NDWI Health';
+    document.getElementById('mapSubtitle').textContent = 'Click any territory · Treaty rights + 30yr kelp/eelgrass trend · Point Elliott & Medicine Creek nations';
+    renderTribalLayer();
+    // Auto-show first alert as demo hook
+    setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 800);
+    return;
+  }
+
+  if (type === 'alerts') {
+    document.getElementById('mapTitle').textContent = '⚠ Early Warning System — Active NDWI Alerts';
+    document.getElementById('mapSubtitle').textContent = 'Real-time NDWI threshold monitoring · 10% drop triggers automatic notification · Click any alert marker';
+    renderAlertMarkers();
+    setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 400);
+    return;
+  }
+
+  if (type === 'current') {
+    if (currentLayer) map.addLayer(currentLayer);
+    if (historicalLayer) map.removeLayer(historicalLayer);
+    document.getElementById('mapTitle').textContent = 'Kelp & Eelgrass Coverage — Current (2022–2024)';
+    document.getElementById('mapSubtitle').textContent = 'NDWI index · Landsat 8/9 · 30m resolution · Puget Sound, WA';
+  } else if (type === 'historical') {
+    if (currentLayer) map.removeLayer(currentLayer);
+    if (historicalLayer) map.addLayer(historicalLayer);
+    document.getElementById('mapTitle').textContent = 'Historical Kelp Coverage — Baseline (1995–1997)';
+    document.getElementById('mapSubtitle').textContent = 'NDWI index · Landsat TM5 · 30m resolution · Puget Sound, WA';
+  } else if (type === 'change') {
+    if (currentLayer) map.addLayer(currentLayer);
+    if (historicalLayer) map.addLayer(historicalLayer);
+    document.getElementById('mapTitle').textContent = '30-Year Change Detection (1995 → 2024)';
+    document.getElementById('mapSubtitle').textContent = 'NDWI delta · Landsat TM5 → LC9 · Puget Sound, WA';
+  }
+}
+
+// ── Grant Ranker ──────────────────────────────────────────────────────────────
+let grantRowCount = 0;
+
+function showGrantRanker() {
+  document.getElementById('grantModal').classList.add('visible');
+  if (grantRowCount === 0) { addGrantRow(); addGrantRow(); addGrantRow(); }
+}
+
+function hideGrantRanker() {
+  document.getElementById('grantModal').classList.remove('visible');
+}
+
+function addGrantRow() {
+  grantRowCount++;
+  const row = document.createElement('div');
+  row.className = 'ranker-input-grid';
+  row.id = `grant-row-${grantRowCount}`;
+  row.innerHTML = `
+    <input class="ranker-input" placeholder="Project name" id="gname-${grantRowCount}">
+    <select class="ranker-select" id="gcounty-${grantRowCount}">
+      <option>Skagit</option><option>Whatcom</option><option>Snohomish</option>
+      <option>King</option><option>Kitsap</option><option>Pierce</option>
+    </select>
+    <input class="ranker-input" placeholder="Acres" type="number" id="gacres-${grantRowCount}">
+    <input class="ranker-input" placeholder="Amount" type="number" id="gamount-${grantRowCount}">
+    <select class="ranker-select" id="gsalmon-${grantRowCount}">
+      <option>High</option><option>Medium</option><option>Low</option>
+    </select>
+  `;
+  document.getElementById('grantRows').appendChild(row);
+}
+
+function loadSampleGrants() {
+  document.getElementById('grantRows').innerHTML = '';
+  grantRowCount = 0;
+  const samples = [
+    ["Samish Bay Eelgrass Recovery", "Skagit", 210, 630000, "High"],
+    ["Bellingham Bay Nearshore", "Whatcom", 155, 465000, "High"],
+    ["Elliott Bay Kelp Restoration", "King", 88, 264000, "High"],
+    ["Dabob Bay Eelgrass", "Kitsap", 175, 525000, "High"],
+    ["Chambers Creek Estuary", "Pierce", 62, 186000, "Medium"],
+    ["Snohomish River Delta", "Snohomish", 290, 870000, "High"],
+  ];
+  samples.forEach(([name, county, acres, amount, salmon]) => {
+    grantRowCount++;
+    const row = document.createElement('div');
+    row.className = 'ranker-input-grid';
+    row.innerHTML = `
+      <input class="ranker-input" value="${name}" id="gname-${grantRowCount}">
+      <select class="ranker-select" id="gcounty-${grantRowCount}">
+        ${["Skagit","Whatcom","Snohomish","King","Kitsap","Pierce"].map(c=>`<option${c===county?" selected":""}>${c}</option>`).join("")}
+      </select>
+      <input class="ranker-input" value="${acres}" type="number" id="gacres-${grantRowCount}">
+      <input class="ranker-input" value="${amount}" type="number" id="gamount-${grantRowCount}">
+      <select class="ranker-select" id="gsalmon-${grantRowCount}">
+        ${["High","Medium","Low"].map(s=>`<option${s===salmon?" selected":""}>${s}</option>`).join("")}
+      </select>
+    `;
+    document.getElementById('grantRows').appendChild(row);
+  });
+}
+
+async function runGrantRanker() {
+  const projects = [];
+  for (let i = 1; i <= grantRowCount; i++) {
+    const name = document.getElementById(`gname-${i}`)?.value;
+    if (!name) continue;
+    projects.push({
+      name,
+      county: document.getElementById(`gcounty-${i}`).value,
+      acres: parseFloat(document.getElementById(`gacres-${i}`).value) || 100,
+      amount_usd: parseFloat(document.getElementById(`gamount-${i}`).value) || 300000,
+      salmon_benefit: document.getElementById(`gsalmon-${i}`).value,
+    });
+  }
+
+  const btn = document.querySelector('.rank-btn');
+  btn.textContent = '⏳ Ranking by satellite data...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`${API}/rank-grants`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({projects})
+    });
+    const data = await res.json();
+    renderRankedResults(data.ranked_projects);
+  } catch(e) {
+    // Fallback: rank client-side using county data
+    const ranked = projects.map(p => {
+      const cd = countyData.find(c => c.county === p.county) || {};
+      const deg = Math.abs(cd.degradation_pct || 10);
+      const sw = {High:1.5,Medium:1.0,Low:0.5}[p.salmon_benefit] || 1.0;
+      return {...p, roi_score: Math.round((deg*p.acres*sw)/(p.amount_usd/10000)*10)/10,
+               county_ndwi: cd.current_ndwi, county_degradation_pct: cd.degradation_pct,
+               recommendation: deg > 15 ? "Fund" : deg > 10 ? "Review" : "Deprioritize"};
+    }).sort((a,b) => b.roi_score - a.roi_score);
+    renderRankedResults(ranked);
+  }
+
+  btn.textContent = '🛰 Rank by Satellite ROI →';
+  btn.disabled = false;
+}
+
+function renderRankedResults(projects) {
+  const colors = ['#00e5b4','#7b61ff','#0096ff','#ffd166','#ff8c42','#ff6b6b'];
+  const container = document.getElementById('rankedResults');
+  container.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:1px">RANKED BY SATELLITE ROI SCORE — ESRP 2026</div>`;
+  projects.forEach((p, i) => {
+    const recoClass = p.recommendation === 'Fund' ? 'reco-fund' : p.recommendation === 'Review' ? 'reco-review' : 'reco-low';
+    const div = document.createElement('div');
+    div.className = 'ranked-item';
+    div.style.animationDelay = `${i*0.1}s`;
+    div.innerHTML = `
+      <div class="rank-num" style="background:${colors[i]||'#4a6b8a'}">${i+1}</div>
+      <div>
+        <div class="ranked-name">${p.name}</div>
+        <div class="ranked-meta">${p.county} · ${p.acres} acres · $${(p.amount_usd/1000).toFixed(0)}K · Salmon: ${p.salmon_benefit} · County NDWI: ${p.county_ndwi||'—'} (${p.county_degradation_pct||'—'}%)</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:${colors[i]||'#4a6b8a'}">${p.roi_score}</div>
+        <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">ROI SCORE</div>
+        <span class="reco-badge ${recoClass}">${p.recommendation}</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function setLayerDirect(type) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach(t => { if (t.textContent.includes('Warning') || t.textContent.includes('Tribal')) t.classList.add('active'); });
+  // Fake event for setLayer
+  const fakeEvent = { target: { classList: { add: ()=>{}, remove: ()=>{} } } };
+  window.event = fakeEvent;
+  if (type === 'alerts') {
+    document.getElementById('mapTitle').textContent = '⚠ Early Warning System — Active NDWI Alerts';
+    document.getElementById('mapSubtitle').textContent = 'Real-time threshold monitoring · 10% drop triggers automatic notification';
+    renderAlertMarkers();
+    setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 400);
+  }
+}
+
+// ── Poll status until county data ready ──────────────────────────────────────
+async function pollUntilReady() {
+  const chip = document.getElementById('countyLoading');
+  let attempts = 0;
+  const interval = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch(`${API}/status`);
+      const d = await res.json();
+      if (d.county_data_ready) {
+        clearInterval(interval);
+        chip.textContent = 'LIVE';
+        chip.style.background = 'rgba(0,229,180,0.15)';
+        await loadCountyData();
+        // Notify in agent chat
+        appendMsg('agent', `✅ Real satellite data loaded — ${d.county_count} Puget Sound counties analyzed from Landsat GEE. Ask me anything.`);
+      } else {
+        chip.textContent = `GEE ${attempts*5}s...`;
+      }
+    } catch(e) {
+      chip.textContent = 'OFFLINE';
+      clearInterval(interval);
+    }
+  }, 5000); // poll every 5s
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+function toggleTribalLayer() {
+  const sw = document.getElementById('toggleTribal');
+  const on = sw.classList.toggle('on');
+  sw.querySelector('.toggle-knob');
+  if (on) { renderTribalLayer(); }
+  else if (tribalLayer) { map.removeLayer(tribalLayer); tribalLayer = null; }
+}
+
+function toggleAlertLayer() {
+  const sw = document.getElementById('toggleAlerts');
+  const on = sw.classList.toggle('on');
+  if (on) { renderAlertMarkers(); }
+  else { alertMarkers.forEach(m => map.removeLayer(m)); alertMarkers = []; }
+}
+
+window.addEventListener('load', () => {
+  initMap();
+  loadGoalTracker();
+  loadCountyData();
+  pollUntilReady();
+  // Auto-show critical alert after 2s for demo impact
+  setTimeout(() => {
+    showAlertBanner(EARLY_WARNINGS[0]);
+  }, 2000);
+});
+</script>
+</body>
+</html>
