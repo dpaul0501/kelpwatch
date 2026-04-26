@@ -45,4 +45,4 @@ Then open `frontend/index.html` in your browser.
 - Puget Sound Partnership Action Agenda
 - Chinook / Southern Resident Orca ESA recovery
 
-![KelpWatch](https://raw.githubusercontent.com/dpaul0501/kelpwatch/main/kelpwatchpng.png)
+![KelpWatch](https://raw.githubusercontent.com/dpaul0501/kelpwatch/kelpwatchpng.png)
