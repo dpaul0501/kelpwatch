@@ -44,3 +44,5 @@ Then open `frontend/index.html` in your browser.
 - ESRP 2026 grant round: $14.6M awarded
 - Puget Sound Partnership Action Agenda
 - Chinook / Southern Resident Orca ESA recovery
+
+![KelpWatch](https://raw.githubusercontent.com/dpaul0501/kelpwatch/main/kelpwatchpng.png)
