@@ -26,7 +26,9 @@ try:
 
     # Also support a file path (local dev — avoids dotenv multiline issues)
     _gee_key_file = os.getenv("GEE_KEY_FILE", "")
-    if not _gee_sa_key and _gee_key_file and os.path.exists(_gee_key_file):
+    if not _gee_sa_key and _gee_key_file:
+        if not os.path.exists(_gee_key_file):
+            raise FileNotFoundError(f"GEE_KEY_FILE={_gee_key_file} does not exist — add it as a Secret File")
         with open(_gee_key_file) as _f:
             _gee_sa_key = _f.read()
 
@@ -58,7 +60,7 @@ try:
 
     _gee_available = True
 except Exception as _gee_err:
-    print(f"⚠ GEE unavailable — kelp tiles degraded. Fix: set GEE_CREDENTIALS_JSON on Render.\n  {_gee_err}")
+    print(f"⚠ GEE unavailable — kelp tiles degraded. Fix: set GEE_KEY_FILE (secret file) or GEE_SERVICE_ACCOUNT_KEY.\n  {_gee_err}")
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
 groq_client   = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
