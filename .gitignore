@@ -1,5 +1,7 @@
 .env
 backend/.env
+*-key.json
+kelpwatch-2026-*.json
 backend/.venv/
 .venv/
 __pycache__/

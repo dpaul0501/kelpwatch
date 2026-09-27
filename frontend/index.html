@@ -12,6 +12,12 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- App config (API base URL + Supabase keys) -->
+<script src="config.js"></script>
+
 <!-- Fonts -->
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
@@ -952,6 +958,105 @@ header {
   border-radius: 4px;
   margin-left: 6px;
 }
+
+/* ── Auth + Contact modals ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(4,13,26,0.85);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex; align-items: center; justify-content: center;
+  display: none;
+}
+.overlay.visible { display: flex; }
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 380px;
+  position: relative;
+}
+
+.auth-card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.auth-card-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 24px; }
+
+.auth-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+.auth-tab {
+  padding: 8px 16px; font-size: 12px; font-family: 'DM Mono', monospace;
+  cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.auth-field { margin-bottom: 14px; }
+.auth-label { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.auth-input {
+  width: 100%; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
+  outline: none;
+}
+.auth-input:focus { border-color: var(--accent); }
+
+.auth-btn {
+  width: 100%; padding: 12px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; color: #040d1a; font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px;
+}
+.auth-btn:hover { opacity: 0.9; }
+.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.auth-msg { font-size: 11px; margin-top: 10px; text-align: center; font-family: 'DM Mono', monospace; min-height: 16px; }
+.auth-msg.error { color: var(--accent3); }
+.auth-msg.success { color: var(--accent); }
+
+.auth-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted); border-radius: 4px; font-size: 18px;
+}
+.auth-close:hover { color: var(--text); background: var(--surface2); }
+
+/* usage badge in agent */
+.usage-badge {
+  font-size: 9px; font-family: 'DM Mono', monospace;
+  padding: 2px 7px; border-radius: 3px;
+  background: rgba(255,107,107,0.1); color: var(--accent3);
+  border: 1px solid rgba(255,107,107,0.2);
+  display: none;
+}
+
+/* auth button in header */
+.auth-header-btn {
+  padding: 6px 14px; border-radius: 6px; font-size: 12px;
+  font-family: 'DM Mono', monospace; cursor: pointer;
+  border: 1px solid rgba(0,229,180,0.3); background: rgba(0,229,180,0.08);
+  color: var(--accent); transition: all 0.2s;
+}
+.auth-header-btn:hover { background: rgba(0,229,180,0.15); }
+
+/* gate overlay on agent input */
+.agent-gate {
+  display: none;
+  padding: 12px 16px;
+  background: rgba(4,13,26,0.95);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace;
+  cursor: pointer;
+}
+.agent-gate:hover { color: var(--accent); }
+.agent-gate.visible { display: block; }
 </style>
 </head>
 <body>
@@ -962,7 +1067,7 @@ header {
     <div class="logo-icon">🌊</div>
     <div>
       <div class="logo-text">KelpWatch</div>
-      <div class="logo-sub">Puget Sound Restoration Intelligence</div>
+      <div class="logo-sub">Climate Risk Intelligence</div>
     </div>
   </div>
   <div class="header-center">
@@ -972,13 +1077,17 @@ header {
     <div class="tab" onclick="setLayer('esrp')">ESRP Sites</div>
     <div class="tab" onclick="setLayer('tribal')">Tribal Waters</div>
     <div class="tab" onclick="setLayer('alerts')">⚠ Early Warnings</div>
+    <div class="tab" onclick="setLayer('fires')" style="color:#ff6b6b">🔥 Forest Fires</div>
+    <div class="tab" onclick="setLayer('india')" style="color:#6baed6">🌧 India Monsoon</div>
     <div class="tab" onclick="showGrantRanker()">Grant Ranker</div>
   </div>
   <div class="header-right">
     <span class="badge badge-live">GEE LIVE</span>
-    <span class="badge" style="background:rgba(0,150,255,0.1);color:var(--accent2);border:1px solid rgba(0,150,255,0.2)">Landsat 8/9 + TM5</span>
-    <span class="badge" style="background:rgba(255,107,107,0.1);color:var(--accent3);border:1px solid rgba(255,107,107,0.2)">WDFW ESRP 2026</span>
-    <span class="badge" style="background:rgba(255,209,102,0.1);color:var(--accent4);border:1px solid rgba(255,209,102,0.2)">Southern Resident Orca</span>
+    <span class="badge" style="background:rgba(0,150,255,0.1);color:var(--accent2);border:1px solid rgba(0,150,255,0.2)">Landsat · MODIS · CHIRPS</span>
+    <button class="auth-header-btn" id="authHeaderBtn" onclick="showAuthModal()">Sign Up / Sign In</button>
+    <span id="userEmailBadge" style="display:none;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></span>
+    <button class="auth-header-btn" id="signOutBtn" style="display:none;border-color:rgba(255,107,107,0.3);color:var(--accent3)" onclick="signOut()">Sign Out</button>
+    <button class="auth-header-btn" onclick="showContactModal()" style="border-color:rgba(0,150,255,0.3);color:var(--accent2)">Contact Us</button>
   </div>
 </header>
 
@@ -988,6 +1097,7 @@ header {
   <!-- LEFT PANEL -->
   <div class="left-panel">
 
+    <div id="kelpPanel">
     <!-- Goal Tracker -->
     <div class="panel-section">
       <div class="section-title">
@@ -1113,6 +1223,83 @@ header {
         🤖 Claude Haiku ROI Agent
       </div>
     </div>
+    </div><!-- /kelpPanel -->
+
+    <!-- FIRE PANEL -->
+    <div id="firePanel" style="display:none">
+      <div class="panel-section">
+        <div class="section-title">
+          🔥 US Wildfire Risk
+          <span class="loading-chip" id="fireUsLoading">LOADING</span>
+        </div>
+        <div id="fireUsStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
+          Querying MODIS data...
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="section-title">🔥 India Fire Risk</div>
+        <div id="fireIndiaStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
+          Querying MODIS data...
+        </div>
+      </div>
+      <div class="panel-section" style="margin-top:auto">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.6">
+          📡 MODIS MCD64A1 Burned Area<br>
+          📡 500m resolution · NASA<br>
+          📊 Last 30 days rolling window<br>
+          🌍 Global coverage
+        </div>
+      </div>
+    </div><!-- /firePanel -->
+
+    <!-- INDIA PANEL -->
+    <div id="indiaPanel" style="display:none">
+      <div class="panel-section">
+        <div class="section-title">
+          🌧 Monsoon Status
+          <span class="loading-chip" id="indiaMonsoonLoading">LOADING</span>
+        </div>
+        <div id="indiaMonsoonStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
+          Querying CHIRPS data...
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="section-title">🌾 Farmer Risk</div>
+        <div id="indiaFarmerStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
+          Querying MODIS NDVI...
+        </div>
+      </div>
+      <div class="panel-section" id="elNinoAlert" style="display:none">
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <div style="width:8px;height:8px;border-radius:50%;background:#ffd166;animation:pulse 1s infinite;flex-shrink:0;margin-top:3px"></div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+              <div style="font-size:11px;font-family:'DM Mono',monospace;color:#ffd166;font-weight:600" id="elNinoLabel">ENSO STATUS</div>
+              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#ffd166" id="elNinoONI">—</div>
+            </div>
+            <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.5" id="elNinoImpact">Loading NOAA data...</div>
+            <div style="margin-top:6px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace" id="elNinoSource"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">🌊 SST Ocean Layer</div>
+          <div class="toggle-switch" id="toggleSST" onclick="toggleSSTLayer()" style="flex-shrink:0">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:4px">NASA MUR SST · Pacific + Indian Ocean</div>
+      </div>
+      <div class="panel-section" style="margin-top:auto">
+        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.6">
+          📡 CHIRPS Daily Rainfall · ~5km<br>
+          📡 MODIS MOD13A2 NDVI · 1km<br>
+          📊 UCSB-CHG / NASA<br>
+          🌾 Last 30 days rolling window
+        </div>
+      </div>
+    </div><!-- /indiaPanel -->
 
   </div>
 
@@ -1137,12 +1324,12 @@ header {
     <!-- Legend -->
     <div class="map-overlay map-legend-overlay">
       <div class="legend-card">
-        <div class="legend-title">NDWI — Aquatic Vegetation</div>
-        <div class="legend-gradient"></div>
+        <div class="legend-title" id="legendTitle">NDWI — Aquatic Vegetation</div>
+        <div class="legend-gradient" id="legendGradient"></div>
         <div class="legend-labels">
-          <span>Low (−0.3)</span>
-          <span>▲ Kelp/Eelgrass</span>
-          <span>High (+0.3)</span>
+          <span id="legendLow">Low (−0.3)</span>
+          <span>▲</span>
+          <span id="legendHigh">High (+0.3)</span>
         </div>
       </div>
     </div>
@@ -1176,14 +1363,14 @@ header {
   <!-- RIGHT PANEL — AGENT -->
   <div class="right-panel">
     <div class="agent-header">
-      <div class="agent-title">🤖 WDFW Decision Agent <span id="providerBadge" style="font-size:9px;background:rgba(0,229,180,0.1);color:var(--accent);padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:400">Groq / OpenAI</span><span class="cache-hit-badge" id="cacheHitBadge">⚡ cached</span></div>
-      <div class="agent-sub">ESRP grant prioritization · Salmon recovery · 2040 goal tracking</div>
+      <div class="agent-title">🤖 Climate Intelligence Agent <span id="providerBadge" style="font-size:9px;background:rgba(0,229,180,0.1);color:var(--accent);padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:400">Groq / OpenAI</span><span class="cache-hit-badge" id="cacheHitBadge">⚡ cached</span> <span class="usage-badge" id="usageBadge">5/5 left</span></div>
+      <div class="agent-sub">Kelp restoration · Forest fires US/India · Monsoon farmer risk</div>
     </div>
 
     <div class="agent-messages" id="agentMessages">
       <div class="msg msg-agent">
         <div class="msg-label">KelpWatch Agent</div>
-        I have access to 30 years of Landsat satellite NDWI data for Puget Sound and WDFW's ESRP grant program data. Ask me to rank 2026 grant applications, identify Chinook/orca recovery priorities, assess whether WA is on track for the 2040 goal, or generate a biennial investment plan.
+        I have satellite intelligence across three domains: <strong>Puget Sound kelp/eelgrass</strong> (30 years of Landsat NDWI, ESRP grants, orca recovery), <strong>forest fire risk</strong> (MODIS burned area for US &amp; India), and <strong>India monsoon/farmer risk</strong> (CHIRPS rainfall, MODIS NDVI, drought alerts). Ask me anything in these areas.
       </div>
     </div>
 
@@ -1191,9 +1378,11 @@ header {
       <div class="quick-q" onclick="askQuery(this.textContent)">Rank 2026 ESRP grant sites by satellite ROI</div>
       <div class="quick-q" onclick="askQuery(this.textContent)">Which county needs most urgent WDFW intervention?</div>
       <div class="quick-q" onclick="askQuery(this.textContent)">How does kelp loss threaten Southern Resident Orca?</div>
-      <div class="quick-q" onclick="askQuery(this.textContent)">Generate WDFW 2025-2027 investment plan by satellite priority</div>
-      <div class="quick-q" onclick="askQuery(this.textContent)">Skagit shows worst NDWI degradation — best restoration sites?</div>
       <div class="quick-q" onclick="askQuery(this.textContent)">Will WA hit its 2040 kelp restoration goal?</div>
+      <div class="quick-q" style="border-color:rgba(255,107,107,0.3);color:#ff9a9a" onclick="askQuery(this.textContent)">🔥 Where are the highest wildfire risk zones in the US right now?</div>
+      <div class="quick-q" style="border-color:rgba(255,107,107,0.3);color:#ff9a9a" onclick="askQuery(this.textContent)">🔥 Which Indian states face peak forest fire risk and when?</div>
+      <div class="quick-q" style="border-color:rgba(107,174,214,0.3);color:#6baed6" onclick="askQuery(this.textContent)">🌧 What does satellite data say about this monsoon season for Indian farmers?</div>
+      <div class="quick-q" style="border-color:rgba(107,174,214,0.3);color:#6baed6" onclick="askQuery(this.textContent)">🌧 Which Indian states face drought risk for Kharif crops?</div>
     </div>
 
     <div class="typing-dots" id="typingDots">
@@ -1209,9 +1398,12 @@ header {
       <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
     </div>
 
-    <div class="agent-input-area">
+    <div class="agent-gate" id="agentGate" onclick="showAuthModal()">
+      🔒 Sign up free to ask the AI agent (5 queries/day)
+    </div>
+    <div class="agent-input-area" id="agentInputArea">
       <div class="agent-input-row">
-        <textarea class="agent-textarea" id="agentInput" placeholder="Ask about restoration priorities, grant allocation, satellite trends..."></textarea>
+        <textarea class="agent-textarea" id="agentInput" placeholder="Ask about kelp restoration, forest fires, or India monsoon risk..."></textarea>
         <button class="send-btn" onclick="sendQuery()">→</button>
       </div>
     </div>
@@ -1274,11 +1466,193 @@ header {
   </div>
 </div>
 
+<!-- Auth Modal -->
+<div class="overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-close" onclick="hideAuthModal()">×</div>
+    <div class="auth-card-title">KelpWatch Intelligence</div>
+    <div class="auth-card-sub">5 free queries/day · Satellite climate risk · No credit card</div>
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</div>
+      <div class="auth-tab" id="tabSignin" onclick="switchAuthTab('signin')">Sign In</div>
+    </div>
+    <div id="authSignupForm">
+      <div class="auth-field"><div class="auth-label">Email</div><input class="auth-input" id="signupEmail" type="email" placeholder="you@example.com"></div>
+      <div class="auth-field"><div class="auth-label">Password</div><input class="auth-input" id="signupPassword" type="password" placeholder="8+ characters"></div>
+      <button class="auth-btn" id="signupBtn" onclick="doSignup()">Create Free Account →</button>
+    </div>
+    <div id="authSigninForm" style="display:none">
+      <div class="auth-field"><div class="auth-label">Email</div><input class="auth-input" id="signinEmail" type="email" placeholder="you@example.com"></div>
+      <div class="auth-field"><div class="auth-label">Password</div><input class="auth-input" id="signinPassword" type="password" placeholder="Your password"></div>
+      <button class="auth-btn" id="signinBtn" onclick="doSignin()">Sign In →</button>
+    </div>
+    <div class="auth-msg" id="authMsg"></div>
+    <div style="margin-top:16px;font-size:10px;color:var(--muted);text-align:center;font-family:'DM Mono',monospace">Powered by Empathy AI Tech · contact@empathyaitech.com</div>
+  </div>
+</div>
+
+<!-- Contact Modal -->
+<div class="overlay" id="contactOverlay">
+  <div class="auth-card" style="width:420px">
+    <div class="auth-close" onclick="hideContactModal()">×</div>
+    <div class="auth-card-title">Contact Empathy AI Tech</div>
+    <div class="auth-card-sub">Climate intelligence · Enterprise licensing · Partnerships</div>
+    <div class="auth-field"><div class="auth-label">Name</div><input class="auth-input" id="contactName" placeholder="Your name"></div>
+    <div class="auth-field"><div class="auth-label">Email</div><input class="auth-input" id="contactEmail" type="email" placeholder="you@company.com"></div>
+    <div class="auth-field"><div class="auth-label">Company</div><input class="auth-input" id="contactCompany" placeholder="Optional"></div>
+    <div class="auth-field"><div class="auth-label">Message</div><textarea class="auth-input" id="contactMessage" rows="4" style="resize:vertical" placeholder="How can we help?"></textarea></div>
+    <button class="auth-btn" id="contactBtn" onclick="doContact()">Send Message →</button>
+    <div class="auth-msg" id="contactMsg"></div>
+  </div>
+</div>
+
 <script>
-const API = 'http://localhost:8000/api';
-let map, currentLayer, historicalLayer, countyData = [];
+const API = (window.KELPWATCH_CONFIG?.apiBase) || 'http://localhost:8100/api';
+
+// ── Supabase auth ─────────────────────────────────────────────────────────────
+const _sbUrl  = window.KELPWATCH_CONFIG?.supabaseUrl  || '';
+const _sbKey  = window.KELPWATCH_CONFIG?.supabaseAnonKey || '';
+const sb = (_sbUrl && _sbKey && window.supabase)
+  ? window.supabase.createClient(_sbUrl, _sbKey)
+  : null;
+
+let currentUser = null;
+let authToken   = null;
+
+function updateAuthUI() {
+  const isLoggedIn = !!currentUser;
+  document.getElementById('authHeaderBtn').style.display  = isLoggedIn ? 'none'  : '';
+  document.getElementById('signOutBtn').style.display     = isLoggedIn ? ''      : 'none';
+  document.getElementById('userEmailBadge').style.display = isLoggedIn ? ''      : 'none';
+  document.getElementById('agentGate').classList.toggle('visible', !isLoggedIn);
+  document.getElementById('agentInputArea').style.display = isLoggedIn ? '' : 'none';
+  if (isLoggedIn) {
+    document.getElementById('userEmailBadge').textContent = currentUser.email;
+    loadUsage();
+  }
+}
+
+async function loadUsage() {
+  if (!authToken) return;
+  try {
+    const r = await fetch(`${API}/usage`, { headers: { Authorization: `Bearer ${authToken}` } });
+    if (!r.ok) return;
+    const d = await r.json();
+    const badge = document.getElementById('usageBadge');
+    badge.style.display = 'inline';
+    badge.textContent = `${d.queries_remaining}/${d.daily_limit} left today`;
+    badge.style.background = d.queries_remaining === 0
+      ? 'rgba(255,107,107,0.2)' : 'rgba(0,229,180,0.1)';
+    badge.style.color = d.queries_remaining === 0 ? 'var(--accent3)' : 'var(--accent)';
+    badge.style.borderColor = d.queries_remaining === 0
+      ? 'rgba(255,107,107,0.3)' : 'rgba(0,229,180,0.2)';
+  } catch(e) {}
+}
+
+if (sb) {
+  sb.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user ?? null;
+    authToken   = session?.access_token ?? null;
+    updateAuthUI();
+  });
+  sb.auth.getSession().then(({ data: { session } }) => {
+    currentUser = session?.user ?? null;
+    authToken   = session?.access_token ?? null;
+    updateAuthUI();
+  });
+} else {
+  // No Supabase configured — run in open mode (local dev)
+  currentUser = { email: 'local-dev' };
+  authToken   = null;
+  updateAuthUI();
+}
+
+// ── Auth modal ────────────────────────────────────────────────────────────────
+function showAuthModal()  { document.getElementById('authOverlay').classList.add('visible'); }
+function hideAuthModal()  { document.getElementById('authOverlay').classList.remove('visible'); clearAuthMsg(); }
+function clearAuthMsg()   { const m = document.getElementById('authMsg'); m.textContent = ''; m.className = 'auth-msg'; }
+
+function switchAuthTab(tab) {
+  document.getElementById('authSignupForm').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('authSigninForm').style.display = tab === 'signin' ? '' : 'none';
+  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tabSignin').classList.toggle('active', tab === 'signin');
+  clearAuthMsg();
+}
+
+async function doSignup() {
+  if (!sb) return alert('Supabase not configured. Set supabaseUrl and supabaseAnonKey in config.js.');
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass  = document.getElementById('signupPassword').value;
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+  const { error } = await sb.auth.signUp({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Create Free Account →';
+  const msg = document.getElementById('authMsg');
+  if (error) { msg.textContent = error.message; msg.className = 'auth-msg error'; }
+  else { msg.textContent = '✅ Check your email to confirm, then sign in.'; msg.className = 'auth-msg success'; }
+}
+
+async function doSignin() {
+  if (!sb) return alert('Supabase not configured.');
+  const email = document.getElementById('signinEmail').value.trim();
+  const pass  = document.getElementById('signinPassword').value;
+  const btn = document.getElementById('signinBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  btn.disabled = false; btn.textContent = 'Sign In →';
+  if (error) {
+    const msg = document.getElementById('authMsg');
+    msg.textContent = error.message; msg.className = 'auth-msg error';
+  } else {
+    hideAuthModal();
+  }
+}
+
+async function signOut() {
+  if (sb) await sb.auth.signOut();
+  currentUser = null; authToken = null;
+  document.getElementById('usageBadge').style.display = 'none';
+  updateAuthUI();
+}
+
+// ── Contact modal ─────────────────────────────────────────────────────────────
+function showContactModal()  { document.getElementById('contactOverlay').classList.add('visible'); }
+function hideContactModal()  { document.getElementById('contactOverlay').classList.remove('visible'); }
+
+async function doContact() {
+  const name    = document.getElementById('contactName').value.trim();
+  const email   = document.getElementById('contactEmail').value.trim();
+  const company = document.getElementById('contactCompany').value.trim();
+  const message = document.getElementById('contactMessage').value.trim();
+  if (!name || !email || !message) {
+    const m = document.getElementById('contactMsg');
+    m.textContent = 'Please fill in name, email, and message.';
+    m.className = 'auth-msg error'; return;
+  }
+  const btn = document.getElementById('contactBtn');
+  btn.disabled = true; btn.textContent = 'Sending...';
+  try {
+    await fetch(`${API}/contact`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, company, message }),
+    });
+    const m = document.getElementById('contactMsg');
+    m.textContent = '✅ Message sent! We\'ll be in touch soon.'; m.className = 'auth-msg success';
+    btn.textContent = 'Sent!';
+  } catch(e) {
+    const m = document.getElementById('contactMsg');
+    m.textContent = 'Failed to send — try contact@empathyaitech.com'; m.className = 'auth-msg error';
+    btn.disabled = false; btn.textContent = 'Send Message →';
+  }
+}
+let map, currentLayer, historicalLayer, fireLayer, indiaLayer, countyData = [];
+let kelpMarkersGroup = null;
+let fireMarkersGroup = null;
+let indiaCityLayer = null;
 let popupChart = null;
 let layerStates = { current: true, historical: false, grants: true, salmon: true };
+let activeView = 'kelp'; // 'kelp' | 'fires' | 'india'
 
 // ESRP grant sites (real locations from public WDFW data)
 const ESRP_SITES = [
@@ -1316,17 +1690,14 @@ function initMap() {
   // Zoom control
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-  // Add ESRP sites
+  // Kelp-specific markers — grouped so they can be hidden on fire/india views
+  kelpMarkersGroup = L.layerGroup().addTo(map);
+
   ESRP_SITES.forEach(site => {
     const color = site.status === 'Completed' ? '#00e5b4' : site.status === 'Active' ? '#ffd166' : '#ff6b6b';
     const marker = L.circleMarker([site.lat, site.lng], {
-      radius: 7,
-      fillColor: color,
-      color: '#fff',
-      weight: 1.5,
-      fillOpacity: 0.85
-    }).addTo(map);
-
+      radius: 7, fillColor: color, color: '#fff', weight: 1.5, fillOpacity: 0.85
+    });
     marker.bindPopup(`
       <div style="font-family:'DM Sans',sans-serif;min-width:160px">
         <div style="font-weight:700;margin-bottom:4px">${site.name}</div>
@@ -1334,18 +1705,15 @@ function initMap() {
         <div style="margin-top:6px;padding:3px 8px;border-radius:4px;display:inline-block;font-size:10px;background:${color}22;color:${color}">${site.status}</div>
       </div>
     `);
+    kelpMarkersGroup.addLayer(marker);
   });
 
-  // Salmon zones
   SALMON_ZONES.forEach(zone => {
-    L.circle([zone.lat, zone.lng], {
-      radius: zone.r,
-      color: '#0096ff',
-      fillColor: '#0096ff',
-      fillOpacity: 0.04,
-      weight: 1,
-      dashArray: '4 6'
-    }).addTo(map).bindTooltip(zone.name, { permanent: false });
+    const circle = L.circle([zone.lat, zone.lng], {
+      radius: zone.r, color: '#0096ff', fillColor: '#0096ff',
+      fillOpacity: 0.04, weight: 1, dashArray: '4 6'
+    }).bindTooltip(zone.name, { permanent: false });
+    kelpMarkersGroup.addLayer(circle);
   });
 
   // Load GEE tiles
@@ -1356,22 +1724,22 @@ function initMap() {
 async function loadGEETiles() {
   document.getElementById('mapLoading').style.display = 'block';
   try {
-    // Current layer
     const res = await fetch(`${API}/tiles/current`);
     const data = await res.json();
-    currentLayer = L.tileLayer(data.tile_url, {
-      opacity: 0.7,
-      maxZoom: 18
-    }).addTo(map);
+    if (data.tile_url) {
+      currentLayer = L.tileLayer(data.tile_url, { opacity: 0.7, maxZoom: 18 }).addTo(map);
+    }
 
-    // Historical layer (hidden by default)
     const res2 = await fetch(`${API}/tiles/historical`);
     const data2 = await res2.json();
-    historicalLayer = L.tileLayer(data2.tile_url, { opacity: 0.7, maxZoom: 18 });
+    if (data2.tile_url) {
+      historicalLayer = L.tileLayer(data2.tile_url, { opacity: 0.7, maxZoom: 18 });
+    }
 
     document.getElementById('mapLoading').style.display = 'none';
   } catch(e) {
-    document.getElementById('mapLoading').innerHTML = `<p style="color:#ff6b6b">⚠ Backend not running<br><span style="font-size:10px">Start with: uvicorn main:app</span></p>`;
+    document.getElementById('mapLoading').innerHTML = `<p style="color:#ff6b6b">⚠ Kelp tile load failed</p>`;
+    console.warn('GEE tiles unavailable:', e);
   }
 }
 
@@ -1606,12 +1974,16 @@ async function sendQuery() {
     }
   } else {
     // Check if this is a fuzzy cache-able query (instant)
-    const cacheKeys = ['where should','king county','which county','2040 goal','most urgent','500k','salmon'];
+    const cacheKeys = ['where should','king county','which county','2040 goal','most urgent','500k','salmon','wildfire','monsoon','india drought','kharif','fire risk','india fire'];
     const isCacheable = cacheKeys.some(k => q.toLowerCase().includes(k));
     if (isCacheable) {
       startProgress('⚡ Retrieving from cached analysis...', 800);
+    } else if (/fire|wildfire|burn/i.test(q)) {
+      startProgress('🔥 Querying MODIS fire data...', 4000);
+    } else if (/india|monsoon|rain|drought|farmer|kharif/i.test(q)) {
+      startProgress('🌧 Querying CHIRPS/MODIS India data...', 4000);
     } else {
-      startProgress('🤖 Querying LLM with satellite data...', 4000);
+      startProgress('🛰 Querying satellite data...', 4000);
     }
   }
 
@@ -1632,19 +2004,34 @@ async function sendQuery() {
   };
 
   try {
+    const headers = { 'Content-Type': 'application/json' };
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
     const res = await fetch(`${API}/agent`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers,
       body: JSON.stringify({ query: q, county_data: context })
     });
-    const data = await res.json();
     document.getElementById('typingDots').classList.remove('visible');
+
+    if (res.status === 401) {
+      completeProgress('❌ Auth required');
+      appendMsg('agent', '🔒 Please sign in to use the AI agent.');
+      showAuthModal();
+      return;
+    }
+    if (res.status === 429) {
+      const err = await res.json();
+      completeProgress('⚠ Limit reached');
+      appendMsg('agent', `⏱ ${err.detail}`);
+      return;
+    }
+
+    const data = await res.json();
 
     if (data.from_cache) {
       completeProgress('⚡ Retrieved from cache');
       const badge = document.getElementById('cacheHitBadge');
-      badge.style.display = 'inline';
-      badge.textContent = '⚡ cached response';
+      badge.style.display = 'inline'; badge.textContent = '⚡ cached response';
     } else {
       completeProgress('✅ Analysis complete');
     }
@@ -1654,6 +2041,15 @@ async function sendQuery() {
       document.getElementById('providerBadge').textContent = label;
     }
     appendMsg('agent', data.response);
+
+    // Update usage badge
+    if (data.queries_remaining !== undefined) {
+      const badge = document.getElementById('usageBadge');
+      const lim = 5;
+      badge.style.display = 'inline';
+      badge.textContent = `${data.queries_remaining}/${lim} left today`;
+      badge.style.color = data.queries_remaining === 0 ? 'var(--accent3)' : 'var(--accent)';
+    }
   } catch(e) {
     document.getElementById('typingDots').classList.remove('visible');
     completeProgress('❌ Error');
@@ -1954,9 +2350,61 @@ function renderESRPMarkers(sites) {
   esrpLayer.addTo(map);
 }
 
+function clearAllLayers() {
+  [currentLayer, historicalLayer, fireLayer, indiaLayer, sstLayer, esrpLayer, tribalLayer, kelpMarkersGroup, fireMarkersGroup, indiaCityLayer].forEach(l => {
+    if (l) { try { map.removeLayer(l); } catch(e) {} }
+  });
+  fireMarkersGroup = null;
+  indiaCityLayer = null;
+  if (alertMarkers) { alertMarkers.forEach(m => { try { map.removeLayer(m); } catch(e) {} }); alertMarkers = []; }
+  document.getElementById('alertBanner').classList.remove('visible');
+}
+
+function clearNonBaseLayers() { clearAllLayers(); }
+
+function showKelpMarkers() { if (kelpMarkersGroup) map.addLayer(kelpMarkersGroup); }
+function hideKelpMarkers() { if (kelpMarkersGroup) map.removeLayer(kelpMarkersGroup); }
+
 function setLayer(type) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   event.target.classList.add('active');
+
+  if (type === 'fires') {
+    activeView = 'fires';
+    switchLeftPanel('fires');
+    clearAllLayers();
+    map.setView([37, -98], 4); // center US
+    document.getElementById('mapTitle').textContent = '🔥 Forest Fire Risk — US & India (MODIS)';
+    document.getElementById('mapSubtitle').textContent = 'MODIS MCD64A1 Burned Area · Last 30 days · 500m resolution';
+    updateLegend('fire');
+    loadFireLayer();
+    loadFirePanel();
+    loadFireMarkers();
+    appendMsg('agent', '🔥 Forest Fires view loaded. MODIS burned area data (last 30 days). Try: "Where are the highest wildfire risk zones in the US?" or "Which Indian states face peak forest fire risk?"');
+    return;
+  }
+
+  if (type === 'india') {
+    activeView = 'india';
+    switchLeftPanel('india');
+    clearAllLayers();
+    map.setView([20.5, 78.9], 5); // center India
+    document.getElementById('mapTitle').textContent = '🌧 India Monsoon & Farmer Risk (CHIRPS)';
+    document.getElementById('mapSubtitle').textContent = 'CHIRPS Daily Rainfall · Last 30 days · India · Kharif/Rabi crop risk';
+    updateLegend('india');
+    loadIndiaLayer();
+    loadIndiaPanel();
+    appendMsg('agent', '🌧 India Monsoon view loaded. CHIRPS rainfall data (last 30 days). Try: "What does satellite data say about this monsoon for Indian farmers?" or "Which states face Kharif drought risk?"');
+    return;
+  }
+
+  // Any kelp view — restore Puget Sound + kelp markers
+  activeView = 'kelp';
+  switchLeftPanel('kelp');
+  clearAllLayers();
+  showKelpMarkers();
+  map.setView([47.8, -122.5], 9);
+  updateLegend('kelp');
 
   if (type === 'esrp') {
     document.getElementById('mapTitle').textContent = 'ESRP Grant Sites — Satellite ROI Scores';
@@ -1983,20 +2431,67 @@ function setLayer(type) {
   }
 
   if (type === 'current') {
+    clearNonBaseLayers();
     if (currentLayer) map.addLayer(currentLayer);
-    if (historicalLayer) map.removeLayer(historicalLayer);
     document.getElementById('mapTitle').textContent = 'Kelp & Eelgrass Coverage — Current (2022–2024)';
     document.getElementById('mapSubtitle').textContent = 'NDWI index · Landsat 8/9 · 30m resolution · Puget Sound, WA';
   } else if (type === 'historical') {
-    if (currentLayer) map.removeLayer(currentLayer);
+    clearNonBaseLayers();
     if (historicalLayer) map.addLayer(historicalLayer);
     document.getElementById('mapTitle').textContent = 'Historical Kelp Coverage — Baseline (1995–1997)';
     document.getElementById('mapSubtitle').textContent = 'NDWI index · Landsat TM5 · 30m resolution · Puget Sound, WA';
   } else if (type === 'change') {
+    clearNonBaseLayers();
     if (currentLayer) map.addLayer(currentLayer);
     if (historicalLayer) map.addLayer(historicalLayer);
     document.getElementById('mapTitle').textContent = '30-Year Change Detection (1995 → 2024)';
     document.getElementById('mapSubtitle').textContent = 'NDWI delta · Landsat TM5 → LC9 · Puget Sound, WA';
+  }
+}
+
+// ── Fire & India tile loaders ─────────────────────────────────────────────────
+async function loadFireLayer() {
+  try {
+    const res = await fetch(`${API}/tiles/fires`);
+    const data = await res.json();
+    fireLayer = L.tileLayer(data.tile_url, { opacity: 0.85, maxZoom: 18 });
+    fireLayer.addTo(map);
+  } catch(e) {
+    appendMsg('agent', '⚠ Fire tile load failed — backend may be offline.');
+  }
+}
+
+async function loadIndiaLayer() {
+  try {
+    const res = await fetch(`${API}/tiles/india-rainfall`);
+    const data = await res.json();
+    indiaLayer = L.tileLayer(data.tile_url, { opacity: 0.8, maxZoom: 18 });
+    indiaLayer.addTo(map);
+  } catch(e) {
+    appendMsg('agent', '⚠ India rainfall tile load failed — backend may be offline.');
+  }
+}
+
+function updateLegend(type) {
+  const grad = document.getElementById('legendGradient');
+  const low  = document.getElementById('legendLow');
+  const high = document.getElementById('legendHigh');
+  const title = document.getElementById('legendTitle');
+  if (type === 'fire') {
+    grad.style.background = 'linear-gradient(90deg, #1a0a0a, #7a1a1a, #ff6b6b, #ffcc00)';
+    low.textContent = 'No burn';
+    high.textContent = 'Active burn';
+    title.textContent = 'MODIS BURNED AREA';
+  } else if (type === 'india') {
+    grad.style.background = 'linear-gradient(90deg, #f7fbff, #c6dbef, #6baed6, #2171b5, #08306b)';
+    low.textContent = '0 mm';
+    high.textContent = '600 mm';
+    title.textContent = 'CHIRPS RAINFALL (30D)';
+  } else {
+    grad.style.background = 'linear-gradient(90deg, #1a0a2e, #16213e, #0f3460, #00b4d8, #00e5b4, #90e0ef)';
+    low.textContent = 'Degraded';
+    high.textContent = 'Healthy';
+    title.textContent = 'NDWI INDEX';
   }
 }
 
@@ -2142,6 +2637,184 @@ function setLayerDirect(type) {
     document.getElementById('mapSubtitle').textContent = 'Real-time threshold monitoring · 10% drop triggers automatic notification';
     renderAlertMarkers();
     setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 400);
+  }
+}
+
+// ── FIRMS fire markers ────────────────────────────────────────────────────────
+function clearFireMarkers() {
+  if (fireMarkersGroup) { map.removeLayer(fireMarkersGroup); fireMarkersGroup = null; }
+}
+
+async function loadFireMarkers() {
+  clearFireMarkers();
+  fireMarkersGroup = L.layerGroup().addTo(map);
+  try {
+    const res = await fetch(`${API}/fire/hotspots`);
+    const geojson = await res.json();
+    if (!geojson.features?.length) return;
+
+    geojson.features.forEach(f => {
+      const [lng, lat] = f.geometry.coordinates;
+      const { confidence, frp, date, region } = f.properties;
+      // radius scales with FRP, capped at 10px
+      const r = Math.min(10, 3 + Math.sqrt(frp || 1) * 0.4);
+      const color = confidence === 'h' ? '#ff2020' : '#ff8c00';
+      const marker = L.circleMarker([lat, lng], {
+        radius: r,
+        fillColor: color,
+        color: '#fff',
+        weight: 0.5,
+        fillOpacity: 0.8,
+      });
+      marker.bindPopup(`
+        <div style="font-family:'DM Sans',sans-serif;min-width:160px;background:#071628;color:#cce0f5;padding:4px">
+          <div style="font-weight:700;color:${color};margin-bottom:4px">🔥 Active Fire · ${region}</div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace">
+            FRP: <b>${frp} MW</b> &nbsp;|&nbsp; Confidence: <b>${confidence === 'h' ? 'High' : 'Nominal'}</b><br>
+            Date: ${date}
+          </div>
+        </div>
+      `);
+      fireMarkersGroup.addLayer(marker);
+    });
+
+    // Update panel badge with total
+    const el = document.getElementById('fireTotalBadge');
+    if (el) { el.textContent = `${geojson.total} detections · last 7d`; el.style.display = 'block'; }
+  } catch(e) {}
+}
+
+// ── Domain panel switching ────────────────────────────────────────────────────
+function switchLeftPanel(view) {
+  document.getElementById('kelpPanel').style.display  = view === 'kelp'  ? '' : 'none';
+  document.getElementById('firePanel').style.display  = view === 'fires' ? '' : 'none';
+  document.getElementById('indiaPanel').style.display = view === 'india' ? '' : 'none';
+}
+
+async function loadFirePanel() {
+  try {
+    const res = await fetch(`${API}/fire/summary`);
+    const d = await res.json();
+    document.getElementById('fireUsLoading').style.display = 'none';
+    const us = d.us || {};
+    const india = d.india || {};
+
+    const fireStat = (val, label) => `
+      <div style="background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#ff6b6b">${val ?? '—'}</div>
+        <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">${label}</div>
+      </div>`;
+
+    document.getElementById('fireUsStats').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        ${fireStat(us.total_hotspots_7d?.toLocaleString(), 'HOTSPOTS 7D')}
+        ${fireStat(us.max_frp_mw ? us.max_frp_mw + ' MW' : null, 'PEAK INTENSITY')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px">HIGH RISK STATES</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+        ${(us.high_risk_states || []).map(s => `<span style="padding:2px 7px;background:rgba(255,107,107,0.1);color:#ff9a9a;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace">${s}</span>`).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">${us.season_status || ''}</div>
+      <div id="fireTotalBadge" style="display:none;margin-top:6px;font-size:10px;color:var(--accent);font-family:'DM Mono',monospace"></div>
+    `;
+
+    document.getElementById('fireIndiaStats').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        ${fireStat(india.total_hotspots_7d?.toLocaleString(), 'HOTSPOTS 7D')}
+        ${fireStat(india.max_frp_mw ? india.max_frp_mw + ' MW' : null, 'PEAK INTENSITY')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px">HIGH RISK REGIONS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+        ${(india.high_risk_regions || []).map(r => `<span style="padding:2px 7px;background:rgba(255,107,107,0.1);color:#ff9a9a;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace">${r}</span>`).join('')}
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">${india.season_status || ''}</div>
+    `;
+  } catch(e) {
+    document.getElementById('fireUsLoading').textContent = 'OFFLINE';
+  }
+}
+
+async function loadIndiaPanel() {
+  try {
+    const res = await fetch(`${API}/india/summary`);
+    const d = await res.json();
+    document.getElementById('indiaMonsoonLoading').style.display = 'none';
+
+    const droughtColor = d.drought_risk === 'High' ? '#ff6b6b' : d.drought_risk === 'Moderate' ? '#ffd166' : '#00e5b4';
+    const stressColor  = d.crop_stress  === 'Severe' ? '#ff6b6b' : d.crop_stress === 'Moderate' ? '#ffd166' : '#00e5b4';
+    const bgDrought    = d.drought_risk === 'High' ? '255,107,107' : d.drought_risk === 'Moderate' ? '255,209,102' : '0,229,180';
+
+    document.getElementById('indiaMonsoonStats').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+        <div style="background:rgba(107,174,214,0.08);border:1px solid rgba(107,174,214,0.2);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#6baed6">${d.rainfall_mm_30d ?? '—'}</div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">RAINFALL MM (30D)</div>
+        </div>
+        <div style="background:rgba(${bgDrought},0.08);border:1px solid rgba(${bgDrought},0.2);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:${droughtColor}">${d.drought_risk ?? '—'}</div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">DROUGHT RISK</div>
+        </div>
+      </div>
+      <div style="padding:10px;background:rgba(${bgDrought},0.07);border:1px solid rgba(${bgDrought},0.2);border-radius:8px;font-size:11px;line-height:1.5;color:var(--text)">
+        ${d.farmer_advisory || '—'}
+      </div>
+    `;
+
+    document.getElementById('indiaFarmerStats').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:rgba(0,229,180,0.06);border:1px solid rgba(0,229,180,0.15);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:${stressColor}">${d.crop_stress ?? '—'}</div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">CROP STRESS</div>
+        </div>
+        <div style="background:rgba(0,229,180,0.06);border:1px solid rgba(0,229,180,0.15);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text)">${d.ndvi_mean ?? '—'}</div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">NDVI ×10⁴</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.5">${d.notes || ''}</div>
+    `;
+
+    document.getElementById('elNinoAlert').style.display = '';
+    loadElNino();
+  } catch(e) {
+    document.getElementById('indiaMonsoonLoading').textContent = 'OFFLINE';
+    document.getElementById('elNinoAlert').style.display = '';
+    loadElNino();
+  }
+}
+
+let sstLayer = null;
+
+async function loadElNino() {
+  try {
+    const res = await fetch(`${API}/elnino`);
+    const d = await res.json();
+    const oni = d.oni;
+    const color = oni >= 0.5 ? '#ff6b6b' : oni <= -0.5 ? '#6baed6' : '#ffd166';
+    const label = oni >= 0.5 ? 'EL NIÑO' : oni <= -0.5 ? 'LA NIÑA' : 'ENSO NEUTRAL';
+    document.getElementById('elNinoLabel').textContent = label;
+    document.getElementById('elNinoLabel').style.color = color;
+    document.getElementById('elNinoONI').textContent = oni != null ? `ONI ${oni > 0 ? '+' : ''}${oni}` : '—';
+    document.getElementById('elNinoONI').style.color = color;
+    document.getElementById('elNinoImpact').textContent = d.impact_india;
+    document.getElementById('elNinoSource').textContent = `Source: ${d.source}${d.live ? ' · live' : ' · fallback'}`;
+  } catch(e) {
+    document.getElementById('elNinoImpact').textContent = 'NOAA data unavailable';
+  }
+}
+
+async function toggleSSTLayer() {
+  const sw = document.getElementById('toggleSST');
+  const on = sw.classList.toggle('on');
+  if (on) {
+    try {
+      const res = await fetch(`${API}/tiles/sst`);
+      const d = await res.json();
+      sstLayer = L.tileLayer(d.tile_url, { opacity: 0.65, maxZoom: 18 });
+      sstLayer.addTo(map);
+    } catch(e) { sw.classList.remove('on'); }
+  } else {
+    if (sstLayer) { map.removeLayer(sstLayer); sstLayer = null; }
   }
 }
 
