@@ -351,9 +351,20 @@ function MapTab(cfg) {
   TABS[cfg.id] = tab;
   return tab;
 }
+// Keep the region of interest in the part of the map the info panel does not cover.
+function panelOffset(tab) {
+  const p = $('panel-' + tab.cfg.id);
+  return p && !p.classList.contains('collapsed') ? p.offsetWidth + 20 : 0;
+}
+function frame(tab, bounds) {
+  const left = panelOffset(tab);
+  if (bounds) tab.map.fitBounds(bounds, { paddingTopLeft:[left, 20], paddingBottomRight:[20, 20], maxZoom:tab.cfg.zoom + 3 });
+  else { tab.map.setView(tab.cfg.center, tab.cfg.zoom, { animate:false }); tab.map.panBy([-left / 2, 0], { animate:false }); }
+}
 function ensureMap(tab) {
   if (tab.map) { setTimeout(() => tab.map.invalidateSize(), 30); return; }
   tab.map = L.map('map-' + tab.cfg.id, { zoomControl:false }).setView(tab.cfg.center, tab.cfg.zoom);
+  setTimeout(() => { tab.map.invalidateSize(); frame(tab, tab.cfg.bounds); }, 0);
   L.control.zoom({ position:'topright' }).addTo(tab.map);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution:'Basemap &copy; Esri · Data layers: Google Earth Engine', maxZoom:16 }).addTo(tab.map);
@@ -370,10 +381,20 @@ async function setLayer(tab, key) {
   const leg = $('legend-' + tab.cfg.id);
   leg.innerHTML = Legend(layer.legend, layer.note);
   try {
+    if (layer.points) {                       // point layer: one circle per feature, drawn on canvas
+      const d = await cachedJSON(layer.points);
+      if (tab.current !== key) return;
+      const renderer = L.canvas({ padding:0.3 });
+      tab.overlay = L.layerGroup(d.points.map(p => layer.pointStyle(p, renderer))).addTo(tab.map);
+      if (d.points.length) frame(tab, L.latLngBounds(d.points.map(p => [p[0], p[1]])));
+      leg.insertAdjacentHTML('beforeend', `<div class="meta" style="margin-top:4px">${d.points.length.toLocaleString()} fire clusters · ${esc(d.window || '')} · ${esc(d.status || '')}</div>`);
+      return;
+    }
     const t = await cachedJSON(layer.tile);
     if (tab.current !== key) return;
     if (t.tile_url) tab.overlay = L.tileLayer(t.tile_url, { opacity:0.85 }).addTo(tab.map);
-    else leg.insertAdjacentHTML('beforeend', `<div class="notice warn" style="margin:6px 0 0">Map layer unavailable: ${esc(t.error || 'Earth Engine not connected')}. The panel shows the latest snapshot.</div>`);
+    if (t.fallback) leg.innerHTML = `<div><b>${esc(layer.label)}</b></div><div class="notice warn" style="margin:6px 0 0">${esc(t.note)} Colours follow NASA GIBS's own scale.</div>`;
+    else if (!t.tile_url) leg.insertAdjacentHTML('beforeend', `<div class="notice warn" style="margin:6px 0 0">Map imagery needs Earth Engine, which is not connected on this server (${esc(t.error || 'no key')}). The panel shows the latest saved data.</div>`);
   } catch (e) { leg.insertAdjacentHTML('beforeend', `<div class="notice warn">Map layer failed: ${esc(e.message)}</div>`); }
 }
 async function showMapTab(id) {
@@ -389,7 +410,7 @@ async function showMapTab(id) {
 // ═══ Tab: Kelp ═════════════════════════════════════════════════════════════
 const KELP_LEGEND = { title:'Summer median NDVI over permanent water', colors:['#0b2a4a','#1d5f7a','#3a9d8f','#9bd18b','#f2e394'], ends:['-0.3 open water','0.4 vegetation'] };
 const PERIOD_NOTE = { '1995':'1995-97', '2000':'1999-2001', '2015':'2014-16', '2023':'2022-24' };
-MapTab({ id:'kelp', title:'Puget Sound kelp', center:[47.75, -122.5], zoom:9, defaultLayer:'k2023',
+MapTab({ id:'kelp', title:'Puget Sound kelp', center:[47.75, -122.5], zoom:9, bounds:[[47.0, -123.2], [49.0, -121.9]], defaultLayer:'k2023',
   layers: [
     ...['1995', '2000', '2015', '2023'].map(p => ({ group:'Summer NDVI', key:'k' + p, label:p, tile:`/tiles/kelp/${p}`, legend:KELP_LEGEND, note:`Landsat, summers ${PERIOD_NOTE[p]}` })),
     { group:'Change', key:'kchange', label:'2015 to 2023', tile:'/tiles/kelp-change', legend:{ title:'NDVI change, 2015 to 2023', colors:['#b2182b','#f7f7f7','#2166ac'], ends:['-0.2 lower','+0.2 higher'] }, note:'Same sensor family (OLI): a like-for-like comparison' },
@@ -446,7 +467,7 @@ MapTab({ id:'kelp', title:'Puget Sound kelp', center:[47.75, -122.5], zoom:9, de
   } });
 
 // ═══ Tab: El Niño ══════════════════════════════════════════════════════════
-MapTab({ id:'enso', title:'El Niño watch', center:[5, -150], zoom:2, defaultLayer:'sst',
+MapTab({ id:'enso', title:'El Niño watch', center:[5, -150], zoom:2, bounds:[[-40, 120], [55, -70 + 360]], defaultLayer:'sst',
   layers: [{ key:'sst', label:'Sea-surface temperature anomaly (7 days)', tile:'/tiles/sst-anomaly',
     legend:{ title:'SST anomaly, °C (OISST, last 7 days)', colors:['#2166ac','#67a9cf','#d1e5f0','#f7f7f7','#fddbc7','#ef8a62','#b2182b'], ends:['-3 cooler','+3 warmer'] }, note:'Dashed box: Niño 3.4 region' }],
   async render(el, tab) {
@@ -475,22 +496,28 @@ MapTab({ id:'enso', title:'El Niño watch', center:[5, -150], zoom:2, defaultLay
 
 // ═══ Tab: Wildfire ═════════════════════════════════════════════════════════
 MapTab({ id:'wildfire', title:'Wildfire activity', center:[30, -20], zoom:2, defaultLayer:'fire',
-  layers: [{ key:'fire', label:'Active fire, last 7 days', tile:'/tiles/wildfire',
-    legend:{ title:'Active fire brightness (K), FIRMS', colors:['#ffd166','#f77f00','#d62828'], ends:['300','400'] } }],
+  layers: [{ key:'fire', label:'Fire clusters, last 7 days', points:'/wildfire/points',
+    legend:{ title:'Peak fire brightness (K), FIRMS', colors:['#ffd166','#f77f00','#d62828'], ends:['300','400+'] },
+    pointStyle: ([lat, lon, k, region], renderer) => {
+      const c = k >= 380 ? '#d62828' : k >= 340 ? '#f77f00' : '#e9b940';
+      return L.circleMarker([lat, lon], { renderer, radius: k >= 380 ? 5 : 4, color:'#5a1a0a', weight:0.6, fillColor:c, fillOpacity:0.9 })
+        .bindTooltip(`${region === 'us' ? 'United States' : 'India'} · peak ${k} K`);
+    } }],
   async render(el) {
     const d = await cachedJSON('/wildfire');
     if (d.error) { el.innerHTML = `<div class="notice bad">${esc(d.error)}</div>`; return; }
     el.innerHTML = `<div class="meta" style="margin:6px 0">NASA FIRMS (MODIS) · ${esc(d.window)} · ${esc(d.status)}</div>${Issues(d.quality_issues)}
       ${Collapsible('fire-counts', 'Fire detections', `<table class="data"><tr><th>Region</th><th class="num">1 km fire pixels, 7 days</th></tr>
         <tr><td>United States</td><td class="num">${d.us.fire_pixels_1km_7d.toLocaleString()}</td></tr>
-        <tr><td>India</td><td class="num">${d.india.fire_pixels_1km_7d.toLocaleString()}</td></tr></table>`)}
+        <tr><td>India</td><td class="num">${d.india.fire_pixels_1km_7d.toLocaleString()}</td></tr></table>
+        ${d.us.fire_clusters_7d != null ? `<div class="meta" style="margin-top:4px">Grouped into ${d.us.fire_clusters_7d.toLocaleString()} clusters in the US and ${d.india.fire_clusters_7d.toLocaleString()} in India, shown as dots on the map.</div>` : ''}`)}
       ${Collapsible('fire-checks', 'Quality checks', Checks(d.checks), { open:false })}
       ${Collapsible('fire-context', 'General risk context (not data)', `<p style="margin:0"><b>US:</b> ${esc(d.context.us_high_risk_states.join(', '))}</p><p style="margin:4px 0 0"><b>India:</b> ${esc(d.context.india_high_risk_regions.join(', '))}</p>`, { open:false })}
       ${Collapsible('fire-method', 'Method and caveats', `<p style="margin:0 0 6px">${esc(d.method)}</p>${List(d.caveats)}`, { open:false })}`;
   } });
 
 // ═══ Tab: Drought ══════════════════════════════════════════════════════════
-MapTab({ id:'drought', title:'Drought, India', center:[22, 80], zoom:4, defaultLayer:'rain',
+MapTab({ id:'drought', title:'Drought, India', center:[22, 80], zoom:4, bounds:[[6, 68], [36, 97.5]], defaultLayer:'rain',
   layers: [{ key:'rain', label:'Rainfall, % of normal (30 days)', tile:'/tiles/drought',
     legend:{ title:'Rainfall, % of 1991-2020 normal', colors:['#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e'], ends:['25%','175%'] } }],
   async render(el) {

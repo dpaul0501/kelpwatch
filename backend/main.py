@@ -209,7 +209,7 @@ def _compact_enso(e: dict) -> dict:
 
 AGENT_TOOLS = {
     "get_kelp_trends": lambda county=None: _compact_kelp(climate.kelp(county)),
-    "get_wildfire_activity": lambda: climate.fire(_gee_available),
+    "get_wildfire_activity": lambda: {k: v for k, v in climate.fire(_gee_available).items() if k != "points"},
     "get_drought_conditions": lambda: climate.drought(_gee_available),
     "rank_restoration_sites": lambda budget_usd=None: climate.rank_sites(budget_usd),
     "get_kelp_yearly": lambda county=None: _compact_yearly(climate.kelp_yearly(county)),
@@ -249,7 +249,13 @@ def kelp_data(county: str | None = None):
 
 @app.get("/api/wildfire")
 def wildfire_data():
-    return climate.fire(_gee_available)
+    return {k: v for k, v in climate.fire(_gee_available).items() if k != "points"}
+
+@app.get("/api/wildfire/points")
+def wildfire_points():
+    d = climate.fire(_gee_available)
+    return {"window": d.get("window"), "status": d.get("status"),
+            "columns": ["lat", "lon", "peak_brightness_k", "region"], "points": d.get("points", [])}
 
 @app.get("/api/drought")
 def drought_data():
@@ -265,7 +271,7 @@ def enso_data():
 
 @app.get("/api/tiles/sst-anomaly")
 def sst_anomaly_tiles():
-    return _tile(climate.sst_anomaly_tile)
+    return _tile(climate.sst_anomaly_tile, fallback="sst")
 
 @app.get("/api/sites")
 def sites(budget_usd: float | None = None):
@@ -278,13 +284,17 @@ def goal():
             "progress": None, "progress_note": "KelpWatch does not track restored acreage; see the WA DNR plan for progress."}
 
 # ── Map tiles (Earth Engine) ──────────────────────────────────────────────────
-def _tile(fn, *args):
-    if not _gee_available:
-        return {"tile_url": None, "error": "Earth Engine not available"}
-    try:
-        return {"tile_url": fn(*args)}
-    except Exception as e:
-        return {"tile_url": None, "error": str(e)[:200]}
+def _tile(fn, *args, fallback: str | None = None):
+    """Earth Engine tile URL; on failure, a labelled NASA GIBS fallback when one exists."""
+    error = "Earth Engine not available"
+    if _gee_available:
+        try:
+            return {"tile_url": fn(*args)}
+        except Exception as e:
+            error = str(e)[:200]
+    if fallback:
+        return {**climate.FALLBACK_TILES[fallback], "error": error}
+    return {"tile_url": None, "error": error}
 
 @app.get("/api/tiles/kelp/{period}")
 def kelp_tiles(period: str):
@@ -302,7 +312,7 @@ def wildfire_tiles():
 
 @app.get("/api/tiles/drought")
 def drought_tiles():
-    return _tile(climate.drought_tile)
+    return _tile(climate.drought_tile, fallback="drought")
 
 # ── Transparency: sources, knowledge base, policy, skills, evals ──────────────
 @app.get("/api/sources")

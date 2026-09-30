@@ -222,13 +222,22 @@ def compute_fire() -> dict:
     last = ee.Date(firms.aggregate_max("system:time_start"))
     end = last.format("YYYY-MM-dd").getInfo()
     window = firms.filterDate(last.advance(-6, "day"), last.advance(1, "day")).select("T21").max().gt(0).selfMask()
-    out = {}
+    t21 = firms.filterDate(last.advance(-6, "day"), last.advance(1, "day")).select("T21").max()
+    out, points = {}, []
     for name, b in (("us", US_BOUNDS), ("india", INDIA_BOUNDS)):
-        r = window.reduceRegion(ee.Reducer.count(), ee.Geometry.Rectangle(b), 1000, maxPixels=1e10, tileScale=4).getInfo()
-        out[name] = {"fire_pixels_1km_7d": r.get("T21", 0)}
+        geom = ee.Geometry.Rectangle(b)
+        r = window.reduceRegion(ee.Reducer.count(), geom, 1000, maxPixels=1e10, tileScale=4).getInfo()
+        vec = t21.gt(0).selfMask().int().rename("fire").addBands(t21.rename("t21")).reduceToVectors(
+            geometry=geom, scale=1000, geometryType="centroid", eightConnected=True,
+            reducer=ee.Reducer.max(), maxPixels=1e10, bestEffort=True).limit(4000, "max", False).getInfo()
+        clusters = [[round(f["geometry"]["coordinates"][1], 3), round(f["geometry"]["coordinates"][0], 3),
+                     round(f["properties"]["max"], 1), name] for f in vec["features"]]
+        points += clusters
+        out[name] = {"fire_pixels_1km_7d": r.get("T21", 0), "fire_clusters_7d": len(clusters)}
     start = (datetime.date.fromisoformat(end) - datetime.timedelta(days=6)).isoformat()
-    return {"computed_at": _now(), "window": f"{start} to {end}", "data_through": end, **out,
-            "method": "Count of 1 km pixels with at least one active-fire detection (FIRMS, MODIS) in the 7-day window.",
+    return {"computed_at": _now(), "window": f"{start} to {end}", "data_through": end, **out, "points": points,
+            "method": "Count of 1 km pixels with at least one active-fire detection (FIRMS, MODIS) in the 7-day window; "
+                      "adjacent fire pixels are grouped into clusters, each mapped at its centre with its peak brightness.",
             "caveats": ["A detection is a 1 km pixel where the satellite saw active fire; it is not a count of separate fires.",
                         "Clouds and smoke can hide fires, so counts are a lower bound."],
             "context": {"us_high_risk_states": ["California", "Oregon", "Washington", "Colorado", "Idaho"],
@@ -568,3 +577,16 @@ def sst_anomaly_tile() -> str:
     last = ee.Date(oi.aggregate_max("system:time_start"))
     img = oi.filterDate(last.advance(-6, "day"), last.advance(1, "day")).select("anom").mean().multiply(0.01)
     return img.getMapId({"min": -3, "max": 3, "palette": ["#2166ac", "#67a9cf", "#d1e5f0", "#f7f7f7", "#fddbc7", "#ef8a62", "#b2182b"]})["tile_fetcher"].url_format
+
+
+# ── Fallback map tiles (NASA GIBS, no key) ────────────────────────────────────
+def gibs_tile(layer: str, matrix: str, days_ago: int = 2) -> str:
+    d = (datetime.date.today() - datetime.timedelta(days=days_ago)).isoformat()
+    return f"https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/{layer}/default/{d}/{matrix}/{{z}}/{{y}}/{{x}}.png"
+
+FALLBACK_TILES = {
+    "sst": {"tile_url": gibs_tile("GHRSST_L4_MUR_Sea_Surface_Temperature_Anomalies", "GoogleMapsCompatible_Level7"),
+            "fallback": True, "note": "Fallback layer: NASA GIBS MUR sea-surface temperature anomaly (daily), not the OISST 7-day mean."},
+    "drought": {"tile_url": gibs_tile("IMERG_Precipitation_Rate", "GoogleMapsCompatible_Level6"),
+                "fallback": True, "note": "Fallback layer: NASA GIBS IMERG daily precipitation rate, not rainfall as a percent of normal."},
+}
