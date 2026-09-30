@@ -7,7 +7,7 @@ owner: Empathy AI
 
 rules:
   - id: scope
-    text: Answer only questions about kelp and eelgrass, wildfire, drought and monsoon risk, and the documents and data behind them.
+    text: Answer only questions about kelp and eelgrass, ocean temperature and El Niño, wildfire, drought and monsoon risk, and the documents and data behind them.
     stage: input
     check: scope
     on_fail: refuse
@@ -28,7 +28,7 @@ rules:
     check: tool_allowlist
     on_fail: block
     params:
-      allowed: [get_kelp_trends, get_wildfire_activity, get_drought_conditions, search_documents,
+      allowed: [get_kelp_trends, get_kelp_yearly, get_sea_temperature, get_enso_status, get_wildfire_activity, get_drought_conditions, search_documents,
                 rank_restoration_sites, get_data_quality, use_skill]
 
   - id: evidence

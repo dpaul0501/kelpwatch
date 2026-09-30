@@ -180,11 +180,17 @@ def kelp_quality(snapshot: dict) -> tuple[list, list]:
 
 _kelp_cache: dict | None = _load("kelp")
 
-def refresh_kelp(gee_ok: bool):
+def refresh_kelp(gee_ok: bool, max_age_days: int = 7):
     global _kelp_cache
     if not gee_ok:
         record("landsat", False, [], "Earth Engine not available; serving snapshot")
         return
+    if _kelp_cache:
+        age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(_kelp_cache["computed_at"])
+        if age.days < max_age_days:     # recent enough: record the snapshot's checks, skip a 4-minute recompute
+            record("landsat", True, kelp_quality(_kelp_cache)[0])
+            record("gsw", True, [{"check": "mask_loaded", "passed": True, "detail": "permanent-water mask applied"}])
+            return
     try:
         snap = compute_kelp()
         _save("kelp", snap)
@@ -277,10 +283,11 @@ def _cached(name: str, source_ids: list, compute, gee_ok: bool, checks_fn) -> di
                 record(sid, False, [], str(e)[:200])
     if data is None:
         return {"error": f"{name} data unavailable", "quality_issues": [f"{name} data unavailable"]}
-    issues = [c["detail"] for c in checks_fn(data) if not c["passed"]]
+    checks = checks_fn(data)
+    issues = [c["detail"] for c in checks if not c["passed"]]
     if _cache[name][1] == 0.0:
         issues.insert(0, f"live refresh unavailable; snapshot computed {data['computed_at']}")
-    return {**data, "quality_issues": issues, "status": "live" if _cache[name][1] else "snapshot"}
+    return {**data, "checks": checks, "quality_issues": issues, "status": "live" if _cache[name][1] else "snapshot"}
 
 def _fire_checks(d):
     lag = (datetime.date.today() - datetime.date.fromisoformat(d["data_through"])).days
@@ -375,3 +382,189 @@ def rank_sites(budget_usd: float | None = None) -> dict:
                        "The satellite signal is not used because it failed validation against documented trends.",
             "budget_usd": budget_usd, "funded_within_budget": funded,
             "budget_remaining_usd": round(left) if budget_usd else None, "sites": ranked}
+
+
+# ── Kelp: yearly series ───────────────────────────────────────────────────────
+YEARS = list(range(1990, 2026))
+
+def _year_sensor(y: int) -> dict:
+    if y <= 2011:
+        return {"sensor": "TM", "collections": ["LANDSAT/LT05/C02/T1_L2"], "bands": ("SR_B2", "SR_B3", "SR_B4")}
+    if y == 2012:
+        return {"sensor": "ETM+", "collections": ["LANDSAT/LE07/C02/T1_L2"], "bands": ("SR_B2", "SR_B3", "SR_B4")}
+    cols = ["LANDSAT/LC08/C02/T1_L2"] + (["LANDSAT/LC09/C02/T1_L2"] if y >= 2022 else [])
+    return {"sensor": "OLI", "collections": cols, "bands": ("SR_B3", "SR_B4", "SR_B5")}
+
+def compute_kelp_yearly(years=YEARS) -> dict:
+    fc = ee.FeatureCollection([ee.Feature(ee.Geometry.Rectangle(b), {"county": k}) for k, b in COUNTY_BOUNDS.items()])
+    region = fc.geometry().bounds()
+    series = {c: [] for c in COUNTY_BOUNDS}
+    for y in years:
+        p = {**_year_sensor(y), "label": str(y), "years": (y, y)}
+        try:
+            col, comp = _period_composite(p, region)
+            img = ee.Image.cat([comp.rename("ndvi_mean"), comp.gt(NDVI_THRESHOLD).rename("veg")])
+            res = img.reduceRegions(fc, ee.Reducer.mean(), scale=30, tileScale=4).getInfo()
+            scenes = col.size().getInfo()
+            for f in res["features"]:
+                pr = f["properties"]
+                ok = scenes >= MIN_SCENES and pr.get("ndvi_mean") is not None
+                series[pr["county"]].append({
+                    "year": y, "sensor": p["sensor"], "scenes": scenes,
+                    "ndvi_mean": round(pr["ndvi_mean"], 4) if pr.get("ndvi_mean") is not None else None,
+                    "signal_pct": round(100 * pr["veg"], 2) if pr.get("veg") is not None else None,
+                    "status": "ok" if ok else "warning"})
+        except Exception as e:
+            for c in COUNTY_BOUNDS:
+                series[c].append({"year": y, "sensor": p["sensor"], "scenes": None, "ndvi_mean": None,
+                                  "signal_pct": None, "status": "failed", "error": str(e)[:160]})
+    return {"computed_at": _now(), "years": years, "method": "Summer (June to September) median NDVI over permanent water, per year; "
+            "signal = share of those pixels above NDVI 0.2.", "counties": series}
+
+def compute_sst_yearly(years=YEARS) -> dict:
+    """Summer sea-surface temperature for the Salish Sea box, with anomalies against 1991-2020."""
+    oi = ee.ImageCollection("NOAA/CDR/OISST/V2_1").select("sst")
+    box = ee.Geometry.Rectangle(SALISH_BOUNDS)
+    def summer(y):
+        y = ee.Number(y)
+        img = oi.filter(ee.Filter.calendarRange(y, y, "year")).filter(ee.Filter.calendarRange(6, 9, "month")).mean().multiply(0.01)
+        return ee.Feature(None, img.reduceRegion(ee.Reducer.mean(), box, 27830)).set("year", y)
+    feats = ee.FeatureCollection(ee.List.sequence(1991, max(years)).map(summer)).getInfo()["features"]
+    vals = {int(f["properties"]["year"]): f["properties"].get("sst") for f in feats}
+    base = [vals[y] for y in range(1991, 2021) if vals.get(y) is not None]
+    normal = sum(base) / len(base)
+    return {"computed_at": _now(), "region": "Salish Sea and Strait of Juan de Fuca box " + str(SALISH_BOUNDS),
+            "normal_1991_2020_c": round(normal, 2),
+            "years": [{"year": y, "summer_sst_c": round(v, 2), "anomaly_c": round(v - normal, 2)}
+                      for y, v in sorted(vals.items()) if v is not None],
+            "method": "NOAA OISST v2.1 daily sea-surface temperature, June to September mean over the box, "
+                      "anomaly against the 1991-2020 summer mean.",
+            "caveats": ["OISST is 0.25 degree (about 25 km), so inland Puget Sound is barely resolved; this tracks the wider Salish Sea and coast."]}
+
+SALISH_BOUNDS = [-125.0, 47.0, -122.0, 49.0]
+
+def _yearly_quality(k: dict, sst: dict | None) -> list:
+    cells = [c for s in k["counties"].values() for c in s]
+    failed = [c for c in cells if c["status"] == "failed"]
+    weak = [c for c in cells if c["status"] == "warning"]
+    checks = [
+        {"check": "all_years_computed", "passed": not failed, "detail": f"{len(cells) - len(failed)} of {len(cells)} county-years computed"},
+        {"check": "enough_scenes_each_year", "passed": not weak,
+         "detail": f"{len(weak)} county-years had fewer than {MIN_SCENES} clear scenes" if weak else "every year has enough scenes"},
+        {"check": "single_sensor_series", "passed": False,
+         "detail": "Sensor changes in 2012 (TM to ETM+) and 2013 (to OLI); compare years within one sensor era"},
+    ]
+    # Year-to-year noise within one sensor era: if single years swing wildly, single years can't carry a trend.
+    swings = []
+    for rows in k["counties"].values():
+        vals = [r["signal_pct"] for r in rows if r["sensor"] == "OLI" and r["signal_pct"]]
+        swings += [abs(b - a) / a for a, b in zip(vals, vals[1:]) if a]
+    if swings:
+        med = sorted(swings)[len(swings) // 2]
+        checks.append({"check": "stable_between_years", "passed": med <= 0.5,
+                       "detail": f"median year-to-year change in the signal is {med:.0%} within 2013-2025; "
+                                 + ("single years are too noisy to read as a trend; use multi-year periods" if med > 0.5 else "acceptable")})
+    if sst:
+        checks.append({"check": "sst_available", "passed": len(sst["years"]) >= 30, "detail": f"{len(sst['years'])} summers of sea-surface temperature"})
+    return checks
+
+_yearly_cache = _load("kelp_yearly")
+_sst_cache = _load("sst")
+
+def refresh_yearly(gee_ok: bool, max_age_days: int = 30):
+    """Yearly series change slowly: recompute only when the snapshot is older than max_age_days."""
+    global _yearly_cache, _sst_cache
+    if not gee_ok:
+        return
+    def stale(snap):
+        if not snap:
+            return True
+        age = datetime.datetime.now(datetime.timezone.utc) - datetime.datetime.fromisoformat(snap["computed_at"])
+        return age.days >= max_age_days
+    try:
+        if stale(_sst_cache):
+            _sst_cache = compute_sst_yearly(); _save("sst", _sst_cache)
+        if stale(_yearly_cache):
+            _yearly_cache = compute_kelp_yearly(); _save("kelp_yearly", _yearly_cache)
+    except Exception as e:
+        record("landsat", False, [], f"yearly series: {str(e)[:160]}")
+
+def kelp_yearly(county: str | None = None) -> dict:
+    if not _yearly_cache:
+        return {"error": "Yearly kelp series has not been computed yet", "quality_issues": ["yearly kelp series unavailable"]}
+    k = _yearly_cache
+    checks = _yearly_quality(k, _sst_cache)
+    counties = k["counties"]
+    if county:
+        counties = {c: v for c, v in counties.items() if c.lower() == county.lower()} or counties
+    return {"computed_at": k["computed_at"], "method": k["method"], "counties": counties, "sst": _sst_cache,
+            "checks": checks, "quality_issues": [c["detail"] for c in checks if not c["passed"]],
+            "caveats": KELP_CAVEATS}
+
+# ── El Niño (ENSO) ────────────────────────────────────────────────────────────
+NINO34 = [-170.0, -5.0, -120.0, 5.0]
+
+def compute_enso() -> dict:
+    import requests
+    txt = requests.get("https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt", timeout=20).text
+    rows = []
+    for line in txt.strip().splitlines()[1:]:
+        parts = line.split()
+        if len(parts) == 4:
+            rows.append({"season": parts[0], "year": int(parts[1]), "total_c": float(parts[2]), "oni": float(parts[3])})
+    latest = rows[-1]
+    def phase(v):
+        return "El Niño" if v >= 0.5 else "La Niña" if v <= -0.5 else "Neutral"
+    def strength(v):
+        a = abs(v)
+        return None if a < 0.5 else "weak" if a < 1.0 else "moderate" if a < 1.5 else "strong" if a < 2.0 else "very strong"
+    oi = ee.ImageCollection("NOAA/CDR/OISST/V2_1")
+    last = ee.Date(oi.aggregate_max("system:time_start"))
+    oisst_date = last.format("YYYY-MM-dd").getInfo()
+    anom = oi.filterDate(last.advance(-29, "day"), last.advance(1, "day")).select("anom").mean().multiply(0.01) \
+             .reduceRegion(ee.Reducer.mean(), ee.Geometry.Rectangle(NINO34), 27830).getInfo().get("anom")
+    return {"computed_at": _now(),
+            "oni_latest": {**latest, "phase": phase(latest["oni"]), "strength": strength(latest["oni"])},
+            "oni_series": rows[-60:],
+            "nino34_oisst_30d": {"anomaly_c": round(anom, 2) if anom is not None else None, "through": oisst_date,
+                                 "baseline": "OISST climatology (1971-2000)"},
+            "method": "Official ENSO status from the NOAA CPC Oceanic Niño Index (3-month running Niño 3.4 anomaly, centred "
+                      "30-year base periods). Cross-checked with the latest 30-day Niño 3.4 anomaly from NOAA OISST.",
+            "thresholds": "ONI of +0.5 or more for five overlapping seasons is El Niño; -0.5 or less is La Niña. "
+                          "Strength: 0.5-0.9 weak, 1.0-1.4 moderate, 1.5-1.9 strong, 2.0+ very strong.",
+            "caveats": ["The ONI is a 3-month average, so it lags current conditions by about a month.",
+                        "OISST anomalies use an older, cooler baseline, so they run higher than the ONI; compare direction, not size."],
+            "pacific_northwest_note": "El Niño winters in the Pacific Northwest tend to be warmer and drier than normal."}
+
+def _enso_checks(d):
+    o, s = d["oni_latest"], d["nino34_oisst_30d"]
+    a = s["anomaly_c"]
+    if a is None:
+        agree = True
+    elif abs(o["oni"]) < 0.5:
+        agree = abs(a) < 1.5            # neutral ONI: OISST should not show a strong event
+    else:
+        agree = (o["oni"] > 0) == (a > 0)
+    lag = (datetime.date.today() - datetime.date.fromisoformat(s["through"])).days if s["through"] else 99
+    return [{"check": "oni_recent", "passed": o["year"] >= datetime.date.today().year - (1 if datetime.date.today().month <= 2 else 0),
+             "detail": f"latest ONI season {o['season']} {o['year']}"},
+            {"check": "oisst_fresh", "passed": lag <= 7, "detail": f"OISST through {s['through']} ({lag} days ago)"},
+            {"check": "sources_agree_on_phase", "passed": agree,
+             "detail": f"ONI {o['oni']:+.2f} and OISST Niño 3.4 {s['anomaly_c']:+.2f} °C point the same way" if agree
+                       else f"ONI {o['oni']:+.2f} and OISST {s['anomaly_c']:+.2f} °C disagree on phase"}]
+
+_cache["enso"] = (_load("enso"), 0.0)
+SOURCES.append({"id": "enso", "name": "El Niño: Oceanic Niño Index and OISST", "provider": "NOAA Climate Prediction Center; NOAA OISST via Google Earth Engine",
+                "dataset": "CPC oni.ascii.txt; NOAA/CDR/OISST/V2_1", "resolution": "Niño 3.4 region average; 0.25 degree",
+                "cadence": "ONI monthly; OISST daily", "licence": "US government public domain (NOAA)",
+                "used_for": "El Niño status, and Salish Sea summer sea temperature for kelp"})
+_status["enso"] = {"state": "not run", "last_success": None, "last_error": None, "checks": []}
+
+def enso(gee_ok: bool) -> dict:
+    return _cached("enso", ["enso"], compute_enso, gee_ok, _enso_checks)
+
+def sst_anomaly_tile() -> str:
+    oi = ee.ImageCollection("NOAA/CDR/OISST/V2_1")
+    last = ee.Date(oi.aggregate_max("system:time_start"))
+    img = oi.filterDate(last.advance(-6, "day"), last.advance(1, "day")).select("anom").mean().multiply(0.01)
+    return img.getMapId({"min": -3, "max": 3, "palette": ["#2166ac", "#67a9cf", "#d1e5f0", "#f7f7f7", "#fddbc7", "#ef8a62", "#b2182b"]})["tile_fetcher"].url_format

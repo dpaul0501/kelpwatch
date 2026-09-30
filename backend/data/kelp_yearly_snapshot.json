@@ -1,0 +1,1784 @@
+{
+ "computed_at": "2026-09-30T03:05:34+00:00",
+ "years": [
+  1990,
+  1991,
+  1992,
+  1993,
+  1994,
+  1995,
+  1996,
+  1997,
+  1998,
+  1999,
+  2000,
+  2001,
+  2002,
+  2003,
+  2004,
+  2005,
+  2006,
+  2007,
+  2008,
+  2009,
+  2010,
+  2011,
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "method": "Summer (June to September) median NDVI over permanent water, per year; signal = share of those pixels above NDVI 0.2.",
+ "counties": {
+  "King": [
+   {
+    "year": 1990,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1348,
+    "signal_pct": 26.84,
+    "status": "ok"
+   },
+   {
+    "year": 1991,
+    "sensor": "TM",
+    "scenes": 17,
+    "ndvi_mean": 0.1582,
+    "signal_pct": 28.52,
+    "status": "ok"
+   },
+   {
+    "year": 1992,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.2247,
+    "signal_pct": 63.79,
+    "status": "ok"
+   },
+   {
+    "year": 1993,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1793,
+    "signal_pct": 41.07,
+    "status": "ok"
+   },
+   {
+    "year": 1994,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1183,
+    "signal_pct": 21.14,
+    "status": "ok"
+   },
+   {
+    "year": 1995,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.1986,
+    "signal_pct": 40.36,
+    "status": "warning"
+   },
+   {
+    "year": 1996,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1588,
+    "signal_pct": 24.84,
+    "status": "ok"
+   },
+   {
+    "year": 1997,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1903,
+    "signal_pct": 47.23,
+    "status": "ok"
+   },
+   {
+    "year": 1998,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.1984,
+    "signal_pct": 47.31,
+    "status": "ok"
+   },
+   {
+    "year": 1999,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1808,
+    "signal_pct": 42.34,
+    "status": "ok"
+   },
+   {
+    "year": 2000,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1405,
+    "signal_pct": 21.58,
+    "status": "ok"
+   },
+   {
+    "year": 2001,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1322,
+    "signal_pct": 25.14,
+    "status": "ok"
+   },
+   {
+    "year": 2002,
+    "sensor": "TM",
+    "scenes": 11,
+    "ndvi_mean": 0.1794,
+    "signal_pct": 38.67,
+    "status": "ok"
+   },
+   {
+    "year": 2003,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.1267,
+    "signal_pct": 22.79,
+    "status": "ok"
+   },
+   {
+    "year": 2004,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.1269,
+    "signal_pct": 19.34,
+    "status": "ok"
+   },
+   {
+    "year": 2005,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1731,
+    "signal_pct": 34.9,
+    "status": "ok"
+   },
+   {
+    "year": 2006,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.1993,
+    "signal_pct": 49.8,
+    "status": "ok"
+   },
+   {
+    "year": 2007,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.15,
+    "signal_pct": 22.25,
+    "status": "ok"
+   },
+   {
+    "year": 2008,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.1603,
+    "signal_pct": 34.59,
+    "status": "ok"
+   },
+   {
+    "year": 2009,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.2076,
+    "signal_pct": 49.01,
+    "status": "ok"
+   },
+   {
+    "year": 2010,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.1895,
+    "signal_pct": 45.95,
+    "status": "warning"
+   },
+   {
+    "year": 2011,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1472,
+    "signal_pct": 26.74,
+    "status": "ok"
+   },
+   {
+    "year": 2012,
+    "sensor": "ETM+",
+    "scenes": 12,
+    "ndvi_mean": 0.0987,
+    "signal_pct": 24.77,
+    "status": "ok"
+   },
+   {
+    "year": 2013,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.0267,
+    "signal_pct": 14.1,
+    "status": "ok"
+   },
+   {
+    "year": 2014,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": 0.0992,
+    "signal_pct": 29.99,
+    "status": "ok"
+   },
+   {
+    "year": 2015,
+    "sensor": "OLI",
+    "scenes": 25,
+    "ndvi_mean": 0.1245,
+    "signal_pct": 24.6,
+    "status": "ok"
+   },
+   {
+    "year": 2016,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.0738,
+    "signal_pct": 7.44,
+    "status": "ok"
+   },
+   {
+    "year": 2017,
+    "sensor": "OLI",
+    "scenes": 14,
+    "ndvi_mean": 0.0441,
+    "signal_pct": 22.46,
+    "status": "ok"
+   },
+   {
+    "year": 2018,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": 0.0481,
+    "signal_pct": 27.85,
+    "status": "ok"
+   },
+   {
+    "year": 2019,
+    "sensor": "OLI",
+    "scenes": 11,
+    "ndvi_mean": 0.284,
+    "signal_pct": 73.49,
+    "status": "ok"
+   },
+   {
+    "year": 2020,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": 0.0579,
+    "signal_pct": 11.76,
+    "status": "ok"
+   },
+   {
+    "year": 2021,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": 0.1277,
+    "signal_pct": 45.52,
+    "status": "ok"
+   },
+   {
+    "year": 2022,
+    "sensor": "OLI",
+    "scenes": 33,
+    "ndvi_mean": -0.0122,
+    "signal_pct": 2.54,
+    "status": "ok"
+   },
+   {
+    "year": 2023,
+    "sensor": "OLI",
+    "scenes": 38,
+    "ndvi_mean": 0.0479,
+    "signal_pct": 7.95,
+    "status": "ok"
+   },
+   {
+    "year": 2024,
+    "sensor": "OLI",
+    "scenes": 18,
+    "ndvi_mean": 0.0576,
+    "signal_pct": 4.83,
+    "status": "ok"
+   },
+   {
+    "year": 2025,
+    "sensor": "OLI",
+    "scenes": 30,
+    "ndvi_mean": 0.094,
+    "signal_pct": 25.7,
+    "status": "ok"
+   }
+  ],
+  "Skagit": [
+   {
+    "year": 1990,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": -0.0374,
+    "signal_pct": 11.91,
+    "status": "ok"
+   },
+   {
+    "year": 1991,
+    "sensor": "TM",
+    "scenes": 17,
+    "ndvi_mean": 0.0012,
+    "signal_pct": 4.81,
+    "status": "ok"
+   },
+   {
+    "year": 1992,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1012,
+    "signal_pct": 15.62,
+    "status": "ok"
+   },
+   {
+    "year": 1993,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.0669,
+    "signal_pct": 10.04,
+    "status": "ok"
+   },
+   {
+    "year": 1994,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": -0.0397,
+    "signal_pct": 2.95,
+    "status": "ok"
+   },
+   {
+    "year": 1995,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": -0.0389,
+    "signal_pct": 20.64,
+    "status": "warning"
+   },
+   {
+    "year": 1996,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.046,
+    "signal_pct": 9.96,
+    "status": "ok"
+   },
+   {
+    "year": 1997,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": -0.0327,
+    "signal_pct": 11.13,
+    "status": "ok"
+   },
+   {
+    "year": 1998,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": -0.0002,
+    "signal_pct": 21.59,
+    "status": "ok"
+   },
+   {
+    "year": 1999,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0112,
+    "signal_pct": 12.79,
+    "status": "ok"
+   },
+   {
+    "year": 2000,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": -0.0007,
+    "signal_pct": 11.09,
+    "status": "ok"
+   },
+   {
+    "year": 2001,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": -0.0027,
+    "signal_pct": 5.82,
+    "status": "ok"
+   },
+   {
+    "year": 2002,
+    "sensor": "TM",
+    "scenes": 11,
+    "ndvi_mean": 0.0169,
+    "signal_pct": 16.42,
+    "status": "ok"
+   },
+   {
+    "year": 2003,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.0454,
+    "signal_pct": 15.57,
+    "status": "ok"
+   },
+   {
+    "year": 2004,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.011,
+    "signal_pct": 10.23,
+    "status": "ok"
+   },
+   {
+    "year": 2005,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": -0.0184,
+    "signal_pct": 8.64,
+    "status": "ok"
+   },
+   {
+    "year": 2006,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.0414,
+    "signal_pct": 25.54,
+    "status": "ok"
+   },
+   {
+    "year": 2007,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.0679,
+    "signal_pct": 12.36,
+    "status": "ok"
+   },
+   {
+    "year": 2008,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.032,
+    "signal_pct": 6.35,
+    "status": "ok"
+   },
+   {
+    "year": 2009,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.0653,
+    "signal_pct": 12.77,
+    "status": "ok"
+   },
+   {
+    "year": 2010,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": -0.1525,
+    "signal_pct": 9.4,
+    "status": "warning"
+   },
+   {
+    "year": 2011,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0646,
+    "signal_pct": 18.11,
+    "status": "ok"
+   },
+   {
+    "year": 2012,
+    "sensor": "ETM+",
+    "scenes": 12,
+    "ndvi_mean": -0.1396,
+    "signal_pct": 11.0,
+    "status": "ok"
+   },
+   {
+    "year": 2013,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.3458,
+    "signal_pct": 4.19,
+    "status": "ok"
+   },
+   {
+    "year": 2014,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.1696,
+    "signal_pct": 9.61,
+    "status": "ok"
+   },
+   {
+    "year": 2015,
+    "sensor": "OLI",
+    "scenes": 25,
+    "ndvi_mean": -0.1775,
+    "signal_pct": 10.02,
+    "status": "ok"
+   },
+   {
+    "year": 2016,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.3736,
+    "signal_pct": 8.23,
+    "status": "ok"
+   },
+   {
+    "year": 2017,
+    "sensor": "OLI",
+    "scenes": 14,
+    "ndvi_mean": -0.1867,
+    "signal_pct": 11.52,
+    "status": "ok"
+   },
+   {
+    "year": 2018,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.1923,
+    "signal_pct": 9.05,
+    "status": "ok"
+   },
+   {
+    "year": 2019,
+    "sensor": "OLI",
+    "scenes": 11,
+    "ndvi_mean": 0.2531,
+    "signal_pct": 60.17,
+    "status": "ok"
+   },
+   {
+    "year": 2020,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.2446,
+    "signal_pct": 9.5,
+    "status": "ok"
+   },
+   {
+    "year": 2021,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.122,
+    "signal_pct": 24.89,
+    "status": "ok"
+   },
+   {
+    "year": 2022,
+    "sensor": "OLI",
+    "scenes": 33,
+    "ndvi_mean": -0.3072,
+    "signal_pct": 5.72,
+    "status": "ok"
+   },
+   {
+    "year": 2023,
+    "sensor": "OLI",
+    "scenes": 38,
+    "ndvi_mean": -0.0784,
+    "signal_pct": 8.31,
+    "status": "ok"
+   },
+   {
+    "year": 2024,
+    "sensor": "OLI",
+    "scenes": 18,
+    "ndvi_mean": -0.1995,
+    "signal_pct": 10.22,
+    "status": "ok"
+   },
+   {
+    "year": 2025,
+    "sensor": "OLI",
+    "scenes": 30,
+    "ndvi_mean": -0.1907,
+    "signal_pct": 10.81,
+    "status": "ok"
+   }
+  ],
+  "Whatcom": [
+   {
+    "year": 1990,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.0126,
+    "signal_pct": 9.94,
+    "status": "ok"
+   },
+   {
+    "year": 1991,
+    "sensor": "TM",
+    "scenes": 17,
+    "ndvi_mean": 0.0223,
+    "signal_pct": 7.87,
+    "status": "ok"
+   },
+   {
+    "year": 1992,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1325,
+    "signal_pct": 16.65,
+    "status": "ok"
+   },
+   {
+    "year": 1993,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.0835,
+    "signal_pct": 11.14,
+    "status": "ok"
+   },
+   {
+    "year": 1994,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.002,
+    "signal_pct": 6.14,
+    "status": "ok"
+   },
+   {
+    "year": 1995,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.073,
+    "signal_pct": 28.17,
+    "status": "warning"
+   },
+   {
+    "year": 1996,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.0227,
+    "signal_pct": 8.19,
+    "status": "ok"
+   },
+   {
+    "year": 1997,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0065,
+    "signal_pct": 10.08,
+    "status": "ok"
+   },
+   {
+    "year": 1998,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.087,
+    "signal_pct": 27.41,
+    "status": "ok"
+   },
+   {
+    "year": 1999,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0739,
+    "signal_pct": 22.88,
+    "status": "ok"
+   },
+   {
+    "year": 2000,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.0141,
+    "signal_pct": 13.09,
+    "status": "ok"
+   },
+   {
+    "year": 2001,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.0156,
+    "signal_pct": 8.93,
+    "status": "ok"
+   },
+   {
+    "year": 2002,
+    "sensor": "TM",
+    "scenes": 11,
+    "ndvi_mean": 0.1073,
+    "signal_pct": 25.68,
+    "status": "ok"
+   },
+   {
+    "year": 2003,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.0666,
+    "signal_pct": 7.99,
+    "status": "ok"
+   },
+   {
+    "year": 2004,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.0636,
+    "signal_pct": 10.45,
+    "status": "ok"
+   },
+   {
+    "year": 2005,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.0648,
+    "signal_pct": 9.62,
+    "status": "ok"
+   },
+   {
+    "year": 2006,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.1052,
+    "signal_pct": 21.33,
+    "status": "ok"
+   },
+   {
+    "year": 2007,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.0245,
+    "signal_pct": 6.05,
+    "status": "ok"
+   },
+   {
+    "year": 2008,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.0613,
+    "signal_pct": 11.38,
+    "status": "ok"
+   },
+   {
+    "year": 2009,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.0924,
+    "signal_pct": 8.33,
+    "status": "ok"
+   },
+   {
+    "year": 2010,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.0394,
+    "signal_pct": 27.71,
+    "status": "warning"
+   },
+   {
+    "year": 2011,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0728,
+    "signal_pct": 18.86,
+    "status": "ok"
+   },
+   {
+    "year": 2012,
+    "sensor": "ETM+",
+    "scenes": 12,
+    "ndvi_mean": -0.0944,
+    "signal_pct": 13.23,
+    "status": "ok"
+   },
+   {
+    "year": 2013,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.1708,
+    "signal_pct": 14.88,
+    "status": "ok"
+   },
+   {
+    "year": 2014,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.1398,
+    "signal_pct": 10.28,
+    "status": "ok"
+   },
+   {
+    "year": 2015,
+    "sensor": "OLI",
+    "scenes": 25,
+    "ndvi_mean": -0.0033,
+    "signal_pct": 5.16,
+    "status": "ok"
+   },
+   {
+    "year": 2016,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.3003,
+    "signal_pct": 7.54,
+    "status": "ok"
+   },
+   {
+    "year": 2017,
+    "sensor": "OLI",
+    "scenes": 14,
+    "ndvi_mean": -0.2524,
+    "signal_pct": 10.0,
+    "status": "ok"
+   },
+   {
+    "year": 2018,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.2098,
+    "signal_pct": 6.68,
+    "status": "ok"
+   },
+   {
+    "year": 2019,
+    "sensor": "OLI",
+    "scenes": 11,
+    "ndvi_mean": 0.1997,
+    "signal_pct": 40.26,
+    "status": "ok"
+   },
+   {
+    "year": 2020,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.273,
+    "signal_pct": 7.78,
+    "status": "ok"
+   },
+   {
+    "year": 2021,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.1785,
+    "signal_pct": 22.39,
+    "status": "ok"
+   },
+   {
+    "year": 2022,
+    "sensor": "OLI",
+    "scenes": 33,
+    "ndvi_mean": -0.2436,
+    "signal_pct": 3.08,
+    "status": "ok"
+   },
+   {
+    "year": 2023,
+    "sensor": "OLI",
+    "scenes": 38,
+    "ndvi_mean": -0.0109,
+    "signal_pct": 5.97,
+    "status": "ok"
+   },
+   {
+    "year": 2024,
+    "sensor": "OLI",
+    "scenes": 18,
+    "ndvi_mean": -0.1969,
+    "signal_pct": 8.58,
+    "status": "ok"
+   },
+   {
+    "year": 2025,
+    "sensor": "OLI",
+    "scenes": 30,
+    "ndvi_mean": -0.0638,
+    "signal_pct": 8.55,
+    "status": "ok"
+   }
+  ],
+  "Kitsap": [
+   {
+    "year": 1990,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1731,
+    "signal_pct": 38.73,
+    "status": "ok"
+   },
+   {
+    "year": 1991,
+    "sensor": "TM",
+    "scenes": 17,
+    "ndvi_mean": 0.2077,
+    "signal_pct": 51.47,
+    "status": "ok"
+   },
+   {
+    "year": 1992,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.2718,
+    "signal_pct": 79.96,
+    "status": "ok"
+   },
+   {
+    "year": 1993,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.2238,
+    "signal_pct": 64.03,
+    "status": "ok"
+   },
+   {
+    "year": 1994,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1649,
+    "signal_pct": 39.14,
+    "status": "ok"
+   },
+   {
+    "year": 1995,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.2012,
+    "signal_pct": 37.95,
+    "status": "warning"
+   },
+   {
+    "year": 1996,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1976,
+    "signal_pct": 40.07,
+    "status": "ok"
+   },
+   {
+    "year": 1997,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.239,
+    "signal_pct": 60.2,
+    "status": "ok"
+   },
+   {
+    "year": 1998,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.2266,
+    "signal_pct": 56.73,
+    "status": "ok"
+   },
+   {
+    "year": 1999,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.2079,
+    "signal_pct": 52.66,
+    "status": "ok"
+   },
+   {
+    "year": 2000,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1858,
+    "signal_pct": 41.53,
+    "status": "ok"
+   },
+   {
+    "year": 2001,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1679,
+    "signal_pct": 38.2,
+    "status": "ok"
+   },
+   {
+    "year": 2002,
+    "sensor": "TM",
+    "scenes": 11,
+    "ndvi_mean": 0.2254,
+    "signal_pct": 60.16,
+    "status": "ok"
+   },
+   {
+    "year": 2003,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.1443,
+    "signal_pct": 33.32,
+    "status": "ok"
+   },
+   {
+    "year": 2004,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.16,
+    "signal_pct": 32.89,
+    "status": "ok"
+   },
+   {
+    "year": 2005,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1901,
+    "signal_pct": 42.36,
+    "status": "ok"
+   },
+   {
+    "year": 2006,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.2286,
+    "signal_pct": 61.09,
+    "status": "ok"
+   },
+   {
+    "year": 2007,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.1481,
+    "signal_pct": 23.95,
+    "status": "ok"
+   },
+   {
+    "year": 2008,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.18,
+    "signal_pct": 41.64,
+    "status": "ok"
+   },
+   {
+    "year": 2009,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.2725,
+    "signal_pct": 64.49,
+    "status": "ok"
+   },
+   {
+    "year": 2010,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.2434,
+    "signal_pct": 61.79,
+    "status": "warning"
+   },
+   {
+    "year": 2011,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.181,
+    "signal_pct": 40.03,
+    "status": "ok"
+   },
+   {
+    "year": 2012,
+    "sensor": "ETM+",
+    "scenes": 12,
+    "ndvi_mean": 0.11,
+    "signal_pct": 28.15,
+    "status": "ok"
+   },
+   {
+    "year": 2013,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.0413,
+    "signal_pct": 14.05,
+    "status": "ok"
+   },
+   {
+    "year": 2014,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": 0.1225,
+    "signal_pct": 37.0,
+    "status": "ok"
+   },
+   {
+    "year": 2015,
+    "sensor": "OLI",
+    "scenes": 25,
+    "ndvi_mean": 0.1802,
+    "signal_pct": 40.68,
+    "status": "ok"
+   },
+   {
+    "year": 2016,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.2169,
+    "signal_pct": 7.73,
+    "status": "ok"
+   },
+   {
+    "year": 2017,
+    "sensor": "OLI",
+    "scenes": 14,
+    "ndvi_mean": 0.0482,
+    "signal_pct": 26.5,
+    "status": "ok"
+   },
+   {
+    "year": 2018,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.0279,
+    "signal_pct": 21.99,
+    "status": "ok"
+   },
+   {
+    "year": 2019,
+    "sensor": "OLI",
+    "scenes": 11,
+    "ndvi_mean": 0.358,
+    "signal_pct": 83.96,
+    "status": "ok"
+   },
+   {
+    "year": 2020,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": 0.1403,
+    "signal_pct": 30.06,
+    "status": "ok"
+   },
+   {
+    "year": 2021,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": 0.0832,
+    "signal_pct": 42.95,
+    "status": "ok"
+   },
+   {
+    "year": 2022,
+    "sensor": "OLI",
+    "scenes": 33,
+    "ndvi_mean": 0.0101,
+    "signal_pct": 6.44,
+    "status": "ok"
+   },
+   {
+    "year": 2023,
+    "sensor": "OLI",
+    "scenes": 38,
+    "ndvi_mean": 0.0635,
+    "signal_pct": 11.54,
+    "status": "ok"
+   },
+   {
+    "year": 2024,
+    "sensor": "OLI",
+    "scenes": 18,
+    "ndvi_mean": 0.0618,
+    "signal_pct": 9.26,
+    "status": "ok"
+   },
+   {
+    "year": 2025,
+    "sensor": "OLI",
+    "scenes": 30,
+    "ndvi_mean": 0.0808,
+    "signal_pct": 27.88,
+    "status": "ok"
+   }
+  ],
+  "Pierce": [
+   {
+    "year": 1990,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1304,
+    "signal_pct": 30.19,
+    "status": "ok"
+   },
+   {
+    "year": 1991,
+    "sensor": "TM",
+    "scenes": 17,
+    "ndvi_mean": 0.1315,
+    "signal_pct": 33.88,
+    "status": "ok"
+   },
+   {
+    "year": 1992,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.2067,
+    "signal_pct": 68.7,
+    "status": "ok"
+   },
+   {
+    "year": 1993,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1424,
+    "signal_pct": 27.16,
+    "status": "ok"
+   },
+   {
+    "year": 1994,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1188,
+    "signal_pct": 32.97,
+    "status": "ok"
+   },
+   {
+    "year": 1995,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.1616,
+    "signal_pct": 39.97,
+    "status": "warning"
+   },
+   {
+    "year": 1996,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1233,
+    "signal_pct": 26.54,
+    "status": "ok"
+   },
+   {
+    "year": 1997,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1454,
+    "signal_pct": 44.89,
+    "status": "ok"
+   },
+   {
+    "year": 1998,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.1512,
+    "signal_pct": 46.42,
+    "status": "ok"
+   },
+   {
+    "year": 1999,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1939,
+    "signal_pct": 55.26,
+    "status": "ok"
+   },
+   {
+    "year": 2000,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1383,
+    "signal_pct": 37.02,
+    "status": "ok"
+   },
+   {
+    "year": 2001,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.0977,
+    "signal_pct": 19.59,
+    "status": "ok"
+   },
+   {
+    "year": 2002,
+    "sensor": "TM",
+    "scenes": 11,
+    "ndvi_mean": 0.1597,
+    "signal_pct": 41.32,
+    "status": "ok"
+   },
+   {
+    "year": 2003,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.1367,
+    "signal_pct": 34.84,
+    "status": "ok"
+   },
+   {
+    "year": 2004,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.1105,
+    "signal_pct": 18.71,
+    "status": "ok"
+   },
+   {
+    "year": 2005,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1576,
+    "signal_pct": 37.69,
+    "status": "ok"
+   },
+   {
+    "year": 2006,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.1721,
+    "signal_pct": 47.71,
+    "status": "ok"
+   },
+   {
+    "year": 2007,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.172,
+    "signal_pct": 40.3,
+    "status": "ok"
+   },
+   {
+    "year": 2008,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.1289,
+    "signal_pct": 30.46,
+    "status": "ok"
+   },
+   {
+    "year": 2009,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1932,
+    "signal_pct": 49.97,
+    "status": "ok"
+   },
+   {
+    "year": 2010,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.0744,
+    "signal_pct": 32.71,
+    "status": "warning"
+   },
+   {
+    "year": 2011,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1742,
+    "signal_pct": 42.1,
+    "status": "ok"
+   },
+   {
+    "year": 2012,
+    "sensor": "ETM+",
+    "scenes": 12,
+    "ndvi_mean": 0.1518,
+    "signal_pct": 43.66,
+    "status": "ok"
+   },
+   {
+    "year": 2013,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.0619,
+    "signal_pct": 28.34,
+    "status": "ok"
+   },
+   {
+    "year": 2014,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": 0.043,
+    "signal_pct": 34.06,
+    "status": "ok"
+   },
+   {
+    "year": 2015,
+    "sensor": "OLI",
+    "scenes": 25,
+    "ndvi_mean": 0.1302,
+    "signal_pct": 33.36,
+    "status": "ok"
+   },
+   {
+    "year": 2016,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.1103,
+    "signal_pct": 9.69,
+    "status": "ok"
+   },
+   {
+    "year": 2017,
+    "sensor": "OLI",
+    "scenes": 14,
+    "ndvi_mean": 0.0338,
+    "signal_pct": 29.97,
+    "status": "ok"
+   },
+   {
+    "year": 2018,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.0257,
+    "signal_pct": 32.39,
+    "status": "ok"
+   },
+   {
+    "year": 2019,
+    "sensor": "OLI",
+    "scenes": 11,
+    "ndvi_mean": 0.2674,
+    "signal_pct": 66.18,
+    "status": "ok"
+   },
+   {
+    "year": 2020,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.0098,
+    "signal_pct": 26.96,
+    "status": "ok"
+   },
+   {
+    "year": 2021,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": 0.1596,
+    "signal_pct": 52.35,
+    "status": "ok"
+   },
+   {
+    "year": 2022,
+    "sensor": "OLI",
+    "scenes": 33,
+    "ndvi_mean": -0.0549,
+    "signal_pct": 11.68,
+    "status": "ok"
+   },
+   {
+    "year": 2023,
+    "sensor": "OLI",
+    "scenes": 38,
+    "ndvi_mean": 0.0465,
+    "signal_pct": 18.28,
+    "status": "ok"
+   },
+   {
+    "year": 2024,
+    "sensor": "OLI",
+    "scenes": 18,
+    "ndvi_mean": 0.0481,
+    "signal_pct": 17.31,
+    "status": "ok"
+   },
+   {
+    "year": 2025,
+    "sensor": "OLI",
+    "scenes": 30,
+    "ndvi_mean": 0.0492,
+    "signal_pct": 35.44,
+    "status": "ok"
+   }
+  ],
+  "Snohomish": [
+   {
+    "year": 1990,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.0412,
+    "signal_pct": 16.91,
+    "status": "ok"
+   },
+   {
+    "year": 1991,
+    "sensor": "TM",
+    "scenes": 17,
+    "ndvi_mean": 0.1164,
+    "signal_pct": 19.78,
+    "status": "ok"
+   },
+   {
+    "year": 1992,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.1622,
+    "signal_pct": 36.39,
+    "status": "ok"
+   },
+   {
+    "year": 1993,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.1381,
+    "signal_pct": 33.61,
+    "status": "ok"
+   },
+   {
+    "year": 1994,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.045,
+    "signal_pct": 18.29,
+    "status": "ok"
+   },
+   {
+    "year": 1995,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.0607,
+    "signal_pct": 16.65,
+    "status": "warning"
+   },
+   {
+    "year": 1996,
+    "sensor": "TM",
+    "scenes": 7,
+    "ndvi_mean": 0.0696,
+    "signal_pct": 11.88,
+    "status": "ok"
+   },
+   {
+    "year": 1997,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.1034,
+    "signal_pct": 30.71,
+    "status": "ok"
+   },
+   {
+    "year": 1998,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.0305,
+    "signal_pct": 15.64,
+    "status": "ok"
+   },
+   {
+    "year": 1999,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0732,
+    "signal_pct": 22.86,
+    "status": "ok"
+   },
+   {
+    "year": 2000,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.0558,
+    "signal_pct": 7.53,
+    "status": "ok"
+   },
+   {
+    "year": 2001,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.0437,
+    "signal_pct": 15.16,
+    "status": "ok"
+   },
+   {
+    "year": 2002,
+    "sensor": "TM",
+    "scenes": 11,
+    "ndvi_mean": 0.0782,
+    "signal_pct": 19.69,
+    "status": "ok"
+   },
+   {
+    "year": 2003,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.0402,
+    "signal_pct": 11.76,
+    "status": "ok"
+   },
+   {
+    "year": 2004,
+    "sensor": "TM",
+    "scenes": 13,
+    "ndvi_mean": 0.0356,
+    "signal_pct": 8.5,
+    "status": "ok"
+   },
+   {
+    "year": 2005,
+    "sensor": "TM",
+    "scenes": 10,
+    "ndvi_mean": 0.0942,
+    "signal_pct": 23.16,
+    "status": "ok"
+   },
+   {
+    "year": 2006,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.1134,
+    "signal_pct": 26.12,
+    "status": "ok"
+   },
+   {
+    "year": 2007,
+    "sensor": "TM",
+    "scenes": 8,
+    "ndvi_mean": 0.0595,
+    "signal_pct": 10.05,
+    "status": "ok"
+   },
+   {
+    "year": 2008,
+    "sensor": "TM",
+    "scenes": 12,
+    "ndvi_mean": 0.0837,
+    "signal_pct": 18.82,
+    "status": "ok"
+   },
+   {
+    "year": 2009,
+    "sensor": "TM",
+    "scenes": 9,
+    "ndvi_mean": 0.1165,
+    "signal_pct": 22.41,
+    "status": "ok"
+   },
+   {
+    "year": 2010,
+    "sensor": "TM",
+    "scenes": 2,
+    "ndvi_mean": 0.0449,
+    "signal_pct": 30.09,
+    "status": "warning"
+   },
+   {
+    "year": 2011,
+    "sensor": "TM",
+    "scenes": 6,
+    "ndvi_mean": 0.0967,
+    "signal_pct": 24.62,
+    "status": "ok"
+   },
+   {
+    "year": 2012,
+    "sensor": "ETM+",
+    "scenes": 12,
+    "ndvi_mean": -0.0127,
+    "signal_pct": 10.29,
+    "status": "ok"
+   },
+   {
+    "year": 2013,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.249,
+    "signal_pct": 5.03,
+    "status": "ok"
+   },
+   {
+    "year": 2014,
+    "sensor": "OLI",
+    "scenes": 12,
+    "ndvi_mean": -0.1799,
+    "signal_pct": 5.18,
+    "status": "ok"
+   },
+   {
+    "year": 2015,
+    "sensor": "OLI",
+    "scenes": 25,
+    "ndvi_mean": 0.004,
+    "signal_pct": 11.39,
+    "status": "ok"
+   },
+   {
+    "year": 2016,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.3346,
+    "signal_pct": 11.58,
+    "status": "ok"
+   },
+   {
+    "year": 2017,
+    "sensor": "OLI",
+    "scenes": 14,
+    "ndvi_mean": -0.0419,
+    "signal_pct": 13.43,
+    "status": "ok"
+   },
+   {
+    "year": 2018,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.2199,
+    "signal_pct": 7.43,
+    "status": "ok"
+   },
+   {
+    "year": 2019,
+    "sensor": "OLI",
+    "scenes": 11,
+    "ndvi_mean": 0.244,
+    "signal_pct": 66.35,
+    "status": "ok"
+   },
+   {
+    "year": 2020,
+    "sensor": "OLI",
+    "scenes": 15,
+    "ndvi_mean": -0.0456,
+    "signal_pct": 5.82,
+    "status": "ok"
+   },
+   {
+    "year": 2021,
+    "sensor": "OLI",
+    "scenes": 13,
+    "ndvi_mean": -0.2276,
+    "signal_pct": 15.33,
+    "status": "ok"
+   },
+   {
+    "year": 2022,
+    "sensor": "OLI",
+    "scenes": 33,
+    "ndvi_mean": -0.0607,
+    "signal_pct": 2.01,
+    "status": "ok"
+   },
+   {
+    "year": 2023,
+    "sensor": "OLI",
+    "scenes": 38,
+    "ndvi_mean": -0.0152,
+    "signal_pct": 3.63,
+    "status": "ok"
+   },
+   {
+    "year": 2024,
+    "sensor": "OLI",
+    "scenes": 18,
+    "ndvi_mean": -0.0568,
+    "signal_pct": 3.39,
+    "status": "ok"
+   },
+   {
+    "year": 2025,
+    "sensor": "OLI",
+    "scenes": 30,
+    "ndvi_mean": 0.009,
+    "signal_pct": 10.5,
+    "status": "ok"
+   }
+  ]
+ }
+}

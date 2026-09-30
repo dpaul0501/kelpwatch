@@ -16,71 +16,54 @@
   --ok:#2D6F6A; --warn:#9A6214; --bad:#A33A2B; --ok-bg:#E3F0EC; --warn-bg:#F6EBD6; --bad-bg:#F6E1DD;
 }
 * { box-sizing:border-box; }
-html, body { margin:0; height:100%; background:var(--paper); color:var(--body); font:15px/1.5 'IBM Plex Sans', Arial, sans-serif; }
+html, body { margin:0; height:100%; }
+body { display:flex; flex-direction:column; background:var(--paper); color:var(--body); font:15px/1.5 'IBM Plex Sans', Arial, sans-serif; }
 h1,h2,h3 { font-family:'Source Serif 4', Georgia, serif; color:var(--ink); font-weight:500; margin:0; }
 button { font:inherit; cursor:pointer; }
 a { color:var(--teal); }
 code, .mono { font-family:'IBM Plex Mono', monospace; font-size:13px; }
 
-header { display:flex; align-items:center; gap:24px; padding:10px 20px; background:var(--deep); color:#F3EEE3; flex-wrap:wrap; }
-header .brand { font-family:'Source Serif 4', Georgia, serif; font-size:22px; color:#F3EEE3; }
-header .brand small { font-family:'IBM Plex Sans', sans-serif; font-size:13px; color:#B8CCC8; margin-left:8px; }
-nav { display:flex; gap:4px; flex-wrap:wrap; }
-nav button { background:none; border:none; color:#B8CCC8; padding:8px 12px; border-radius:6px; }
+/* ── Shell ── */
+header { flex:none; display:flex; align-items:center; gap:18px; padding:8px 16px; background:var(--deep); color:#F3EEE3; flex-wrap:wrap; }
+.brand { font-family:'Source Serif 4', Georgia, serif; font-size:21px; }
+.brand small { font-family:'IBM Plex Sans', sans-serif; font-size:12.5px; color:#B8CCC8; margin-left:6px; }
+nav { display:flex; gap:2px; flex-wrap:wrap; }
+nav button { background:none; border:none; color:#B8CCC8; padding:7px 11px; border-radius:6px; font-size:14px; }
 nav button.active { background:#1C3F45; color:#F3EEE3; }
-header .spacer { flex:1; }
-.userbox { display:flex; gap:10px; align-items:center; font-size:13px; color:#B8CCC8; }
+nav .navsep { width:1px; background:#2E4E53; margin:4px 6px; }
+.spacer { flex:1; }
+.userbox { display:flex; gap:8px; align-items:center; font-size:13px; color:#B8CCC8; }
 .btn { background:var(--amber-soft); color:var(--ink); border:none; border-radius:6px; padding:7px 14px; font-weight:500; }
 .btn.ghost { background:none; color:#F3EEE3; border:1px solid #3C5A5E; }
 .btn.small { padding:4px 10px; font-size:13px; }
 
-.layout { display:grid; grid-template-columns:minmax(0,1fr) 440px; height:calc(100% - 56px); }
-@media (max-width: 960px) { .layout { grid-template-columns:1fr; height:auto; } .agent { height:80vh; } #map { height:60vh; } }
-.view { display:none; overflow:auto; }
+.shell { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) 430px; }
+.shell.agent-hidden { grid-template-columns:minmax(0,1fr) 0; }
+.shell.agent-hidden .agent { display:none; }
+#content { min-height:0; position:relative; }
+.view { display:none; position:absolute; inset:0; overflow-y:auto; }
 .view.active { display:block; }
-.page { max-width:1100px; margin:0 auto; padding:28px 24px 64px; }
+.view.maptab.active { display:flex; flex-direction:column; overflow:hidden; }
+@media (max-width: 900px) {
+  .shell, .shell.agent-hidden { grid-template-columns:1fr; grid-template-rows:minmax(60vh,1fr) auto; }
+  .agent { height:75vh; }
+}
+
+/* ── Pages ── */
+.page { max-width:1100px; margin:0 auto; padding:24px 24px 64px; }
 .page h2 { font-size:30px; margin-bottom:6px; }
-.lede { font-size:16px; color:var(--body); max-width:760px; margin:0 0 20px; }
-
-/* Map view */
-#mapView.active { display:grid; grid-template-rows:auto minmax(0,1fr); height:100%; }
-.maptools { display:flex; gap:8px; padding:10px 14px; background:var(--card); border-bottom:1px solid var(--rule); flex-wrap:wrap; align-items:center; }
-.maptools button { background:var(--paper); border:1px solid var(--rule); border-radius:6px; padding:6px 10px; color:var(--ink); font-size:13px; }
-.maptools button.active { background:var(--deep); color:#F3EEE3; border-color:var(--deep); }
-.maptools .sep { width:1px; height:22px; background:var(--rule); margin:0 4px; }
-.mapwrap { position:relative; min-height:0; }
-#map { position:absolute; inset:0; }
-.mappanel { position:absolute; top:12px; left:12px; z-index:500; width:380px; max-width:calc(100% - 24px); max-height:calc(100% - 24px); overflow:auto;
-  background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:14px 16px; box-shadow:0 4px 18px rgba(16,38,43,.12); }
-.mappanel h3 { font-size:18px; margin-bottom:4px; }
-.mappanel .sub { font-size:12.5px; color:var(--muted); margin-bottom:10px; }
-.legend { position:absolute; right:12px; bottom:24px; z-index:500; background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:8px 10px; font-size:12px; }
-.legend .bar { height:10px; width:180px; border-radius:3px; margin:4px 0; }
-.legend .ends { display:flex; justify-content:space-between; color:var(--muted); }
-
-table.data { width:100%; border-collapse:collapse; font-size:13px; }
-table.data th, table.data td { text-align:left; padding:5px 6px; border-bottom:1px solid var(--rule); vertical-align:top; }
-table.data th { color:var(--ink); font-weight:600; background:#EFEADF; }
-.num { text-align:right !important; font-variant-numeric:tabular-nums; }
-
-.badge { display:inline-block; font-size:12px; font-weight:500; padding:2px 8px; border-radius:999px; white-space:nowrap; }
-.b-ok { background:var(--ok-bg); color:var(--ok); } .b-warn { background:var(--warn-bg); color:var(--warn); } .b-bad { background:var(--bad-bg); color:var(--bad); }
-.b-neutral { background:#ECE8DD; color:var(--muted); }
-.notice { border-radius:8px; padding:10px 12px; font-size:13px; margin:10px 0; }
-.notice.warn { background:var(--warn-bg); color:#5E3D0C; } .notice.bad { background:var(--bad-bg); color:#6B2419; } .notice.info { background:#E8EEF0; color:var(--ink); }
-.checks { list-style:none; padding:0; margin:6px 0 0; font-size:13px; }
-.checks li { display:flex; gap:8px; padding:3px 0; }
-.checks .mark { flex:none; width:52px; }
-
+.lede { font-size:15.5px; color:var(--body); max-width:780px; margin:0 0 16px; }
 .grid2 { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
 .card { background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:16px; }
-.card h3 { font-size:18px; margin-bottom:4px; }
+.card h3 { font-size:18px; }
 .meta { font-size:12.5px; color:var(--muted); }
-.kv { display:grid; grid-template-columns:110px 1fr; gap:2px 10px; font-size:13px; margin:8px 0; }
+.kv { display:grid; grid-template-columns:105px 1fr; gap:2px 10px; font-size:13px; margin:8px 0; }
 .kv dt { color:var(--muted); } .kv dd { margin:0; color:var(--ink); overflow-wrap:anywhere; }
-.section { margin-top:32px; }
-.section > h3 { font-size:22px; margin-bottom:8px; }
 .table-wrap { overflow-x:auto; background:var(--card); border:1px solid var(--rule); border-radius:10px; }
+table.data { width:100%; border-collapse:collapse; font-size:13px; }
+table.data th, table.data td { text-align:left; padding:5px 7px; border-bottom:1px solid var(--rule); vertical-align:top; }
+table.data th { color:var(--ink); font-weight:600; background:#EFEADF; }
+.num { text-align:right !important; font-variant-numeric:tabular-nums; }
 .flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0 4px; }
 .flow .step { background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:8px 12px; font-size:13px; color:var(--ink); }
 .flow .arrow { color:var(--teal); }
@@ -89,12 +72,59 @@ table.data th { color:var(--ink); font-weight:600; background:#EFEADF; }
 .hit { border-top:1px solid var(--rule); padding:10px 0; font-size:14px; }
 .hit .t { color:var(--ink); font-weight:500; }
 
-/* Agent panel */
+/* ── Reusable: badges, notices, checks ── */
+.badge { display:inline-block; font-size:12px; font-weight:500; padding:2px 8px; border-radius:999px; white-space:nowrap; line-height:1.5; }
+.b-ok { background:var(--ok-bg); color:var(--ok); } .b-warn { background:var(--warn-bg); color:var(--warn); } .b-bad { background:var(--bad-bg); color:var(--bad); }
+.b-neutral { background:#ECE8DD; color:var(--muted); }
+.notice { border-radius:8px; padding:9px 12px; font-size:13px; margin:8px 0; }
+.notice.warn { background:var(--warn-bg); color:#5E3D0C; } .notice.bad { background:var(--bad-bg); color:#6B2419; } .notice.info { background:#E8EEF0; color:var(--ink); }
+.checks { list-style:none; padding:0; margin:4px 0 0; font-size:13px; }
+.checks li { display:flex; gap:8px; padding:3px 0; }
+.checks .mark { flex:none; width:50px; }
+
+/* ── Reusable: collapsible section ── */
+.coll { border-top:1px solid var(--rule); }
+.coll:first-child { border-top:none; }
+.coll > .coll-head { width:100%; display:flex; align-items:center; gap:8px; background:none; border:none; padding:10px 0; text-align:left; color:var(--ink); font-weight:600; font-size:14px; }
+.coll > .coll-head .chev { transition:transform .15s; color:var(--teal); flex:none; }
+.coll.closed > .coll-head .chev { transform:rotate(-90deg); }
+.coll > .coll-head .extra { margin-left:auto; font-weight:400; }
+.coll > .coll-body { padding:0 0 12px; }
+.coll.closed > .coll-body { display:none; }
+.page .coll { background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:0 16px; margin-top:16px; }
+.page .coll > .coll-head { font-family:'Source Serif 4', Georgia, serif; font-size:20px; font-weight:500; }
+
+/* ── Reusable: map tab ── */
+.maptools { flex:none; display:flex; gap:6px; padding:8px 12px; background:var(--card); border-bottom:1px solid var(--rule); flex-wrap:wrap; align-items:center; }
+.maptools .lbl { color:var(--ink); font-size:13px; font-weight:600; margin-right:2px; }
+.maptools button { background:var(--paper); border:1px solid var(--rule); border-radius:6px; padding:5px 10px; color:var(--ink); font-size:13px; }
+.maptools button.active { background:var(--deep); color:#F3EEE3; border-color:var(--deep); }
+.maptools .sep { width:1px; height:22px; background:var(--rule); margin:0 4px; }
+.mapwrap { flex:1; position:relative; min-height:0; }
+.mapwrap .map { position:absolute; inset:0; }
+.infopanel { position:absolute; top:10px; left:10px; bottom:10px; z-index:500; width:420px; max-width:calc(100% - 20px);
+  display:flex; flex-direction:column; background:var(--card); border:1px solid var(--rule); border-radius:10px; box-shadow:0 4px 18px rgba(16,38,43,.12); }
+.infopanel.collapsed { bottom:auto; }
+.infopanel .ip-head { flex:none; display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--rule); }
+.infopanel.collapsed .ip-head { border-bottom:none; }
+.infopanel .ip-head h3 { font-size:18px; flex:1; }
+.infopanel .ip-body { flex:1; overflow-y:auto; padding:6px 14px 10px; }
+.infopanel.collapsed .ip-body { display:none; }
+.iconbtn { background:var(--paper); border:1px solid var(--rule); border-radius:6px; padding:3px 9px; font-size:12.5px; color:var(--ink); }
+.legend { position:absolute; right:10px; bottom:22px; z-index:500; background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:8px 10px; font-size:12px; max-width:260px; }
+.legend .bar { height:10px; width:200px; border-radius:3px; margin:4px 0; }
+.legend .ends { display:flex; justify-content:space-between; color:var(--muted); }
+.bignum { font-family:'Source Serif 4', Georgia, serif; font-size:44px; line-height:1; color:var(--ink); }
+.select { padding:4px 8px; border:1px solid var(--rule); border-radius:6px; background:var(--paper); font:inherit; font-size:13px; }
+.chart-legend { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; margin-top:4px; }
+.chart-legend span::before { content:""; display:inline-block; width:10px; height:3px; margin-right:5px; vertical-align:middle; background:var(--c); }
+svg.chart text { font-family:'IBM Plex Sans', sans-serif; font-size:10.5px; fill:var(--muted); }
+
+/* ── Agent ── */
 .agent { display:flex; flex-direction:column; background:var(--card); border-left:1px solid var(--rule); min-height:0; }
-.agent-head { padding:14px 16px 10px; border-bottom:1px solid var(--rule); }
+.agent-head { flex:none; padding:12px 16px 10px; border-bottom:1px solid var(--rule); display:flex; gap:8px; align-items:flex-start; }
 .agent-head h2 { font-size:20px; }
-.agent-head .meta { margin-top:2px; }
-.messages { flex:1; overflow:auto; padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
+.messages { flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
 .msg.user { align-self:flex-end; background:var(--deep); color:#F3EEE3; padding:8px 12px; border-radius:10px 10px 2px 10px; max-width:88%; }
 .msg.bot { background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:12px 14px; }
 .msg.bot .answer p { margin:0 0 8px; } .msg.bot .answer ul { margin:0 0 8px; padding-left:18px; }
@@ -110,9 +140,9 @@ details.trace summary { cursor:pointer; color:var(--teal); font-weight:500; }
 .tl .kind { font-weight:600; color:var(--ink); }
 .suggest { display:flex; flex-direction:column; gap:6px; }
 .suggest button { text-align:left; background:var(--paper); border:1px solid var(--rule); border-radius:8px; padding:8px 10px; color:var(--ink); font-size:13.5px; }
-.composer { border-top:1px solid var(--rule); padding:10px 12px; display:flex; gap:8px; }
-.composer textarea { flex:1; resize:none; height:58px; padding:8px 10px; border:1px solid var(--rule); border-radius:8px; font:inherit; background:var(--paper); }
-.gate { padding:14px 16px; border-top:1px solid var(--rule); font-size:14px; }
+.composer { flex:none; border-top:1px solid var(--rule); padding:10px 12px; display:flex; gap:8px; }
+.composer textarea { flex:1; resize:none; height:56px; padding:8px 10px; border:1px solid var(--rule); border-radius:8px; font:inherit; background:var(--paper); }
+.gate { flex:none; padding:14px 16px; border-top:1px solid var(--rule); font-size:14px; }
 .thinking { color:var(--muted); font-size:13px; }
 
 .overlay { position:fixed; inset:0; background:rgba(14,42,47,.55); display:none; align-items:center; justify-content:center; z-index:2000; padding:16px; }
@@ -133,99 +163,71 @@ details.trace summary { cursor:pointer; color:var(--teal); font-weight:500; }
 <header>
   <div class="brand">KelpWatch <small>a verified climate data agent</small></div>
   <nav id="nav">
-    <button data-view="mapView" class="active">Map</button>
-    <button data-view="dataView">Data &amp; quality</button>
-    <button data-view="kbView">Knowledge base</button>
-    <button data-view="policyView">Policy &amp; skills</button>
+    <button data-view="kelp">Kelp</button>
+    <button data-view="enso">El Niño</button>
+    <button data-view="wildfire">Wildfire</button>
+    <button data-view="drought">Drought</button>
+    <span class="navsep"></span>
+    <button data-view="data">Data &amp; quality</button>
+    <button data-view="kb">Knowledge base</button>
+    <button data-view="policy">Policy &amp; skills</button>
   </nav>
   <div class="spacer"></div>
   <div class="userbox">
+    <button class="btn ghost small" id="agentToggle">Hide agent</button>
     <span id="userEmail"></span>
     <button class="btn ghost small" id="signOutBtn" style="display:none">Sign out</button>
     <button class="btn small" id="signInBtn">Sign in</button>
   </div>
 </header>
 
-<div class="layout">
-  <main style="min-height:0; overflow:hidden; position:relative">
+<div class="shell" id="shell">
+  <main id="content">
+    <section class="view maptab" id="view-kelp"></section>
+    <section class="view maptab" id="view-enso"></section>
+    <section class="view maptab" id="view-wildfire"></section>
+    <section class="view maptab" id="view-drought"></section>
 
-    <!-- MAP -->
-    <section id="mapView" class="view active">
-      <div class="maptools">
-        <strong style="color:var(--ink); font-size:13px">Kelp signal:</strong>
-        <button data-layer="kelp:1995">1995</button><button data-layer="kelp:2000">2000</button>
-        <button data-layer="kelp:2015">2015</button><button data-layer="kelp:2023" class="active">2023</button>
-        <button data-layer="kelp-change">Change 2015 to 2023</button>
-        <span class="sep"></span>
-        <button data-layer="wildfire">Wildfire (7 days)</button>
-        <button data-layer="drought">Drought, India</button>
-      </div>
-      <div class="mapwrap">
-        <div id="map"></div>
-        <div class="mappanel" id="mapPanel"><div class="thinking">Loading data…</div></div>
-        <div class="legend" id="legend"></div>
-      </div>
-    </section>
+    <section class="view" id="view-data"><div class="page">
+      <h2>Data and quality</h2>
+      <p class="lede">Every source the agent can use, where it comes from, when it last refreshed, and the checks it passed or failed. Failed checks are passed to the agent, which must disclose them.</p>
+      <div id="sourcesMount"></div>
+      <div id="ingestMount"></div>
+    </div></section>
 
-    <!-- DATA & QUALITY -->
-    <section id="dataView" class="view">
-      <div class="page">
-        <h2>Data and quality</h2>
-        <p class="lede">Every source the agent can use, where it comes from, when it last refreshed, and the quality checks it passed or failed. Failed checks are shown here and passed to the agent, which must disclose them.</p>
-        <div class="grid2" id="sourceCards"></div>
-        <div class="section">
-          <h3>Document ingestion</h3>
-          <p class="lede" id="ingestLede"></p>
-          <div class="table-wrap"><table class="data" id="ingestTable"></table></div>
-        </div>
-      </div>
-    </section>
+    <section class="view" id="view-kb"><div class="page">
+      <h2>Knowledge base</h2>
+      <p class="lede">Public kelp and eelgrass documents from Washington DNR, WDFW, the Northwest Straits Commission and partners: extracted, redacted, chunked and indexed. Search it the same way the agent does.</p>
+      <div class="searchbar"><input id="kbQuery" placeholder="e.g. What is driving bull kelp decline?"><button class="btn" id="kbSearchBtn">Search</button></div>
+      <div id="kbResults"></div>
+      <div id="evalMount"></div>
+    </div></section>
 
-    <!-- KNOWLEDGE BASE -->
-    <section id="kbView" class="view">
-      <div class="page">
-        <h2>Knowledge base</h2>
-        <p class="lede">Public kelp and eelgrass documents from Washington DNR, WDFW, the Northwest Straits Commission and partners, extracted, redacted, chunked and indexed. Search it the same way the agent does.</p>
-        <div class="searchbar"><input id="kbQuery" placeholder="e.g. What is driving bull kelp decline?"><button class="btn" id="kbSearchBtn">Search</button></div>
-        <div id="kbResults"></div>
-        <div class="section">
-          <h3>Retrieval test</h3>
-          <p class="lede" id="evalLede"></p>
-          <div class="table-wrap"><table class="data" id="evalTable"></table></div>
-        </div>
+    <section class="view" id="view-policy"><div class="page">
+      <h2>Policy and skills</h2>
+      <p class="lede">Rules are written in plain language and compiled into checks that run in code, before and after the model. The model never decides whether a rule passed.</p>
+      <div class="flow">
+        <span class="step">1. Input rules</span><span class="arrow">→</span>
+        <span class="step">2. Agent plans and calls approved tools</span><span class="arrow">→</span>
+        <span class="step">3. Every figure verified against tool results</span><span class="arrow">→</span>
+        <span class="step">4. Output rules</span><span class="arrow">→</span>
+        <span class="step">5. Answer with its full record</span>
       </div>
-    </section>
-
-    <!-- POLICY & SKILLS -->
-    <section id="policyView" class="view">
-      <div class="page">
-        <h2>Policy and skills</h2>
-        <p class="lede">Rules are written in plain language and compiled into checks that run in code, before and after the model. The model never decides whether a rule passed.</p>
-        <div class="flow">
-          <span class="step">1. Input rules</span><span class="arrow">→</span>
-          <span class="step">2. Agent plans and calls approved tools</span><span class="arrow">→</span>
-          <span class="step">3. Every figure verified against tool results</span><span class="arrow">→</span>
-          <span class="step">4. Output rules</span><span class="arrow">→</span>
-          <span class="step">5. Answer with its full record</span>
-        </div>
-        <div class="section"><h3>Policy pack</h3><p class="meta" id="policyMeta"></p><div class="table-wrap"><table class="data" id="policyTable"></table></div></div>
-        <div class="section"><h3>Skills</h3><div class="grid2" id="skillCards"></div></div>
-        <div class="section"><h3>Tools</h3><div class="table-wrap"><table class="data" id="toolTable"></table></div></div>
-      </div>
-    </section>
+      <div id="policyMount"></div>
+    </div></section>
   </main>
 
-  <!-- AGENT -->
-  <aside class="agent">
+  <aside class="agent" id="agent">
     <div class="agent-head">
-      <h2>Ask the agent</h2>
-      <div class="meta" id="agentMeta">Every answer is checked against the data it used.</div>
+      <div style="flex:1"><h2>Ask the agent</h2><div class="meta" id="agentMeta">Every answer is checked against the data it used.</div></div>
+      <button class="iconbtn" id="agentClose" title="Hide the agent panel">Hide</button>
     </div>
     <div class="messages" id="messages">
       <div class="suggest" id="suggest">
         <div class="meta">Try:</div>
         <button>Where should the next $500K for kelp and eelgrass restoration go?</button>
-        <button>Is Puget Sound kelp declining? How reliable is the satellite signal?</button>
+        <button>How has the kelp signal in Kitsap changed year by year since 2013?</button>
+        <button>Is El Niño developing, and what could it mean for Puget Sound kelp?</button>
         <button>What is driving bull kelp decline in Puget Sound?</button>
         <button>Brief me on current wildfire activity in the US and India.</button>
         <button>Are Indian farmers facing drought right now?</button>
@@ -234,7 +236,7 @@ details.trace summary { cursor:pointer; color:var(--teal); font-weight:500; }
     </div>
     <div class="gate" id="gate" style="display:none">Sign in to ask the agent (5 questions a day). <button class="btn small" id="gateBtn">Sign in</button></div>
     <div class="composer" id="composer">
-      <textarea id="question" placeholder="Ask about kelp, wildfire or drought…"></textarea>
+      <textarea id="question" placeholder="Ask about kelp, El Niño, wildfire or drought…"></textarea>
       <button class="btn" id="askBtn">Ask</button>
     </div>
   </aside>
@@ -255,134 +257,273 @@ details.trace summary { cursor:pointer; color:var(--teal); font-weight:500; }
 const API = (window.KELPWATCH_CONFIG && window.KELPWATCH_CONFIG.apiBase) || '/api';
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const getJSON = async (path, opts) => { const r = await fetch(API + path, opts); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText); return r.json(); };
-const badge = (ok, yes = 'Passed', no = 'Failed', warn = false) => `<span class="badge ${ok ? 'b-ok' : warn ? 'b-warn' : 'b-bad'}">${ok ? yes : no}</span>`;
-const stateBadge = (s) => ({ok:'<span class="badge b-ok">OK</span>', warning:'<span class="badge b-warn">Warning</span>',
-  failed:'<span class="badge b-bad">Failed</span>'}[s] || '<span class="badge b-neutral">Not run</span>');
-const checksList = (checks) => `<ul class="checks">${(checks || []).map(c =>
-  `<li><span class="mark">${badge(c.passed, 'Pass', 'Fail')}</span><span><b>${esc(c.check.replaceAll('_', ' '))}</b>: ${esc(c.detail || '')}</span></li>`).join('')}</ul>`;
+const _jsonCache = {};
+async function getJSON(path, opts) {
+  const r = await fetch(API + path, opts);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.json();
+}
+const cachedJSON = (path) => (_jsonCache[path] ??= getJSON(path).catch(e => { delete _jsonCache[path]; throw e; }));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-// ── Navigation ──────────────────────────────────────────────────────────────
-document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
-  document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x === b));
-  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === b.dataset.view));
-  const h = Object.keys({ '#data':'dataView', '#kb':'kbView', '#policy':'policyView', '#map':'mapView' }).find(k => ({ '#data':'dataView', '#kb':'kbView', '#policy':'policyView', '#map':'mapView' })[k] === b.dataset.view);
-  if (h && location.hash !== h) history.replaceState(null, '', h);
-  if (b.dataset.view === 'mapView') setTimeout(() => map.invalidateSize(), 50);
-  if (b.dataset.view === 'dataView') loadSources();
-  if (b.dataset.view === 'kbView') loadEvals();
-  if (b.dataset.view === 'policyView') loadPolicy();
+// ═══ Reusable components ═══════════════════════════════════════════════════
+const Badge = (ok, yes = 'Passed', no = 'Failed', warn = false) => `<span class="badge ${ok ? 'b-ok' : warn ? 'b-warn' : 'b-bad'}">${ok ? yes : no}</span>`;
+const StateBadge = (s) => ({ok:'<span class="badge b-ok">OK</span>', warning:'<span class="badge b-warn">Warning</span>',
+  failed:'<span class="badge b-bad">Failed</span>'}[s] || '<span class="badge b-neutral">Not run</span>');
+const Checks = (checks) => `<ul class="checks">${(checks || []).map(c =>
+  `<li><span class="mark">${Badge(c.passed, 'Pass', 'Fail')}</span><span><b>${esc(c.check.replaceAll('_', ' '))}</b>: ${esc(c.detail || '')}</span></li>`).join('')}</ul>`;
+const Issues = (issues, kind = 'warn') => (issues || []).length ? `<div class="notice ${kind}">${issues.map(esc).join('<br>')}</div>` : '';
+const List = (items) => `<ul style="margin:4px 0; padding-left:18px">${items.map(i => `<li>${esc(i)}</li>`).join('')}</ul>`;
+
+// Collapsible section; open/closed state is remembered per id.
+function Collapsible(id, title, body, { open = true, extra = '' } = {}) {
+  const isOpen = store.get('coll:' + id, open);
+  return `<div class="coll ${isOpen ? '' : 'closed'}" data-coll="${id}">
+    <button class="coll-head"><span class="chev">▾</span><span>${esc(title)}</span>${extra ? `<span class="extra">${extra}</span>` : ''}</button>
+    <div class="coll-body">${body}</div></div>`;
+}
+document.addEventListener('click', e => {
+  const head = e.target.closest('.coll-head'); if (!head) return;
+  const c = head.parentElement; c.classList.toggle('closed'); store.set('coll:' + c.dataset.coll, !c.classList.contains('closed'));
 });
 
-// ── Map ─────────────────────────────────────────────────────────────────────
-const map = L.map('map', { zoomControl:false }).setView([47.75, -122.5], 9);
-L.control.zoom({ position:'topright' }).addTo(map);
-L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-  attribution:'Basemap &copy; Esri · Satellite layers: Google Earth Engine (Landsat, JRC, FIRMS, CHIRPS)', maxZoom:16 }).addTo(map);
-let overlay = null, siteLayer = null, kelpData = null;
-const LEGENDS = {
-  kelp: { title:'Summer median NDVI over permanent water', colors:['#0b2a4a','#1d5f7a','#3a9d8f','#9bd18b','#f2e394'], ends:['-0.3 (open water)','0.4 (vegetation)'] },
-  'kelp-change': { title:'NDVI change, 2015 to 2023', colors:['#b2182b','#f7f7f7','#2166ac'], ends:['-0.2 (lower)','+0.2 (higher)'] },
-  wildfire: { title:'Active fire, brightness (K), last 7 days', colors:['#ffd166','#f77f00','#d62828'], ends:['300','400'] },
-  drought: { title:'Rainfall, % of 1991-2020 normal (30 days)', colors:['#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e'], ends:['25%','175%'] },
-};
-function setLegend(key, note) {
-  const l = LEGENDS[key];
-  $('legend').innerHTML = `<div><b>${esc(l.title)}</b></div><div class="bar" style="background:linear-gradient(90deg, ${l.colors.join(',')})"></div>
+// SVG chart: lines (multi-series) or bars, with optional shaded bands and threshold lines.
+const PALETTE = ['#2D6F6A', '#C0762B', '#3E6FB0', '#A33A2B', '#7A5BA6', '#5E6E70'];
+function Chart({ series, bands = [], thresholds = [], height = 190, yLabel = '', bars = false, zeroLine = false, fmt = v => v, xTicks = true }) {
+  const W = 390, H = height, P = { l: 40, r: 8, t: 14, b: 22 };
+  const xs = series.flatMap(s => s.points.map(p => p[0]));
+  const ys = series.flatMap(s => s.points.map(p => p[1])).filter(v => v != null).concat(thresholds.map(t => t.y));
+  if (!ys.length) return '<div class="meta">No data.</div>';
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); if (bars || zeroLine) { y0 = Math.min(0, y0); y1 = Math.max(0, y1); }
+  const pad = (y1 - y0) * 0.08 || 1; y0 -= pad; y1 += pad;
+  const X = v => P.l + (x1 === x0 ? 0.5 : (v - x0) / (x1 - x0)) * (W - P.l - P.r);
+  const Y = v => P.t + (1 - (v - y0) / (y1 - y0)) * (H - P.t - P.b);
+  let g = '';
+  bands.forEach((b, i) => { g += `<rect x="${X(b.from - 0.5)}" y="${P.t}" width="${Math.max(0, X(b.to + 0.5) - X(b.from - 0.5))}" height="${H - P.t - P.b}" fill="${i % 2 ? '#EFEADF' : '#F7F4EC'}"/>
+    <text x="${X((b.from + b.to) / 2)}" y="${P.t + 10}" text-anchor="middle">${esc(b.label)}</text>`; });
+  for (let i = 0; i <= 4; i++) { const v = y0 + (y1 - y0) * i / 4;
+    g += `<line x1="${P.l}" x2="${W - P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#E6E1D5"/><text x="${P.l - 4}" y="${Y(v) + 3}" text-anchor="end">${fmt(+v.toFixed(2))}</text>`; }
+  if (xTicks) { const step = Math.max(1, Math.ceil((x1 - x0) / 7));
+    for (let v = Math.ceil(x0 / step) * step; v <= x1; v += step) g += `<text x="${X(v)}" y="${H - 6}" text-anchor="middle">${v}</text>`; }
+  if (zeroLine || bars) g += `<line x1="${P.l}" x2="${W - P.r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#9AA5A6"/>`;
+  thresholds.forEach(t => { g += `<line x1="${P.l}" x2="${W - P.r}" y1="${Y(t.y)}" y2="${Y(t.y)}" stroke="${t.color || '#9A6214'}" stroke-dasharray="4 3"/>
+    <text x="${W - P.r - 2}" y="${Y(t.y) - 3}" text-anchor="end" style="fill:${t.color || '#9A6214'}">${esc(t.label)}</text>`; });
+  series.forEach((s, si) => {
+    const color = s.color || PALETTE[si % PALETTE.length];
+    if (bars) {
+      const bw = Math.max(1.5, (W - P.l - P.r) / (s.points.length * 1.4));
+      s.points.forEach(([x, y, label]) => { if (y == null) return; const c = s.colorFn ? s.colorFn(y) : color;
+        g += `<rect x="${X(x) - bw / 2}" y="${Math.min(Y(y), Y(0))}" width="${bw}" height="${Math.abs(Y(y) - Y(0))}" fill="${c}"><title>${esc(label || x)}: ${fmt(y)}</title></rect>`; });
+    } else {
+      let d = '', pen = false;
+      s.points.forEach(([x, y]) => { if (y == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${X(x).toFixed(1)},${Y(y).toFixed(1)}`; pen = true; });
+      g += `<path d="${d}" fill="none" stroke="${color}" stroke-width="${s.width || 2}"/>`;
+      s.points.forEach(([x, y]) => { if (y != null) g += `<circle cx="${X(x)}" cy="${Y(y)}" r="2.2" fill="${color}"><title>${esc(s.name)} ${x}: ${fmt(y)}</title></circle>`; });
+    }
+  });
+  const named = series.filter(s => s.name);
+  const legend = named.length ? `<div class="chart-legend">${named.map((s, i) => `<span style="--c:${s.color || PALETTE[i % PALETTE.length]}">${esc(s.name)}</span>`).join('')}</div>` : '';
+  return `${yLabel ? `<div class="meta">${esc(yLabel)}</div>` : ''}<svg class="chart" viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(yLabel)}">${g}</svg>${legend}`;
+}
+
+// Map tab: toolbar of layers, a Leaflet map, a collapsible info panel and a legend.
+const TABS = {};
+function MapTab(cfg) {
+  const root = $('view-' + cfg.id);
+  const open = store.get('panel:' + cfg.id, true);
+  root.innerHTML = `<div class="maptools">${cfg.layers.map((l, i) =>
+      (l.group && (i === 0 || cfg.layers[i - 1].group !== l.group) ? `${i ? '<span class="sep"></span>' : ''}<span class="lbl">${esc(l.group)}</span>` : '') +
+      `<button data-layer="${l.key}">${esc(l.label)}</button>`).join('')}</div>
+    <div class="mapwrap"><div class="map" id="map-${cfg.id}"></div>
+      <div class="infopanel ${open ? '' : 'collapsed'}" id="panel-${cfg.id}">
+        <div class="ip-head"><h3>${esc(cfg.title)}</h3><button class="iconbtn" data-toggle>${open ? 'Hide' : 'Show'}</button></div>
+        <div class="ip-body" id="panelbody-${cfg.id}"><div class="thinking">Loading…</div></div>
+      </div>
+      <div class="legend" id="legend-${cfg.id}"></div></div>`;
+  const tab = { cfg, map: null, overlay: null, extras: [], loaded: false };
+  root.querySelector('[data-toggle]').onclick = (e) => {
+    const nowOpen = $('panel-' + cfg.id).classList.toggle('collapsed') === false;
+    e.target.textContent = nowOpen ? 'Hide' : 'Show'; store.set('panel:' + cfg.id, nowOpen);
+  };
+  root.querySelectorAll('.maptools button').forEach(b => b.onclick = () => setLayer(tab, b.dataset.layer));
+  TABS[cfg.id] = tab;
+  return tab;
+}
+function ensureMap(tab) {
+  if (tab.map) { setTimeout(() => tab.map.invalidateSize(), 30); return; }
+  tab.map = L.map('map-' + tab.cfg.id, { zoomControl:false }).setView(tab.cfg.center, tab.cfg.zoom);
+  L.control.zoom({ position:'topright' }).addTo(tab.map);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'Basemap &copy; Esri · Data layers: Google Earth Engine', maxZoom:16 }).addTo(tab.map);
+}
+function Legend(l, note) {
+  return `<div><b>${esc(l.title)}</b></div><div class="bar" style="background:linear-gradient(90deg, ${l.colors.join(',')})"></div>
     <div class="ends"><span>${esc(l.ends[0])}</span><span>${esc(l.ends[1])}</span></div>${note ? `<div class="meta" style="margin-top:4px">${esc(note)}</div>` : ''}`;
 }
-async function showLayer(key) {
-  document.querySelectorAll('.maptools button').forEach(b => b.classList.toggle('active', b.dataset.layer === key));
-  if (overlay) { map.removeLayer(overlay); overlay = null; }
-  if (siteLayer) { map.removeLayer(siteLayer); siteLayer = null; }
-  const [kind, period] = key.split(':');
-  const path = kind === 'kelp' ? `/tiles/kelp/${period}` : kind === 'kelp-change' ? '/tiles/kelp-change' : kind === 'wildfire' ? '/tiles/wildfire' : '/tiles/drought';
-  if (kind === 'kelp' || kind === 'kelp-change') { map.setView([47.75, -122.5], 9); renderKelpPanel(); loadSites(); }
-  if (kind === 'wildfire') { map.setView([30, -20], 2); renderFirePanel(); }
-  if (kind === 'drought') { map.setView([22, 80], 4); renderDroughtPanel(); }
-  setLegend(kind === 'kelp' ? 'kelp' : kind, kind === 'kelp' ? `Landsat, summer ${period} composite` : '');
+async function setLayer(tab, key) {
+  const layer = tab.cfg.layers.find(l => l.key === key);
+  tab.current = key;
+  $('view-' + tab.cfg.id).querySelectorAll('.maptools button').forEach(b => b.classList.toggle('active', b.dataset.layer === key));
+  if (tab.overlay) { tab.map.removeLayer(tab.overlay); tab.overlay = null; }
+  const leg = $('legend-' + tab.cfg.id);
+  leg.innerHTML = Legend(layer.legend, layer.note);
   try {
-    const t = await getJSON(path);
-    if (t.tile_url) { overlay = L.tileLayer(t.tile_url, { opacity:0.85 }).addTo(map); }
-    else { $('legend').insertAdjacentHTML('beforeend', `<div class="notice warn" style="margin:6px 0 0">Map layer unavailable: ${esc(t.error || 'Earth Engine not connected')}. The data panel shows the latest snapshot.</div>`); }
-  } catch (e) { $('legend').insertAdjacentHTML('beforeend', `<div class="notice warn">Map layer failed: ${esc(e.message)}</div>`); }
+    const t = await cachedJSON(layer.tile);
+    if (tab.current !== key) return;
+    if (t.tile_url) tab.overlay = L.tileLayer(t.tile_url, { opacity:0.85 }).addTo(tab.map);
+    else leg.insertAdjacentHTML('beforeend', `<div class="notice warn" style="margin:6px 0 0">Map layer unavailable: ${esc(t.error || 'Earth Engine not connected')}. The panel shows the latest snapshot.</div>`);
+  } catch (e) { leg.insertAdjacentHTML('beforeend', `<div class="notice warn">Map layer failed: ${esc(e.message)}</div>`); }
 }
-document.querySelectorAll('.maptools button').forEach(b => b.onclick = () => showLayer(b.dataset.layer));
-
-async function loadSites() {
-  try {
-    const d = await getJSON('/sites');
-    siteLayer = L.layerGroup(d.sites.map(s => L.circleMarker([s.lat, s.lng], { radius:7, color:'#9A6214', fillColor:'#E0A84A', fillOpacity:.9, weight:2 })
-      .bindPopup(`<b>${esc(s.name)}</b> <span class="badge b-warn">Illustrative</span><br>${esc(s.county)} County · ${s.acres} acres · $${s.cost_per_acre_usd.toLocaleString()}/acre<br>Salmon benefit: ${esc(s.salmon_benefit)} · score ${s.score}`))).addTo(map);
-  } catch (e) {}
+async function showMapTab(id) {
+  const tab = TABS[id]; ensureMap(tab);
+  if (!tab.loaded) {
+    tab.loaded = true;
+    setLayer(tab, tab.cfg.defaultLayer);
+    try { await tab.cfg.render($('panelbody-' + id), tab); }
+    catch (e) { $('panelbody-' + id).innerHTML = `<div class="notice bad">Could not load data: ${esc(e.message)}</div>`; tab.loaded = false; }
+  }
 }
 
-async function renderKelpPanel() {
-  const p = $('mapPanel');
-  try { kelpData = kelpData || await getJSON('/kelp'); } catch (e) { p.innerHTML = `<div class="notice bad">Kelp data unavailable: ${esc(e.message)}</div>`; return; }
-  const d = kelpData;
-  if (d.error) { p.innerHTML = `<div class="notice bad">${esc(d.error)}</div>`; return; }
-  const periods = d.counties[0].timeline.map(t => t.period);
-  const fails = d.checks.filter(c => !c.passed);
-  p.innerHTML = `<h3>Nearshore vegetation signal</h3>
-    <div class="sub">${esc(d.status === 'live' ? 'Computed live' : 'Snapshot')} · ${esc(d.computed_at.slice(0, 10))} · share of permanent-water pixels with NDVI above 0.2</div>
-    ${fails.length ? `<div class="notice bad"><b>${fails.length} quality check${fails.length > 1 ? 's' : ''} failed.</b> Treat this as a screening signal, not a kelp measurement.</div>` : ''}
-    <table class="data"><tr><th>County</th>${periods.map(x => `<th class="num">${x}</th>`).join('')}<th class="num">2015→23</th></tr>
-    ${d.counties.map(c => `<tr><td>${esc(c.county)}</td>${c.timeline.map(t => `<td class="num" title="${esc(t.checks.map(k => k.detail).join('; '))}">${t.signal_pct == null ? '<span class="badge b-bad">failed</span>' : t.signal_pct.toFixed(1) + '%'}</td>`).join('')}
-      <td class="num">${c.change_2015_2023_pct == null ? '—' : (c.change_2015_2023_pct > 0 ? '+' : '') + c.change_2015_2023_pct + '%'}</td></tr>`).join('')}</table>
-    <div style="margin-top:10px"><b style="color:var(--ink); font-size:13px">Quality checks</b>${checksList(d.checks)}</div>
-    <details style="margin-top:8px; font-size:13px"><summary style="cursor:pointer; color:var(--teal)">Method and caveats</summary>
-      <p>${esc(d.method)}</p><ul>${d.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
-      <p><b>Documented trend:</b> ${esc(d.documented_trend.statement)} <span class="meta">(${esc(d.documented_trend.sources.join('; '))})</span></p></details>
-    <div class="meta" style="margin-top:8px">Orange dots: illustrative restoration sites, not official ESRP data.</div>`;
-}
-async function renderFirePanel() {
-  const p = $('mapPanel');
-  try {
-    const d = await getJSON('/wildfire');
-    if (d.error) throw new Error(d.error);
-    p.innerHTML = `<h3>Wildfire activity</h3><div class="sub">NASA FIRMS (MODIS) · ${esc(d.window)} · ${esc(d.status)}</div>
-      ${(d.quality_issues || []).length ? `<div class="notice warn">${d.quality_issues.map(esc).join('<br>')}</div>` : ''}
-      <table class="data"><tr><th>Region</th><th class="num">1 km fire pixels, 7 days</th></tr>
-      <tr><td>United States</td><td class="num">${d.us.fire_pixels_1km_7d.toLocaleString()}</td></tr>
-      <tr><td>India</td><td class="num">${d.india.fire_pixels_1km_7d.toLocaleString()}</td></tr></table>
-      <p class="meta" style="margin-top:8px">${esc(d.method)}</p><ul class="meta">${d.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
-  } catch (e) { p.innerHTML = `<h3>Wildfire activity</h3><div class="notice bad">Unavailable: ${esc(e.message)}</div>`; }
-}
-async function renderDroughtPanel() {
-  const p = $('mapPanel');
-  try {
-    const d = await getJSON('/drought');
-    if (d.error) throw new Error(d.error);
-    p.innerHTML = `<h3>Drought, India</h3><div class="sub">CHIRPS rainfall and MODIS NDVI · ${esc(d.status)}</div>
-      ${(d.quality_issues || []).length ? `<div class="notice warn">${d.quality_issues.map(esc).join('<br>')}</div>` : ''}
-      <table class="data">
-      <tr><td>Rainfall, ${esc(d.rainfall_window)}</td><td class="num">${d.rainfall_mm_30d} mm</td></tr>
-      <tr><td>1991-2020 normal, same days</td><td class="num">${d.normal_mm_30d_1991_2020} mm</td></tr>
-      <tr><td>Percent of normal</td><td class="num"><b>${d.percent_of_normal}%</b> (${esc(d.rainfall_category)})</td></tr>
-      <tr><td>Mean NDVI, ${esc(d.ndvi_date)}</td><td class="num">${d.ndvi_mean}</td></tr></table>
-      <p class="meta" style="margin-top:8px">${esc(d.thresholds)}</p><ul class="meta">${d.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
-  } catch (e) { p.innerHTML = `<h3>Drought, India</h3><div class="notice bad">Unavailable: ${esc(e.message)}</div>`; }
-}
+// ═══ Tab: Kelp ═════════════════════════════════════════════════════════════
+const KELP_LEGEND = { title:'Summer median NDVI over permanent water', colors:['#0b2a4a','#1d5f7a','#3a9d8f','#9bd18b','#f2e394'], ends:['-0.3 open water','0.4 vegetation'] };
+const PERIOD_NOTE = { '1995':'1995-97', '2000':'1999-2001', '2015':'2014-16', '2023':'2022-24' };
+MapTab({ id:'kelp', title:'Puget Sound kelp', center:[47.75, -122.5], zoom:9, defaultLayer:'k2023',
+  layers: [
+    ...['1995', '2000', '2015', '2023'].map(p => ({ group:'Summer NDVI', key:'k' + p, label:p, tile:`/tiles/kelp/${p}`, legend:KELP_LEGEND, note:`Landsat, summers ${PERIOD_NOTE[p]}` })),
+    { group:'Change', key:'kchange', label:'2015 to 2023', tile:'/tiles/kelp-change', legend:{ title:'NDVI change, 2015 to 2023', colors:['#b2182b','#f7f7f7','#2166ac'], ends:['-0.2 lower','+0.2 higher'] }, note:'Same sensor family (OLI): a like-for-like comparison' },
+  ],
+  async render(el, tab) {
+    const [k, y, sites] = await Promise.all([cachedJSON('/kelp'), cachedJSON('/kelp/yearly').catch(e => ({ error:e.message })), cachedJSON('/sites').catch(() => null)]);
+    if (k.error) { el.innerHTML = `<div class="notice bad">${esc(k.error)}</div>`; return; }
+    if (sites) {
+      tab.extras.push(L.layerGroup(sites.sites.map(s => L.circleMarker([s.lat, s.lng], { radius:7, color:'#9A6214', fillColor:'#E0A84A', fillOpacity:.9, weight:2 })
+        .bindPopup(`<b>${esc(s.name)}</b> <span class="badge b-warn">Illustrative</span><br>${esc(s.county)} County · ${s.acres} acres · $${s.cost_per_acre_usd.toLocaleString()}/acre<br>Salmon benefit: ${esc(s.salmon_benefit)} · score ${s.score}`))).addTo(tab.map));
+    }
+    const fails = k.checks.filter(c => !c.passed).concat((y.checks || []).filter(c => !c.passed));
+    const periods = k.counties[0].timeline.map(t => t.period);
+    const periodTable = `<table class="data"><tr><th>Area</th>${periods.map(x => `<th class="num">${x}</th>`).join('')}<th class="num">2015→23</th></tr>
+      ${k.counties.map(c => `<tr><td>${esc(c.county)}</td>${c.timeline.map(t => `<td class="num" title="${esc(t.checks.map(q => q.detail).join('; '))}">${t.signal_pct == null ? '<span class="badge b-bad">failed</span>' : t.signal_pct.toFixed(1) + '%'}</td>`).join('')}
+        <td class="num">${c.change_2015_2023_pct == null ? '—' : (c.change_2015_2023_pct > 0 ? '+' : '') + c.change_2015_2023_pct + '%'}</td></tr>`).join('')}</table>
+      <div class="meta" style="margin-top:4px">Share of permanent-water pixels with summer NDVI above 0.2. Only 2015 to 2023 is like-for-like.</div>`;
+    let yearly = `<div class="notice warn">${esc(y.error || 'Yearly series unavailable')}</div>`;
+    if (!y.error) {
+      const counties = Object.keys(y.counties);
+      yearly = `<div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:6px">
+          <select class="select" id="kyCounty"><option value="">All six areas</option>${counties.map(c => `<option>${esc(c)}</option>`).join('')}</select>
+          <select class="select" id="kyMetric"><option value="ndvi_mean">Mean NDVI</option><option value="signal_pct">Vegetation signal (%)</option></select>
+          <select class="select" id="kyFrom"><option value="1990">1990 to 2025</option><option value="2013">2013 to 2025 (OLI only)</option></select></div>
+        <div id="kyChart"></div>`;
+    }
+    const sst = y.sst;
+    const sstBlock = sst ? `${Chart({ series:[{ name:'', points:sst.years.map(r => [r.year, r.anomaly_c]), colorFn:v => v >= 0 ? '#C0562B' : '#3E6FB0' }], bars:true,
+        yLabel:`Summer SST anomaly vs 1991-2020 (normal ${sst.normal_1991_2020_c} °C)`, fmt:v => (v > 0 ? '+' : '') + v + '°' })}
+        <div class="meta">${esc(sst.method)}</div>${List(sst.caveats)}` : '<div class="meta">Sea-surface temperature not available yet.</div>';
+    el.innerHTML = `
+      ${fails.length ? `<div class="notice bad"><b>${fails.length} quality check${fails.length > 1 ? 's' : ''} failed.</b> This is a screening signal, not a kelp measurement.</div>` : ''}
+      ${Collapsible('kelp-yearly', 'Yearly NDVI, 1990 to 2025', yearly)}
+      ${Collapsible('kelp-periods', 'Four-period comparison', periodTable)}
+      ${Collapsible('kelp-sst', 'Summer sea temperature, Salish Sea', sstBlock)}
+      ${Collapsible('kelp-checks', 'Quality checks', Checks(k.checks) + (y.checks ? Checks(y.checks) : ''),
+          { extra: fails.length ? `<span class="badge b-bad">${fails.length} failed</span>` : '<span class="badge b-ok">passed</span>' })}
+      ${Collapsible('kelp-method', 'Method and caveats', `<p style="margin:0 0 6px">${esc(k.method)}</p>${List(k.caveats)}
+        <p style="margin:6px 0 0"><b>Documented trend:</b> ${esc(k.documented_trend.statement)} <span class="meta">(${esc(k.documented_trend.sources.join('; '))})</span></p>`, { open:false })}
+      ${Collapsible('kelp-sites', 'Restoration sites (illustrative)', `<p class="meta" style="margin:0">Orange dots are real place names with example acreage and costs, not official ESRP records.</p>`, { open:false })}`;
+    if (!y.error) {
+      const draw = () => {
+        const county = $('kyCounty').value, metric = $('kyMetric').value, from = +$('kyFrom').value;
+        const all = Object.keys(y.counties), names = county ? [county] : all;
+        const series = names.map(c => ({ name:c, color:PALETTE[all.indexOf(c) % PALETTE.length],
+          points:y.counties[c].filter(r => r.year >= from).map(r => [r.year, r[metric]]) }));
+        const bands = [{ from:1990, to:2011, label:'Landsat 5 (TM)' }, { from:2012, to:2012, label:'L7' }, { from:2013, to:2025, label:'Landsat 8/9 (OLI)' }]
+          .filter(b => b.to >= from).map(b => ({ ...b, from:Math.max(b.from, from) }));
+        $('kyChart').innerHTML = Chart({ series, bands, yLabel: metric === 'ndvi_mean' ? 'Mean summer NDVI over permanent water' : 'Vegetation signal (% of water pixels with NDVI above 0.2)',
+          fmt: v => metric === 'signal_pct' ? v + '%' : v }) + `<div class="meta">Shaded bands are satellite sensor eras; do not compare across a band edge.</div>`;
+      };
+      ['kyCounty', 'kyMetric', 'kyFrom'].forEach(id => $(id).onchange = draw); draw();
+    }
+  } });
 
-// ── Data & quality ──────────────────────────────────────────────────────────
-async function loadSources() {
+// ═══ Tab: El Niño ══════════════════════════════════════════════════════════
+MapTab({ id:'enso', title:'El Niño watch', center:[5, -150], zoom:2, defaultLayer:'sst',
+  layers: [{ key:'sst', label:'Sea-surface temperature anomaly (7 days)', tile:'/tiles/sst-anomaly',
+    legend:{ title:'SST anomaly, °C (OISST, last 7 days)', colors:['#2166ac','#67a9cf','#d1e5f0','#f7f7f7','#fddbc7','#ef8a62','#b2182b'], ends:['-3 cooler','+3 warmer'] }, note:'Dashed box: Niño 3.4 region' }],
+  async render(el, tab) {
+    const e = await cachedJSON('/enso');
+    if (e.error) { el.innerHTML = `<div class="notice bad">${esc(e.error)}</div>`; return; }
+    tab.extras.push(L.rectangle([[-5, -170], [5, -120]], { color:'#10262B', weight:1.5, fill:false, dashArray:'4 3' }).bindTooltip('Niño 3.4').addTo(tab.map));
+    const o = e.oni_latest, s = e.nino34_oisst_30d;
+    const phaseColor = o.phase === 'El Niño' ? '#A33A2B' : o.phase === 'La Niña' ? '#3E6FB0' : '#5E6E70';
+    const oni = e.oni_series;
+    el.innerHTML = `
+      <div style="display:flex; gap:16px; align-items:flex-end; margin:6px 0 4px">
+        <div><div class="meta">Oceanic Niño Index, ${esc(o.season)} ${o.year}</div><div class="bignum" style="color:${phaseColor}">${o.oni > 0 ? '+' : ''}${o.oni.toFixed(2)}</div></div>
+        <div><div style="font-size:20px; color:${phaseColor}; font-weight:600">${esc(o.phase)}</div><div class="meta">${o.strength ? esc(o.strength[0].toUpperCase() + o.strength.slice(1)) + ' event' : 'within ±0.5 °C'}</div></div></div>
+      ${Issues(e.quality_issues)}
+      ${Collapsible('enso-oni', 'Oceanic Niño Index, last 5 years', Chart({ series:[{ name:'', points:oni.map((r, i) => [i, r.oni, `${r.season} ${r.year}`]),
+          colorFn:v => v >= 0.5 ? '#C0562B' : v <= -0.5 ? '#3E6FB0' : '#9AA5A6' }], bars:true, xTicks:false,
+          thresholds:[{ y:0.5, label:'El Niño +0.5' }, { y:-0.5, label:'La Niña -0.5', color:'#3E6FB0' }], yLabel:'ONI (°C), 3-month seasons', fmt:v => (v > 0 ? '+' : '') + v })
+          + `<div class="meta">${esc(oni[0].season)} ${oni[0].year} to ${esc(o.season)} ${o.year}. Hover a bar for its season.</div>`)}
+      ${Collapsible('enso-check', 'Satellite cross-check', `<table class="data"><tr><td>ONI, ${esc(o.season)} ${o.year}</td><td class="num">${o.oni > 0 ? '+' : ''}${o.oni} °C</td></tr>
+          <tr><td>OISST Niño 3.4, 30 days to ${esc(s.through)}</td><td class="num">${s.anomaly_c > 0 ? '+' : ''}${s.anomaly_c} °C</td></tr></table>
+          <div class="meta" style="margin-top:4px">OISST baseline: ${esc(s.baseline)}. Compare direction, not size.</div>`)}
+      ${Collapsible('enso-pnw', 'What it means for the Pacific Northwest', `<p style="margin:0">${esc(e.pacific_northwest_note)}</p><p class="meta">Marine heat is a documented kelp stressor; the Kelp tab shows Salish Sea summer temperatures.</p>`)}
+      ${Collapsible('enso-checks', 'Quality checks', Checks(e.checks), { open:false })}
+      ${Collapsible('enso-method', 'Method, thresholds and caveats', `<p style="margin:0 0 6px">${esc(e.method)}</p><p style="margin:0 0 6px">${esc(e.thresholds)}</p>${List(e.caveats)}`, { open:false })}`;
+  } });
+
+// ═══ Tab: Wildfire ═════════════════════════════════════════════════════════
+MapTab({ id:'wildfire', title:'Wildfire activity', center:[30, -20], zoom:2, defaultLayer:'fire',
+  layers: [{ key:'fire', label:'Active fire, last 7 days', tile:'/tiles/wildfire',
+    legend:{ title:'Active fire brightness (K), FIRMS', colors:['#ffd166','#f77f00','#d62828'], ends:['300','400'] } }],
+  async render(el) {
+    const d = await cachedJSON('/wildfire');
+    if (d.error) { el.innerHTML = `<div class="notice bad">${esc(d.error)}</div>`; return; }
+    el.innerHTML = `<div class="meta" style="margin:6px 0">NASA FIRMS (MODIS) · ${esc(d.window)} · ${esc(d.status)}</div>${Issues(d.quality_issues)}
+      ${Collapsible('fire-counts', 'Fire detections', `<table class="data"><tr><th>Region</th><th class="num">1 km fire pixels, 7 days</th></tr>
+        <tr><td>United States</td><td class="num">${d.us.fire_pixels_1km_7d.toLocaleString()}</td></tr>
+        <tr><td>India</td><td class="num">${d.india.fire_pixels_1km_7d.toLocaleString()}</td></tr></table>`)}
+      ${Collapsible('fire-checks', 'Quality checks', Checks(d.checks), { open:false })}
+      ${Collapsible('fire-context', 'General risk context (not data)', `<p style="margin:0"><b>US:</b> ${esc(d.context.us_high_risk_states.join(', '))}</p><p style="margin:4px 0 0"><b>India:</b> ${esc(d.context.india_high_risk_regions.join(', '))}</p>`, { open:false })}
+      ${Collapsible('fire-method', 'Method and caveats', `<p style="margin:0 0 6px">${esc(d.method)}</p>${List(d.caveats)}`, { open:false })}`;
+  } });
+
+// ═══ Tab: Drought ══════════════════════════════════════════════════════════
+MapTab({ id:'drought', title:'Drought, India', center:[22, 80], zoom:4, defaultLayer:'rain',
+  layers: [{ key:'rain', label:'Rainfall, % of normal (30 days)', tile:'/tiles/drought',
+    legend:{ title:'Rainfall, % of 1991-2020 normal', colors:['#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e'], ends:['25%','175%'] } }],
+  async render(el) {
+    const d = await cachedJSON('/drought');
+    if (d.error) { el.innerHTML = `<div class="notice bad">${esc(d.error)}</div>`; return; }
+    el.innerHTML = `<div style="display:flex; gap:14px; align-items:flex-end; margin:6px 0 4px"><div class="bignum">${d.percent_of_normal}%</div>
+        <div><div style="font-weight:600; color:var(--ink)">of normal rainfall</div><div class="meta">${esc(d.rainfall_category)} · ${esc(d.rainfall_window)}</div></div></div>
+      ${Issues(d.quality_issues)}
+      ${Collapsible('drought-figures', 'Figures', `<table class="data">
+        <tr><td>Rainfall, ${esc(d.rainfall_window)}</td><td class="num">${d.rainfall_mm_30d} mm</td></tr>
+        <tr><td>1991-2020 normal, same days</td><td class="num">${d.normal_mm_30d_1991_2020} mm</td></tr>
+        <tr><td>Mean NDVI, ${esc(d.ndvi_date)}</td><td class="num">${d.ndvi_mean}</td></tr></table><div class="meta" style="margin-top:4px">${esc(d.thresholds)}</div>`)}
+      ${Collapsible('drought-checks', 'Quality checks', Checks(d.checks), { open:false })}
+      ${Collapsible('drought-method', 'Method and caveats', `<p style="margin:0 0 6px">${esc(d.method)}</p>${List(d.caveats)}`, { open:false })}`;
+  } });
+
+// ═══ Pages: data, knowledge base, policy ═══════════════════════════════════
+const pagesLoaded = {};
+async function loadDataPage() {
   const d = await getJSON('/sources');
-  $('sourceCards').innerHTML = d.sources.map(s => `<div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px"><h3>${esc(s.name)}</h3>${stateBadge(s.status.state)}</div>
+  $('sourcesMount').innerHTML = Collapsible('page-sources', 'Sources and quality checks', `<div class="grid2" style="padding-bottom:4px">${d.sources.map(s => `<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px"><h3>${esc(s.name)}</h3>${StateBadge(s.status.state)}</div>
     <dl class="kv"><dt>Provider</dt><dd>${esc(s.provider)}</dd><dt>Dataset</dt><dd class="mono">${esc(s.dataset)}</dd>
     <dt>Resolution</dt><dd>${esc(s.resolution)}</dd><dt>Refresh</dt><dd>${esc(s.cadence)}</dd><dt>Licence</dt><dd>${esc(s.licence)}</dd>
-    <dt>Used for</dt><dd>${esc(s.used_for)}</dd><dt>Last success</dt><dd>${esc(s.status.last_success || 'never in this run')}</dd></dl>
-    ${s.status.last_error ? `<div class="notice bad">${esc(s.status.last_error)}</div>` : ''}${checksList(s.status.checks)}</div>`).join('');
+    <dt>Used for</dt><dd>${esc(s.used_for)}</dd><dt>Last success</dt><dd>${esc(s.status.last_success || 'not in this server run')}</dd></dl>
+    ${s.status.last_error ? `<div class="notice bad">${esc(s.status.last_error)}</div>` : ''}${Checks(s.status.checks)}</div>`).join('')}</div>`);
   const r = d.knowledge_base;
-  $('ingestLede').innerHTML = `Built ${esc(r.built_at.slice(0, 10))} with ${esc(r.extractor)}; chunking: ${esc(r.chunking)}. ${r.totals.chunks} passages from ${r.totals.pages} pages; ${r.totals.unreadable_pages} image-only pages need OCR; ${r.totals.redactions} emails or phone numbers redacted before indexing.`;
-  $('ingestTable').innerHTML = `<tr><th>Document</th><th class="num">Pages</th><th class="num">Passages</th><th>Unreadable pages</th><th class="num">Redacted</th><th>Checks</th></tr>` +
-    r.documents.map(x => `<tr><td><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a><div class="meta">${esc(x.publisher)}, ${x.year}</div></td>
+  $('ingestMount').innerHTML = Collapsible('page-ingest', 'Document ingestion', `<p class="lede">Built ${esc(r.built_at.slice(0, 10))} with ${esc(r.extractor)}; chunking: ${esc(r.chunking)}. ${r.totals.chunks} passages from ${r.totals.pages} pages; ${r.totals.unreadable_pages} image-only pages need OCR; ${r.totals.redactions} emails or phone numbers redacted before indexing.</p>
+    <div class="table-wrap" style="margin-bottom:12px"><table class="data"><tr><th>Document</th><th class="num">Pages</th><th class="num">Passages</th><th>Unreadable</th><th class="num">Redacted</th><th>Checks</th></tr>
+    ${r.documents.map(x => `<tr><td><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a><div class="meta">${esc(x.publisher)}, ${x.year}</div></td>
       <td class="num">${x.pages}</td><td class="num">${x.chunks}</td><td>${x.unreadable_pages.length ? `<span class="badge b-warn">${x.unreadable_pages.length} need OCR</span>` : '<span class="badge b-ok">none</span>'}</td>
-      <td class="num">${x.redactions}</td><td>${x.checks.map(c => badge(c.passed, c.check.replaceAll('_', ' '), c.check.replaceAll('_', ' '), true)).join(' ')}</td></tr>`).join('');
+      <td class="num">${x.redactions}</td><td>${x.checks.map(c => Badge(c.passed, c.check.replaceAll('_', ' '), c.check.replaceAll('_', ' '), true)).join(' ')}</td></tr>`).join('')}</table></div>`);
 }
-
-// ── Knowledge base ──────────────────────────────────────────────────────────
 async function kbSearch() {
   const q = $('kbQuery').value.trim(); if (!q) return;
   $('kbResults').innerHTML = '<div class="thinking">Searching…</div>';
@@ -392,37 +533,62 @@ async function kbSearch() {
     : '<div class="notice info">No passages matched. Try different words.</div>';
 }
 $('kbSearchBtn').onclick = kbSearch; $('kbQuery').onkeydown = e => { if (e.key === 'Enter') kbSearch(); };
-let evalsLoaded = false;
-async function loadEvals() {
-  if (evalsLoaded) return; evalsLoaded = true;
+async function loadKbPage() {
   const e = (await getJSON('/evals')).retrieval, a = e.with_thesaurus, b = e.without_thesaurus;
-  $('evalLede').innerHTML = `${a.total} questions with known evidence. A question passes if a passage containing the evidence appears in the top ${e.k} results. Method: ${esc(e.method)}.
-    <b>With the domain thesaurus:</b> ${a.hits} of ${a.total} found (MRR ${a.mrr}). <b>Without it:</b> ${b.hits} of ${b.total} (MRR ${b.mrr}).`;
-  $('evalTable').innerHTML = `<tr><th>Question</th><th>Evidence must contain</th><th class="num">Rank found</th><th>Top source</th></tr>` +
-    a.questions.map(q => `<tr><td>${esc(q.question)}</td><td class="mono">${esc(q.evidence)}</td>
-      <td class="num">${q.found_at_rank ? badge(true, '#' + q.found_at_rank) : badge(false, '', 'not found')}</td><td class="meta">${esc(q.top_source)}</td></tr>`).join('');
+  $('evalMount').innerHTML = Collapsible('page-eval', 'Retrieval test', `<p class="lede">${a.total} questions with known evidence. A question passes if a passage containing the evidence appears in the top ${e.k} results. Method: ${esc(e.method)}.
+    <b>With the domain thesaurus:</b> ${a.hits} of ${a.total} found (MRR ${a.mrr}). <b>Without it:</b> ${b.hits} of ${b.total} (MRR ${b.mrr}).</p>
+    <div class="table-wrap" style="margin-bottom:12px"><table class="data"><tr><th>Question</th><th>Evidence must contain</th><th class="num">Rank</th><th>Top source</th></tr>
+    ${a.questions.map(q => `<tr><td>${esc(q.question)}</td><td class="mono">${esc(q.evidence)}</td>
+      <td class="num">${q.found_at_rank ? Badge(true, '#' + q.found_at_rank) : Badge(false, '', 'not found')}</td><td class="meta">${esc(q.top_source)}</td></tr>`).join('')}</table></div>`);
 }
-
-// ── Policy & skills ─────────────────────────────────────────────────────────
-let policyLoaded = false;
-async function loadPolicy() {
-  if (policyLoaded) return; policyLoaded = true;
-  const [p, c] = await Promise.all([getJSON('/policy'), getJSON('/agent/config')]);
-  $('policyMeta').textContent = `${p.name} · version ${p.version} · owner ${p.owner} · ${p.rules.length} rules`;
+async function loadPolicyPage() {
+  const [p, c] = await Promise.all([cachedJSON('/policy'), cachedJSON('/agent/config')]);
   const onFail = { refuse:'Refuse the question', redact:'Redact', block:'Block the tool call', flag:'Flag the answer', append_notice:'Add a notice to the answer' };
-  $('policyTable').innerHTML = `<tr><th>Rule</th><th>Runs</th><th>Check in code</th><th>If it fails</th></tr>` +
-    p.rules.map(r => `<tr><td><b>${esc(r.id)}</b><div>${esc(r.text)}</div></td><td>${esc(r.stage)}</td><td class="mono">${esc(r.check)}</td><td>${esc(onFail[r.on_fail] || r.on_fail)}</td></tr>`).join('');
-  $('skillCards').innerHTML = c.skills.map(s => `<div class="card"><h3 class="mono" style="font-size:15px">${esc(s.name)}</h3><div class="meta">${esc(s.description)}</div>
-    <pre style="white-space:pre-wrap; font:13px/1.5 'IBM Plex Sans', sans-serif; margin:10px 0 0">${esc(s.procedure)}</pre></div>`).join('');
-  $('toolTable').innerHTML = `<tr><th>Tool</th><th>What it does</th></tr>` + c.tools.map(t => `<tr><td class="mono">${esc(t.name)}</td><td>${esc(t.description)}</td></tr>`).join('');
-  $('agentMeta').textContent = `Model: ${c.model} · ${c.tools.length} tools · ${c.skills.length} skills · ${p.rules.length} policy rules`;
+  $('policyMount').innerHTML =
+    Collapsible('page-policy', `Policy pack · ${p.rules.length} rules`, `<p class="meta" style="margin:0 0 8px">${esc(p.name)} · version ${esc(p.version)} · owner ${esc(p.owner)}</p>
+      <div class="table-wrap" style="margin-bottom:12px"><table class="data"><tr><th>Rule</th><th>Runs</th><th>Check in code</th><th>If it fails</th></tr>
+      ${p.rules.map(r => `<tr><td><b>${esc(r.id)}</b><div>${esc(r.text)}</div></td><td>${esc(r.stage)}</td><td class="mono">${esc(r.check)}</td><td>${esc(onFail[r.on_fail] || r.on_fail)}</td></tr>`).join('')}</table></div>`) +
+    Collapsible('page-skills', `Skills · ${c.skills.length}`, `<div class="grid2" style="padding-bottom:12px">${c.skills.map(s => `<div class="card"><h3 class="mono" style="font-size:15px">${esc(s.name)}</h3><div class="meta">${esc(s.description)}</div>
+      <pre style="white-space:pre-wrap; font:13px/1.5 'IBM Plex Sans', sans-serif; margin:10px 0 0">${esc(s.procedure)}</pre></div>`).join('')}</div>`) +
+    Collapsible('page-tools', `Tools · ${c.tools.length}`, `<div class="table-wrap" style="margin-bottom:12px"><table class="data"><tr><th>Tool</th><th>What it does</th></tr>
+      ${c.tools.map(t => `<tr><td class="mono">${esc(t.name)}</td><td>${esc(t.description)}</td></tr>`).join('')}</table></div>`);
+}
+async function loadAgentMeta() {
+  try { const [p, c] = await Promise.all([cachedJSON('/policy'), cachedJSON('/agent/config')]);
+    $('agentMeta').textContent = `Model: ${c.model} · ${c.tools.length} tools · ${c.skills.length} skills · ${p.rules.length} policy rules`; } catch {}
 }
 
-// ── Agent ───────────────────────────────────────────────────────────────────
+// ═══ Navigation ════════════════════════════════════════════════════════════
+const PAGE_LOADERS = { data:loadDataPage, kb:loadKbPage, policy:loadPolicyPage };
+function openView(id) {
+  if (!$('view-' + id)) id = 'kelp';
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.view === id));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
+  if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+  if (TABS[id]) showMapTab(id);
+  else if (PAGE_LOADERS[id] && !pagesLoaded[id]) {
+    pagesLoaded[id] = true;
+    PAGE_LOADERS[id]().catch(e => { pagesLoaded[id] = false;
+      $('view-' + id).querySelector('.page').insertAdjacentHTML('beforeend', `<div class="notice bad">Could not load: ${esc(e.message)}</div>`); });
+  }
+}
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => openView(b.dataset.view));
+window.addEventListener('hashchange', () => openView(location.hash.slice(1)));
+
+function setAgentVisible(show) {
+  $('shell').classList.toggle('agent-hidden', !show); $('agentToggle').textContent = show ? 'Hide agent' : 'Show agent';
+  store.set('agent:visible', show); Object.values(TABS).forEach(t => t.map && setTimeout(() => t.map.invalidateSize(), 50));
+}
+$('agentToggle').onclick = () => setAgentVisible($('shell').classList.contains('agent-hidden'));
+$('agentClose').onclick = () => setAgentVisible(false);
+
+// ═══ Agent ═════════════════════════════════════════════════════════════════
 function renderMarkdown(text) {
   const lines = esc(text).split('\n'); let html = '', list = false;
   for (const raw of lines) {
+    if (/^\s*\|?\s*:?-{3,}/.test(raw)) continue;
     let l = raw.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<i>$2</i>').replace(/\[D(\d+)\]/g, '<span class="cite">D$1</span>');
+    if (/^\s*\|.*\|\s*$/.test(raw)) l = l.split('|').filter(Boolean).map(s => s.trim()).join(' · ');
     if (/^\s*([-*•]|\d+\.)\s+/.test(raw)) { if (!list) { html += '<ul>'; list = true; } html += `<li>${l.replace(/^\s*([-*•]|\d+\.)\s+/, '')}</li>`; }
     else { if (list) { html += '</ul>'; list = false; } if (l.trim()) html += `<p>${l}</p>`; }
   }
@@ -433,9 +599,9 @@ function traceHTML(trace) {
     if (s.type === 'policy') {
       const failed = s.results.filter(r => !r.passed);
       return `<li class="policy ${failed.length ? 'fail' : ''}"><span class="kind">${s.stage === 'input' ? 'Input' : 'Output'} policy</span>: ${s.results.length - failed.length} of ${s.results.length} rules passed
-        <ul class="checks">${s.results.map(r => `<li><span class="mark">${badge(r.passed, 'Pass', r.action || 'Fail', r.action !== 'refuse')}</span><span><b>${esc(r.rule)}</b>: ${esc(r.detail)}</span></li>`).join('')}</ul></li>`;
+        <ul class="checks">${s.results.map(r => `<li><span class="mark">${Badge(r.passed, 'Pass', r.action || 'Fail', r.action !== 'refuse')}</span><span><b>${esc(r.rule)}</b>: ${esc(r.detail)}</span></li>`).join('')}</ul></li>`;
     }
-    if (s.type === 'model') return `<li><span class="kind">Model, turn ${s.turn}</span> (${s.ms} ms${s.prompt_tokens ? `, ${s.prompt_tokens} tokens in` : ''}): ${s.tool_calls.length ? 'called ' + s.tool_calls.map(t => `<code>${esc(t)}</code>`).join(', ') : 'wrote the answer'}</li>`;
+    if (s.type === 'model') return `<li class="${s.error ? 'fail' : ''}"><span class="kind">Model, turn ${s.turn}</span> (${s.ms} ms${s.prompt_tokens ? `, ${s.prompt_tokens} tokens in` : ''}): ${s.error ? esc(s.error) : s.tool_calls.length ? 'called ' + s.tool_calls.map(t => `<code>${esc(t)}</code>`).join(', ') : 'wrote the answer'}</li>`;
     if (s.type === 'tool') return `<li class="${s.allowed ? '' : 'fail'}"><span class="kind">Tool</span> <code>${esc(s.name)}</code>${Object.keys(s.args || {}).length ? ` <span class="mono">${esc(JSON.stringify(s.args))}</span>` : ''} · ${s.ms} ms · ${s.chars.toLocaleString()} chars${s.truncated ? ' (truncated to fit context)' : ''}<div class="meta">${esc(s.summary)}</div></li>`;
     if (s.type === 'verification') return `<li class="verify ${s.share_verified < 0.9 ? 'fail' : ''}"><span class="kind">Verification</span>: ${s.figures_verified} of ${s.figures_checked} figures traced to tool results${s.unverified.length ? `<div class="meta">Not traced: ${s.unverified.map(esc).join(', ')}</div>` : ''}</li>`;
     return '';
@@ -473,7 +639,7 @@ $('askBtn').onclick = () => ask();
 $('question').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); } };
 document.querySelectorAll('#suggest button').forEach(b => b.onclick = () => ask(b.textContent));
 
-// ── Auth (Supabase) ─────────────────────────────────────────────────────────
+// ═══ Auth (Supabase) ═══════════════════════════════════════════════════════
 const cfg = window.KELPWATCH_CONFIG || {};
 const sb = (cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase) ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey) : null;
 let authToken = null, authMode = 'in';
@@ -502,13 +668,10 @@ $('authSubmit').onclick = async () => {
   if (!error && authMode === 'in') $('authOverlay').classList.remove('visible');
 };
 
-// ── Start ───────────────────────────────────────────────────────────────────
-showLayer('kelp:2023');
-loadPolicy().catch(() => {});
-// Deep links for demos: #data, #kb, #policy
-const HASH_VIEWS = { '#data':'dataView', '#kb':'kbView', '#policy':'policyView', '#map':'mapView' };
-function openHash() { const v = HASH_VIEWS[location.hash]; if (v) document.querySelector(`#nav button[data-view="${v}"]`).click(); }
-window.addEventListener('hashchange', openHash); openHash();
+// ═══ Start ═════════════════════════════════════════════════════════════════
+setAgentVisible(store.get('agent:visible', true));
+openView(location.hash.slice(1) || 'kelp');
+loadAgentMeta();
 </script>
 </body>
 </html>

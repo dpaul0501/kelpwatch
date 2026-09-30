@@ -20,6 +20,15 @@ TOOL_SPECS = [
     {"name": "get_kelp_trends",
      "description": "Nearshore vegetation signal from Landsat for six Puget Sound counties across four periods, with quality checks and method caveats. Optionally filter to one county.",
      "parameters": {"type": "object", "properties": {"county": {"type": ["string", "null"], "description": "King, Skagit, Whatcom, Kitsap, Pierce or Snohomish"}}}},
+    {"name": "get_kelp_yearly",
+     "description": "Year-by-year (1990-2025) summer NDVI and nearshore vegetation signal for six Puget Sound areas, with the satellite sensor for each year. Optionally one county.",
+     "parameters": {"type": "object", "properties": {"county": {"type": ["string", "null"]}}}},
+    {"name": "get_sea_temperature",
+     "description": "Summer (June to September) sea-surface temperature for the Salish Sea, 1991-2025, with anomalies against 1991-2020. Warm summers stress kelp.",
+     "parameters": {"type": "object", "properties": {}}},
+    {"name": "get_enso_status",
+     "description": "Current El Niño / La Niña status: NOAA Oceanic Niño Index, recent seasons, and a satellite cross-check.",
+     "parameters": {"type": "object", "properties": {}}},
     {"name": "get_wildfire_activity",
      "description": "Active fire detections (NASA FIRMS via Earth Engine) for the last 7 days over the US and India.",
      "parameters": {"type": "object", "properties": {}}},
@@ -51,7 +60,7 @@ def load_skills() -> dict:
     return skills
 
 
-SYSTEM_PROMPT = """You are KelpWatch, a climate data agent for Puget Sound kelp and eelgrass, wildfire, and drought risk.
+SYSTEM_PROMPT = """You are KelpWatch, a climate data agent for Puget Sound kelp and eelgrass, ocean temperature and El Niño, wildfire, and drought risk.
 
 How to work:
 - Call tools to get data. Never answer from memory when a tool can provide the data.
@@ -204,6 +213,13 @@ def _summarise(name: str, r) -> str:
         return f"loaded skill '{r.get('skill')}'"
     if name == "get_kelp_trends":
         return f"{len(r.get('counties', []))} counties · {r.get('status', '')}"
+    if name == "get_kelp_yearly":
+        return f"{len(r.get('counties', {}))} counties x {len(next(iter(r.get('counties', {}).values()), []))} years"
+    if name == "get_sea_temperature":
+        return f"{len(r.get('years', []))} summers, normal {r.get('normal_1991_2020_c')} °C"
+    if name == "get_enso_status":
+        o = r.get("oni_latest", {})
+        return f"ONI {o.get('oni')} ({o.get('season')} {o.get('year')}): {o.get('phase')}"
     if name == "rank_restoration_sites":
         return f"{len(r.get('sites', []))} illustrative sites ranked"
     keys = [k for k in r.keys() if k not in ("method", "caveats", "quality_issues")]

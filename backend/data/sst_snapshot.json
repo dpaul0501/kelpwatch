@@ -1,0 +1,186 @@
+{
+ "computed_at": "2026-09-30T02:59:01+00:00",
+ "region": "Salish Sea and Strait of Juan de Fuca box [-125.0, 47.0, -122.0, 49.0]",
+ "normal_1991_2020_c": 12.86,
+ "years": [
+  {
+   "year": 1991,
+   "summer_sst_c": 12.5,
+   "anomaly_c": -0.35
+  },
+  {
+   "year": 1992,
+   "summer_sst_c": 13.07,
+   "anomaly_c": 0.21
+  },
+  {
+   "year": 1993,
+   "summer_sst_c": 13.53,
+   "anomaly_c": 0.67
+  },
+  {
+   "year": 1994,
+   "summer_sst_c": 13.67,
+   "anomaly_c": 0.81
+  },
+  {
+   "year": 1995,
+   "summer_sst_c": 13.43,
+   "anomaly_c": 0.57
+  },
+  {
+   "year": 1996,
+   "summer_sst_c": 12.56,
+   "anomaly_c": -0.29
+  },
+  {
+   "year": 1997,
+   "summer_sst_c": 14.48,
+   "anomaly_c": 1.62
+  },
+  {
+   "year": 1998,
+   "summer_sst_c": 13.71,
+   "anomaly_c": 0.86
+  },
+  {
+   "year": 1999,
+   "summer_sst_c": 12.63,
+   "anomaly_c": -0.23
+  },
+  {
+   "year": 2000,
+   "summer_sst_c": 12.98,
+   "anomaly_c": 0.12
+  },
+  {
+   "year": 2001,
+   "summer_sst_c": 12.52,
+   "anomaly_c": -0.34
+  },
+  {
+   "year": 2002,
+   "summer_sst_c": 12.53,
+   "anomaly_c": -0.33
+  },
+  {
+   "year": 2003,
+   "summer_sst_c": 13.02,
+   "anomaly_c": 0.16
+  },
+  {
+   "year": 2004,
+   "summer_sst_c": 13.13,
+   "anomaly_c": 0.28
+  },
+  {
+   "year": 2005,
+   "summer_sst_c": 12.5,
+   "anomaly_c": -0.36
+  },
+  {
+   "year": 2006,
+   "summer_sst_c": 12.24,
+   "anomaly_c": -0.62
+  },
+  {
+   "year": 2007,
+   "summer_sst_c": 12.15,
+   "anomaly_c": -0.71
+  },
+  {
+   "year": 2008,
+   "summer_sst_c": 11.78,
+   "anomaly_c": -1.07
+  },
+  {
+   "year": 2009,
+   "summer_sst_c": 12.56,
+   "anomaly_c": -0.3
+  },
+  {
+   "year": 2010,
+   "summer_sst_c": 12.11,
+   "anomaly_c": -0.74
+  },
+  {
+   "year": 2011,
+   "summer_sst_c": 12.18,
+   "anomaly_c": -0.67
+  },
+  {
+   "year": 2012,
+   "summer_sst_c": 12.32,
+   "anomaly_c": -0.54
+  },
+  {
+   "year": 2013,
+   "summer_sst_c": 12.92,
+   "anomaly_c": 0.06
+  },
+  {
+   "year": 2014,
+   "summer_sst_c": 12.77,
+   "anomaly_c": -0.09
+  },
+  {
+   "year": 2015,
+   "summer_sst_c": 13.29,
+   "anomaly_c": 0.43
+  },
+  {
+   "year": 2016,
+   "summer_sst_c": 13.12,
+   "anomaly_c": 0.26
+  },
+  {
+   "year": 2017,
+   "summer_sst_c": 12.9,
+   "anomaly_c": 0.04
+  },
+  {
+   "year": 2018,
+   "summer_sst_c": 12.92,
+   "anomaly_c": 0.06
+  },
+  {
+   "year": 2019,
+   "summer_sst_c": 13.58,
+   "anomaly_c": 0.72
+  },
+  {
+   "year": 2020,
+   "summer_sst_c": 12.63,
+   "anomaly_c": -0.22
+  },
+  {
+   "year": 2021,
+   "summer_sst_c": 12.83,
+   "anomaly_c": -0.03
+  },
+  {
+   "year": 2022,
+   "summer_sst_c": 12.55,
+   "anomaly_c": -0.31
+  },
+  {
+   "year": 2023,
+   "summer_sst_c": 12.04,
+   "anomaly_c": -0.82
+  },
+  {
+   "year": 2024,
+   "summer_sst_c": 12.06,
+   "anomaly_c": -0.8
+  },
+  {
+   "year": 2025,
+   "summer_sst_c": 12.15,
+   "anomaly_c": -0.71
+  }
+ ],
+ "method": "NOAA OISST v2.1 daily sea-surface temperature, June to September mean over the box, anomaly against the 1991-2020 summer mean.",
+ "caveats": [
+  "OISST is 0.25 degree (about 25 km), so inland Puget Sound is barely resolved; this tracks the wider Salish Sea and coast."
+ ]
+}

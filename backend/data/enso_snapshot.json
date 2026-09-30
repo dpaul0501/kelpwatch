@@ -1,0 +1,385 @@
+{
+ "computed_at": "2026-09-30T03:06:26+00:00",
+ "oni_latest": {
+  "season": "JJA",
+  "year": 2026,
+  "total_c": 29.09,
+  "oni": 1.8,
+  "phase": "El Ni\u00f1o",
+  "strength": "strong"
+ },
+ "oni_series": [
+  {
+   "season": "JAS",
+   "year": 2021,
+   "total_c": 26.49,
+   "oni": -0.46
+  },
+  {
+   "season": "ASO",
+   "year": 2021,
+   "total_c": 26.13,
+   "oni": -0.64
+  },
+  {
+   "season": "SON",
+   "year": 2021,
+   "total_c": 25.94,
+   "oni": -0.77
+  },
+  {
+   "season": "OND",
+   "year": 2021,
+   "total_c": 25.74,
+   "oni": -0.91
+  },
+  {
+   "season": "NDJ",
+   "year": 2021,
+   "total_c": 25.73,
+   "oni": -0.83
+  },
+  {
+   "season": "DJF",
+   "year": 2022,
+   "total_c": 25.79,
+   "oni": -0.76
+  },
+  {
+   "season": "JFM",
+   "year": 2022,
+   "total_c": 26.09,
+   "oni": -0.68
+  },
+  {
+   "season": "FMA",
+   "year": 2022,
+   "total_c": 26.46,
+   "oni": -0.77
+  },
+  {
+   "season": "MAM",
+   "year": 2022,
+   "total_c": 26.77,
+   "oni": -0.86
+  },
+  {
+   "season": "AMJ",
+   "year": 2022,
+   "total_c": 26.96,
+   "oni": -0.83
+  },
+  {
+   "season": "MJJ",
+   "year": 2022,
+   "total_c": 26.9,
+   "oni": -0.73
+  },
+  {
+   "season": "JJA",
+   "year": 2022,
+   "total_c": 26.59,
+   "oni": -0.7
+  },
+  {
+   "season": "JAS",
+   "year": 2022,
+   "total_c": 26.18,
+   "oni": -0.78
+  },
+  {
+   "season": "ASO",
+   "year": 2022,
+   "total_c": 25.89,
+   "oni": -0.87
+  },
+  {
+   "season": "SON",
+   "year": 2022,
+   "total_c": 25.82,
+   "oni": -0.89
+  },
+  {
+   "season": "OND",
+   "year": 2022,
+   "total_c": 25.83,
+   "oni": -0.82
+  },
+  {
+   "season": "NDJ",
+   "year": 2022,
+   "total_c": 25.86,
+   "oni": -0.7
+  },
+  {
+   "season": "DJF",
+   "year": 2023,
+   "total_c": 26.0,
+   "oni": -0.55
+  },
+  {
+   "season": "JFM",
+   "year": 2023,
+   "total_c": 26.45,
+   "oni": -0.33
+  },
+  {
+   "season": "FMA",
+   "year": 2023,
+   "total_c": 27.12,
+   "oni": -0.11
+  },
+  {
+   "season": "MAM",
+   "year": 2023,
+   "total_c": 27.82,
+   "oni": 0.19
+  },
+  {
+   "season": "AMJ",
+   "year": 2023,
+   "total_c": 28.25,
+   "oni": 0.46
+  },
+  {
+   "season": "MJJ",
+   "year": 2023,
+   "total_c": 28.36,
+   "oni": 0.73
+  },
+  {
+   "season": "JJA",
+   "year": 2023,
+   "total_c": 28.29,
+   "oni": 1.0
+  },
+  {
+   "season": "JAS",
+   "year": 2023,
+   "total_c": 28.21,
+   "oni": 1.25
+  },
+  {
+   "season": "ASO",
+   "year": 2023,
+   "total_c": 28.26,
+   "oni": 1.5
+  },
+  {
+   "season": "SON",
+   "year": 2023,
+   "total_c": 28.45,
+   "oni": 1.74
+  },
+  {
+   "season": "OND",
+   "year": 2023,
+   "total_c": 28.55,
+   "oni": 1.9
+  },
+  {
+   "season": "NDJ",
+   "year": 2023,
+   "total_c": 28.55,
+   "oni": 1.99
+  },
+  {
+   "season": "DJF",
+   "year": 2024,
+   "total_c": 28.38,
+   "oni": 1.84
+  },
+  {
+   "season": "JFM",
+   "year": 2024,
+   "total_c": 28.3,
+   "oni": 1.53
+  },
+  {
+   "season": "FMA",
+   "year": 2024,
+   "total_c": 28.4,
+   "oni": 1.18
+  },
+  {
+   "season": "MAM",
+   "year": 2024,
+   "total_c": 28.4,
+   "oni": 0.77
+  },
+  {
+   "season": "AMJ",
+   "year": 2024,
+   "total_c": 28.23,
+   "oni": 0.43
+  },
+  {
+   "season": "MJJ",
+   "year": 2024,
+   "total_c": 27.8,
+   "oni": 0.18
+  },
+  {
+   "season": "JJA",
+   "year": 2024,
+   "total_c": 27.35,
+   "oni": 0.06
+  },
+  {
+   "season": "JAS",
+   "year": 2024,
+   "total_c": 26.92,
+   "oni": -0.04
+  },
+  {
+   "season": "ASO",
+   "year": 2024,
+   "total_c": 26.64,
+   "oni": -0.12
+  },
+  {
+   "season": "SON",
+   "year": 2024,
+   "total_c": 26.52,
+   "oni": -0.19
+  },
+  {
+   "season": "OND",
+   "year": 2024,
+   "total_c": 26.35,
+   "oni": -0.29
+  },
+  {
+   "season": "NDJ",
+   "year": 2024,
+   "total_c": 26.13,
+   "oni": -0.43
+  },
+  {
+   "season": "DJF",
+   "year": 2025,
+   "total_c": 26.09,
+   "oni": -0.46
+  },
+  {
+   "season": "JFM",
+   "year": 2025,
+   "total_c": 26.56,
+   "oni": -0.22
+  },
+  {
+   "season": "FMA",
+   "year": 2025,
+   "total_c": 27.15,
+   "oni": -0.08
+  },
+  {
+   "season": "MAM",
+   "year": 2025,
+   "total_c": 27.65,
+   "oni": 0.02
+  },
+  {
+   "season": "AMJ",
+   "year": 2025,
+   "total_c": 27.76,
+   "oni": -0.04
+  },
+  {
+   "season": "MJJ",
+   "year": 2025,
+   "total_c": 27.61,
+   "oni": -0.02
+  },
+  {
+   "season": "JJA",
+   "year": 2025,
+   "total_c": 27.18,
+   "oni": -0.11
+  },
+  {
+   "season": "JAS",
+   "year": 2025,
+   "total_c": 26.7,
+   "oni": -0.26
+  },
+  {
+   "season": "ASO",
+   "year": 2025,
+   "total_c": 26.33,
+   "oni": -0.43
+  },
+  {
+   "season": "SON",
+   "year": 2025,
+   "total_c": 26.14,
+   "oni": -0.57
+  },
+  {
+   "season": "OND",
+   "year": 2025,
+   "total_c": 26.04,
+   "oni": -0.61
+  },
+  {
+   "season": "NDJ",
+   "year": 2025,
+   "total_c": 25.96,
+   "oni": -0.6
+  },
+  {
+   "season": "DJF",
+   "year": 2026,
+   "total_c": 26.15,
+   "oni": -0.39
+  },
+  {
+   "season": "JFM",
+   "year": 2026,
+   "total_c": 26.57,
+   "oni": -0.21
+  },
+  {
+   "season": "FMA",
+   "year": 2026,
+   "total_c": 27.34,
+   "oni": 0.11
+  },
+  {
+   "season": "MAM",
+   "year": 2026,
+   "total_c": 28.09,
+   "oni": 0.46
+  },
+  {
+   "season": "AMJ",
+   "year": 2026,
+   "total_c": 28.74,
+   "oni": 0.95
+  },
+  {
+   "season": "MJJ",
+   "year": 2026,
+   "total_c": 29.02,
+   "oni": 1.39
+  },
+  {
+   "season": "JJA",
+   "year": 2026,
+   "total_c": 29.09,
+   "oni": 1.8
+  }
+ ],
+ "nino34_oisst_30d": {
+  "anomaly_c": 2.87,
+  "through": "2026-09-27",
+  "baseline": "OISST climatology (1971-2000)"
+ },
+ "method": "Official ENSO status from the NOAA CPC Oceanic Ni\u00f1o Index (3-month running Ni\u00f1o 3.4 anomaly, centred 30-year base periods). Cross-checked with the latest 30-day Ni\u00f1o 3.4 anomaly from NOAA OISST.",
+ "thresholds": "ONI of +0.5 or more for five overlapping seasons is El Ni\u00f1o; -0.5 or less is La Ni\u00f1a. Strength: 0.5-0.9 weak, 1.0-1.4 moderate, 1.5-1.9 strong, 2.0+ very strong.",
+ "caveats": [
+  "The ONI is a 3-month average, so it lags current conditions by about a month.",
+  "OISST anomalies use an older, cooler baseline, so they run higher than the ONI; compare direction, not size."
+ ],
+ "pacific_northwest_note": "El Ni\u00f1o winters in the Pacific Northwest tend to be warmer and drier than normal."
+}

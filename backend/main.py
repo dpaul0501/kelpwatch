@@ -183,11 +183,38 @@ def _compact_kelp(k: dict) -> dict:
             "caveats": k["caveats"], "documented_trend": k["documented_trend"]["statement"],
             "quality_issues": k["quality_issues"]}
 
+def _compact_yearly(k: dict) -> dict:
+    if k.get("error"):
+        return k
+    return {"method": k["method"], "computed_at": k["computed_at"],
+            "columns": ["year", "sensor", "signal_pct", "ndvi_mean"],
+            "counties": {c: [[r["year"], r["sensor"], r["signal_pct"], r["ndvi_mean"]] for r in rows] for c, rows in k["counties"].items()},
+            "checks": k["checks"], "quality_issues": k["quality_issues"]}
+
+def _compact_sst(k: dict) -> dict:
+    s = k.get("sst") if not k.get("error") else None
+    if not s:
+        return {"error": "Sea-surface temperature series unavailable", "quality_issues": ["sea temperature unavailable"]}
+    return {"region": s["region"], "normal_1991_2020_c": s["normal_1991_2020_c"], "method": s["method"],
+            "columns": ["year", "summer_sst_c", "anomaly_c"],
+            "years": [[y["year"], y["summer_sst_c"], y["anomaly_c"]] for y in s["years"]],
+            "caveats": s["caveats"], "quality_issues": []}
+
+def _compact_enso(e: dict) -> dict:
+    if e.get("error"):
+        return e
+    return {k: e[k] for k in ("computed_at", "oni_latest", "nino34_oisst_30d", "method", "thresholds", "caveats",
+                              "pacific_northwest_note", "quality_issues", "status")} | {
+            "oni_recent": [[r["season"], r["year"], r["oni"]] for r in e["oni_series"][-24:]]}
+
 AGENT_TOOLS = {
     "get_kelp_trends": lambda county=None: _compact_kelp(climate.kelp(county)),
     "get_wildfire_activity": lambda: climate.fire(_gee_available),
     "get_drought_conditions": lambda: climate.drought(_gee_available),
     "rank_restoration_sites": lambda budget_usd=None: climate.rank_sites(budget_usd),
+    "get_kelp_yearly": lambda county=None: _compact_yearly(climate.kelp_yearly(county)),
+    "get_sea_temperature": lambda: _compact_sst(climate.kelp_yearly()),
+    "get_enso_status": lambda: _compact_enso(climate.enso(_gee_available)),
     "get_data_quality": lambda: {"sources": [{"name": s["name"], "state": s["status"]["state"],
                                               "checks": s["status"]["checks"]} for s in climate.registry()]},
 }
@@ -201,7 +228,8 @@ async def lifespan(_app: FastAPI):
     loop = asyncio.get_event_loop()
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
     loop.run_in_executor(executor, climate.refresh_kelp, _gee_available)
-    loop.run_in_executor(executor, lambda: (climate.fire(_gee_available), climate.drought(_gee_available)))
+    loop.run_in_executor(executor, lambda: (climate.fire(_gee_available), climate.drought(_gee_available),
+                                            climate.enso(_gee_available), climate.refresh_yearly(_gee_available)))
     yield
 
 app = FastAPI(title="KelpWatch API", lifespan=lifespan)
@@ -226,6 +254,18 @@ def wildfire_data():
 @app.get("/api/drought")
 def drought_data():
     return climate.drought(_gee_available)
+
+@app.get("/api/kelp/yearly")
+def kelp_yearly_data(county: str | None = None):
+    return climate.kelp_yearly(county)
+
+@app.get("/api/enso")
+def enso_data():
+    return climate.enso(_gee_available)
+
+@app.get("/api/tiles/sst-anomaly")
+def sst_anomaly_tiles():
+    return _tile(climate.sst_anomaly_tile)
 
 @app.get("/api/sites")
 def sites(budget_usd: float | None = None):
