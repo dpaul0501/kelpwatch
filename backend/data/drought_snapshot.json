@@ -1,0 +1,17 @@
+{
+ "computed_at": "2026-09-30T02:48:46+00:00",
+ "rainfall_window": "2026-08-02 to 2026-08-31",
+ "rainfall_mm_30d": 184.1,
+ "normal_mm_30d_1991_2020": 195.9,
+ "percent_of_normal": 94,
+ "rainfall_category": "near normal",
+ "ndvi_mean": 0.492,
+ "ndvi_date": "2026-08-29",
+ "thresholds": "percent of normal: under 50 severe deficit, 50-74 deficit, 75-125 near normal, over 125 above normal",
+ "method": "Mean over India's bounding box of CHIRPS 30-day rainfall, compared with the 1991-2020 mean for the same days of the year; MODIS NDVI from the latest 16-day composite.",
+ "caveats": [
+  "A country-wide average hides regional drought; this is a national screening figure.",
+  "The bounding box includes some neighbouring countries and ocean.",
+  "CHIRPS is published with a lag of several weeks."
+ ]
+}

@@ -3,2873 +3,512 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KelpWatch — Puget Sound Restoration Intelligence</title>
-
-<!-- Leaflet -->
+<title>KelpWatch: a verified climate data agent</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- App config (API base URL + Supabase keys) -->
 <script src="config.js"></script>
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #040d1a;
-  --surface: #071628;
-  --surface2: #0a1f35;
-  --border: #0d2a47;
-  --accent: #00e5b4;
-  --accent2: #0096ff;
-  --accent3: #ff6b6b;
-  --accent4: #ffd166;
-  --text: #cce0f5;
-  --muted: #4a6b8a;
-}
-
-* { margin:0; padding:0; box-sizing:border-box; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Ocean wave background */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 50% at 20% 80%, rgba(0,150,255,0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(0,229,180,0.04) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── HEADER ── */
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  background: rgba(4,13,26,0.95);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(20px);
-  z-index: 1000;
-  flex-shrink: 0;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-icon {
-  width: 34px; height: 34px;
-  background: linear-gradient(135deg, #00e5b4, #0096ff);
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-}
-
-.logo-text {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.5px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.logo-sub {
-  font-size: 10px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.header-center {
-  display: flex;
-  gap: 6px;
-}
-
-.tab {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-family: 'DM Mono', monospace;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.2s;
-  color: var(--muted);
-}
-
-.tab.active, .tab:hover {
-  background: rgba(0,229,180,0.08);
-  border-color: rgba(0,229,180,0.2);
-  color: var(--accent);
-}
-
-.header-right {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-family: 'DM Mono', monospace;
-}
-
-.badge-live {
-  background: rgba(0,229,180,0.1);
-  color: var(--accent);
-  border: 1px solid rgba(0,229,180,0.2);
-  display: flex; align-items: center; gap: 5px;
-}
-
-.badge-live::before {
-  content: '';
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
-
-/* ── MAIN LAYOUT ── */
-.main {
-  display: grid;
-  grid-template-columns: 340px 1fr 300px;
-  grid-template-rows: 1fr;
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  z-index: 1;
-}
-
-/* ── LEFT PANEL ── */
-.left-panel {
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.left-panel::-webkit-scrollbar { width: 4px; }
-.left-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.panel-section {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
-}
-
-.section-title {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.loading-chip {
-  font-size: 9px;
-  padding: 2px 6px;
-  background: rgba(0,229,180,0.1);
-  color: var(--accent);
-  border-radius: 3px;
-  animation: pulse 1s infinite;
-}
-
-/* Goal tracker */
-.goal-ring-container {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
-}
-
-.goal-ring {
-  position: relative;
-  width: 80px; height: 80px;
-  flex-shrink: 0;
-}
-
-.goal-ring svg { transform: rotate(-90deg); }
-
-.goal-ring-text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.goal-pct {
-  font-family: 'Syne', sans-serif;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--accent);
-}
-
-.goal-label {
-  font-size: 8px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.goal-stats { flex: 1; }
-
-.goal-stat {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  margin-bottom: 5px;
-}
-
-.goal-stat-label { color: var(--muted); }
-.goal-stat-value { font-family: 'DM Mono', monospace; color: var(--text); }
-
-.trajectory-bar {
-  margin-top: 8px;
-}
-
-.traj-label {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  margin-bottom: 4px;
-}
-
-.traj-track {
-  height: 4px;
-  background: var(--surface2);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-}
-
-.traj-fill {
-  height: 100%;
-  border-radius: 2px;
-  position: absolute;
-  left: 0;
-  transition: width 1s ease;
-}
-
-.traj-needed { background: var(--accent); }
-.traj-current { background: var(--accent3); margin-top: 4px; }
-
-/* County list */
-.county-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid transparent;
-  margin-bottom: 6px;
-}
-
-.county-item:hover, .county-item.active {
-  background: var(--surface2);
-  border-color: var(--border);
-}
-
-.county-item.active { border-color: rgba(0,229,180,0.3); }
-
-.county-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.county-info { flex: 1; min-width: 0; }
-
-.county-name {
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 2px;
-}
-
-.county-meta {
-  font-size: 10px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.county-delta {
-  font-family: 'DM Mono', monospace;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-/* Layer controls */
-.layer-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(13,42,71,0.5);
-}
-
-.layer-toggle:last-child { border-bottom: none; }
-
-.layer-name {
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.layer-dot {
-  width: 8px; height: 8px;
-  border-radius: 2px;
-}
-
-.toggle-switch {
-  width: 32px; height: 18px;
-  background: var(--surface2);
-  border-radius: 9px;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.2s;
-  border: 1px solid var(--border);
-}
-
-.toggle-switch.on { background: rgba(0,229,180,0.3); border-color: var(--accent); }
-
-.toggle-knob {
-  width: 12px; height: 12px;
-  background: var(--muted);
-  border-radius: 50%;
-  position: absolute;
-  top: 2px; left: 2px;
-  transition: all 0.2s;
-}
-
-.toggle-switch.on .toggle-knob {
-  background: var(--accent);
-  left: 16px;
-}
-
-/* ── MAP ── */
-#map {
-  width: 100%;
-  height: 100%;
-  background: var(--bg);
-}
-
-.leaflet-container { background: #040d1a !important; }
-
-/* Map overlays */
-.map-overlay {
-  position: absolute;
-  z-index: 500;
-  pointer-events: none;
-}
-
-.map-title-overlay {
-  top: 16px; left: 16px;
-  pointer-events: auto;
-}
-
-.map-title-card {
-  background: rgba(4,13,26,0.9);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 16px;
-  backdrop-filter: blur(12px);
-}
-
-.map-title-card h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.map-title-card p {
-  font-size: 11px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.map-legend-overlay {
-  bottom: 24px; left: 16px;
-  pointer-events: auto;
-}
-
-.legend-card {
-  background: rgba(4,13,26,0.9);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
-  backdrop-filter: blur(12px);
-}
-
-.legend-title {
-  font-size: 10px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.legend-gradient {
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #1a0a2e, #16213e, #0f3460, #00b4d8, #00e5b4, #90e0ef);
-  margin-bottom: 4px;
-}
-
-.legend-labels {
-  display: flex;
-  justify-content: space-between;
-  font-size: 9px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.map-loading {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  z-index: 400;
-}
-
-.spinner {
-  width: 40px; height: 40px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 12px;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.map-loading p {
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-/* County popup chart */
-.county-popup {
-  position: absolute;
-  bottom: 80px; left: 50%;
-  transform: translateX(-50%);
-  z-index: 600;
-  width: 340px;
-  background: rgba(4,13,26,0.97);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
-  backdrop-filter: blur(20px);
-  display: none;
-  pointer-events: auto;
-}
-
-.county-popup.visible { display: block; animation: slideUp 0.3s ease; }
-
-@keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
-
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.popup-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.popup-close {
-  width: 20px; height: 20px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  color: var(--muted);
-  font-size: 16px;
-  border-radius: 4px;
-  pointer-events: auto;
-}
-
-.popup-close:hover { color: var(--text); background: var(--surface2); }
-
-.popup-chart-container { height: 120px; margin-bottom: 10px; }
-
-.popup-stats {
-  display: flex;
-  gap: 12px;
-}
-
-.popup-stat {
-  flex: 1;
-  text-align: center;
-  padding: 8px;
-  background: var(--surface2);
-  border-radius: 6px;
-}
-
-.popup-stat-val {
-  font-family: 'Syne', sans-serif;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.popup-stat-lbl {
-  font-size: 10px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-/* ── RIGHT PANEL — AGENT ── */
-.right-panel {
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.agent-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.agent-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 2px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.agent-sub {
-  font-size: 10px;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.agent-messages {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.agent-messages::-webkit-scrollbar { width: 3px; }
-.agent-messages::-webkit-scrollbar-thumb { background: var(--border); }
-
-.msg {
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  line-height: 1.5;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
-
-.msg-user {
-  background: rgba(0,150,255,0.1);
-  border: 1px solid rgba(0,150,255,0.2);
-  margin-left: 20px;
-  color: var(--text);
-}
-
-.msg-agent {
-  background: rgba(0,229,180,0.06);
-  border: 1px solid rgba(0,229,180,0.15);
-  border-left: 3px solid var(--accent);
-  margin-right: 8px;
-}
-
-.msg-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 9px;
-  color: var(--muted);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.quick-queries {
-  padding: 8px 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.quick-q {
-  padding: 6px 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 11px;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-
-.quick-q:hover { border-color: var(--accent); color: var(--accent); }
-
-.agent-input-area {
-  padding: 10px 12px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.agent-input-row {
-  display: flex;
-  gap: 6px;
-  align-items: flex-end;
-}
-
-.agent-textarea {
-  flex: 1;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  resize: none;
-  height: 60px;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.agent-textarea:focus { border-color: var(--accent); }
-.agent-textarea::placeholder { color: var(--muted); }
-
-.send-btn {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--accent), #00b89a);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,229,180,0.3); }
-
-.typing-dots {
-  display: none;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  font-size: 11px;
-  color: var(--accent);
-  font-family: 'DM Mono', monospace;
-}
-
-.typing-dots.visible { display: flex; }
-
-.dot-row { display: flex; gap: 3px; }
-
-.dot-row span {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: var(--accent);
-  animation: dotBounce 1s infinite;
-}
-
-.dot-row span:nth-child(2) { animation-delay: 0.15s; }
-.dot-row span:nth-child(3) { animation-delay: 0.3s; }
-
-@keyframes dotBounce { 0%,80%,100%{transform:translateY(0);opacity:0.4} 40%{transform:translateY(-4px);opacity:1} }
-
-/* Grant Ranker Modal */
-.modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(4,13,26,0.92);
-  backdrop-filter: blur(8px);
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
-.modal-overlay.visible { display: flex; }
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  width: 700px;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 28px;
-}
-.modal-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 20px; font-family: 'DM Mono', monospace; }
-.ranker-input-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 80px;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.ranker-input {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  color: var(--text);
-  font-size: 12px;
-  font-family: 'DM Sans', sans-serif;
-  outline: none;
-}
-.ranker-input:focus { border-color: var(--accent); }
-.ranker-select {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  color: var(--text);
-  font-size: 12px;
-  font-family: 'DM Mono', sans-serif;
-  outline: none;
-}
-.add-row-btn {
-  padding: 8px 14px;
-  background: rgba(0,229,180,0.1);
-  border: 1px solid rgba(0,229,180,0.2);
-  border-radius: 6px;
-  color: var(--accent);
-  font-size: 12px;
-  cursor: pointer;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  transition: all 0.2s;
-}
-.add-row-btn:hover { background: rgba(0,229,180,0.2); }
-.rank-btn {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, var(--accent), #00b89a);
-  border: none;
-  border-radius: 8px;
-  color: #0a0e1a;
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 13px;
-  cursor: pointer;
-  margin-top: 12px;
-  transition: all 0.2s;
-}
-.rank-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,229,180,0.3); }
-.ranked-results { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
-.ranked-item {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  display: grid;
-  grid-template-columns: 32px 1fr auto;
-  gap: 12px;
-  align-items: center;
-  animation: fadeUp 0.3s ease forwards;
-  opacity: 0;
-}
-.rank-num {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 14px;
-  color: #0a0e1a;
-}
-.ranked-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.ranked-meta { font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
-.reco-badge {
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-family: 'DM Mono', monospace;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.reco-fund { background: rgba(0,229,180,0.15); color: var(--accent); border: 1px solid rgba(0,229,180,0.3); }
-.reco-review { background: rgba(255,209,102,0.15); color: var(--accent4); border: 1px solid rgba(255,209,102,0.3); }
-.reco-low { background: rgba(255,107,107,0.15); color: var(--accent3); border: 1px solid rgba(255,107,107,0.3); }
-
-/* Early Warning Alert */
-.alert-banner {
-  position: absolute;
-  top: 72px; left: 50%;
-  transform: translateX(-50%);
-  z-index: 600;
-  background: rgba(255,107,107,0.12);
-  border: 1px solid rgba(255,107,107,0.4);
-  border-radius: 10px;
-  padding: 10px 18px;
-  display: none;
-  align-items: center;
-  gap: 10px;
-  backdrop-filter: blur(12px);
-  pointer-events: auto;
-  min-width: 420px;
-  animation: slideDown 0.3s ease;
-}
-.alert-banner.visible { display: flex; }
-@keyframes slideDown { from { opacity:0; transform: translateX(-50%) translateY(-8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
-.alert-dot {
-  width: 10px; height: 10px; min-width: 10px;
-  border-radius: 50%;
-  background: #ff6b6b;
-  animation: pulse 1s infinite;
-}
-.alert-text { flex: 1; font-size: 12px; line-height: 1.5; }
-.alert-title { font-family: 'Syne', sans-serif; font-weight: 700; color: #ff6b6b; font-size: 13px; margin-bottom: 2px; }
-.alert-meta { color: #8fa3c0; font-family: 'DM Mono', monospace; font-size: 10px; }
-.alert-close { color: var(--muted); cursor: pointer; font-size: 16px; padding: 0 4px; }
-.alert-close:hover { color: var(--text); }
-
-/* Tribal info panel */
-.tribal-panel {
-  position: absolute;
-  bottom: 80px; right: 16px;
-  z-index: 600;
-  width: 280px;
-  background: rgba(4,13,26,0.97);
-  border: 1px solid rgba(123,97,255,0.3);
-  border-radius: 12px;
-  padding: 16px;
-  backdrop-filter: blur(20px);
-  display: none;
-  pointer-events: auto;
-}
-.tribal-panel.visible { display: block; animation: fadeIn 0.3s ease; }
-.tribal-panel-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #a29bfe;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.tribal-stat { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
-.tribal-stat:last-child { border-bottom: none; }
-.tribal-stat-label { color: var(--muted); font-family: 'DM Mono', monospace; }
-.tribal-stat-val { color: var(--text); font-weight: 600; }
-.treaty-badge {
-  margin-top: 10px;
-  padding: 6px 10px;
-  background: rgba(123,97,255,0.1);
-  border: 1px solid rgba(123,97,255,0.2);
-  border-radius: 6px;
-  font-size: 10px;
-  color: #a29bfe;
-  font-family: 'DM Mono', monospace;
-  line-height: 1.5;
-}
-
-/* Progress bar */
-.progress-bar-wrap {
-  padding: 6px 12px;
-  display: none;
-  flex-direction: column;
-  gap: 4px;
-}
-.progress-bar-wrap.visible { display: flex; }
-.progress-label {
-  font-family: 'DM Mono', monospace;
-  font-size: 10px;
-  color: var(--accent);
-  display: flex;
-  justify-content: space-between;
-}
-.progress-track {
-  height: 3px;
-  background: var(--surface2);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent2), var(--accent));
-  border-radius: 2px;
-  transition: width 0.4s ease;
-  width: 0%;
-}
-.cache-hit-badge {
-  display: none;
-  font-size: 10px;
-  font-family: 'DM Mono', monospace;
-  color: var(--accent4);
-  padding: 2px 8px;
-  background: rgba(255,209,102,0.1);
-  border-radius: 4px;
-  margin-left: 6px;
-}
-
-/* ── Auth + Contact modals ── */
-.overlay {
-  position: fixed; inset: 0;
-  background: rgba(4,13,26,0.85);
-  backdrop-filter: blur(6px);
-  z-index: 2000;
-  display: flex; align-items: center; justify-content: center;
-  display: none;
-}
-.overlay.visible { display: flex; }
-
-.auth-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 32px;
-  width: 380px;
-  position: relative;
-}
-
-.auth-card-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 4px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-}
-
-.auth-card-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; margin-bottom: 24px; }
-
-.auth-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
-.auth-tab {
-  padding: 8px 16px; font-size: 12px; font-family: 'DM Mono', monospace;
-  cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px;
-}
-.auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-.auth-field { margin-bottom: 14px; }
-.auth-label { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.auth-input {
-  width: 100%; padding: 10px 12px; border-radius: 8px;
-  border: 1px solid var(--border); background: var(--surface2);
-  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px;
-  outline: none;
-}
-.auth-input:focus { border-color: var(--accent); }
-
-.auth-btn {
-  width: 100%; padding: 12px; border-radius: 8px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none; color: #040d1a; font-family: 'Syne', sans-serif;
-  font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 8px;
-}
-.auth-btn:hover { opacity: 0.9; }
-.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.auth-msg { font-size: 11px; margin-top: 10px; text-align: center; font-family: 'DM Mono', monospace; min-height: 16px; }
-.auth-msg.error { color: var(--accent3); }
-.auth-msg.success { color: var(--accent); }
-
-.auth-close {
-  position: absolute; top: 16px; right: 16px;
-  width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; color: var(--muted); border-radius: 4px; font-size: 18px;
-}
-.auth-close:hover { color: var(--text); background: var(--surface2); }
-
-/* usage badge in agent */
-.usage-badge {
-  font-size: 9px; font-family: 'DM Mono', monospace;
-  padding: 2px 7px; border-radius: 3px;
-  background: rgba(255,107,107,0.1); color: var(--accent3);
-  border: 1px solid rgba(255,107,107,0.2);
-  display: none;
-}
-
-/* auth button in header */
-.auth-header-btn {
-  padding: 6px 14px; border-radius: 6px; font-size: 12px;
-  font-family: 'DM Mono', monospace; cursor: pointer;
-  border: 1px solid rgba(0,229,180,0.3); background: rgba(0,229,180,0.08);
-  color: var(--accent); transition: all 0.2s;
-}
-.auth-header-btn:hover { background: rgba(0,229,180,0.15); }
-
-/* gate overlay on agent input */
-.agent-gate {
-  display: none;
-  padding: 12px 16px;
-  background: rgba(4,13,26,0.95);
-  border-top: 1px solid var(--border);
-  text-align: center;
-  font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace;
-  cursor: pointer;
-}
-.agent-gate:hover { color: var(--accent); }
-.agent-gate.visible { display: block; }
+  --paper:#F5F2EA; --card:#FFFDF8; --rule:#DED8CA; --ink:#10262B; --body:#3F5053; --muted:#5E6E70;
+  --deep:#0E2A2F; --teal:#2D6F6A; --amber:#9A6214; --amber-soft:#E0A84A;
+  --ok:#2D6F6A; --warn:#9A6214; --bad:#A33A2B; --ok-bg:#E3F0EC; --warn-bg:#F6EBD6; --bad-bg:#F6E1DD;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; height:100%; background:var(--paper); color:var(--body); font:15px/1.5 'IBM Plex Sans', Arial, sans-serif; }
+h1,h2,h3 { font-family:'Source Serif 4', Georgia, serif; color:var(--ink); font-weight:500; margin:0; }
+button { font:inherit; cursor:pointer; }
+a { color:var(--teal); }
+code, .mono { font-family:'IBM Plex Mono', monospace; font-size:13px; }
+
+header { display:flex; align-items:center; gap:24px; padding:10px 20px; background:var(--deep); color:#F3EEE3; flex-wrap:wrap; }
+header .brand { font-family:'Source Serif 4', Georgia, serif; font-size:22px; color:#F3EEE3; }
+header .brand small { font-family:'IBM Plex Sans', sans-serif; font-size:13px; color:#B8CCC8; margin-left:8px; }
+nav { display:flex; gap:4px; flex-wrap:wrap; }
+nav button { background:none; border:none; color:#B8CCC8; padding:8px 12px; border-radius:6px; }
+nav button.active { background:#1C3F45; color:#F3EEE3; }
+header .spacer { flex:1; }
+.userbox { display:flex; gap:10px; align-items:center; font-size:13px; color:#B8CCC8; }
+.btn { background:var(--amber-soft); color:var(--ink); border:none; border-radius:6px; padding:7px 14px; font-weight:500; }
+.btn.ghost { background:none; color:#F3EEE3; border:1px solid #3C5A5E; }
+.btn.small { padding:4px 10px; font-size:13px; }
+
+.layout { display:grid; grid-template-columns:minmax(0,1fr) 440px; height:calc(100% - 56px); }
+@media (max-width: 960px) { .layout { grid-template-columns:1fr; height:auto; } .agent { height:80vh; } #map { height:60vh; } }
+.view { display:none; overflow:auto; }
+.view.active { display:block; }
+.page { max-width:1100px; margin:0 auto; padding:28px 24px 64px; }
+.page h2 { font-size:30px; margin-bottom:6px; }
+.lede { font-size:16px; color:var(--body); max-width:760px; margin:0 0 20px; }
+
+/* Map view */
+#mapView.active { display:grid; grid-template-rows:auto minmax(0,1fr); height:100%; }
+.maptools { display:flex; gap:8px; padding:10px 14px; background:var(--card); border-bottom:1px solid var(--rule); flex-wrap:wrap; align-items:center; }
+.maptools button { background:var(--paper); border:1px solid var(--rule); border-radius:6px; padding:6px 10px; color:var(--ink); font-size:13px; }
+.maptools button.active { background:var(--deep); color:#F3EEE3; border-color:var(--deep); }
+.maptools .sep { width:1px; height:22px; background:var(--rule); margin:0 4px; }
+.mapwrap { position:relative; min-height:0; }
+#map { position:absolute; inset:0; }
+.mappanel { position:absolute; top:12px; left:12px; z-index:500; width:380px; max-width:calc(100% - 24px); max-height:calc(100% - 24px); overflow:auto;
+  background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:14px 16px; box-shadow:0 4px 18px rgba(16,38,43,.12); }
+.mappanel h3 { font-size:18px; margin-bottom:4px; }
+.mappanel .sub { font-size:12.5px; color:var(--muted); margin-bottom:10px; }
+.legend { position:absolute; right:12px; bottom:24px; z-index:500; background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:8px 10px; font-size:12px; }
+.legend .bar { height:10px; width:180px; border-radius:3px; margin:4px 0; }
+.legend .ends { display:flex; justify-content:space-between; color:var(--muted); }
+
+table.data { width:100%; border-collapse:collapse; font-size:13px; }
+table.data th, table.data td { text-align:left; padding:5px 6px; border-bottom:1px solid var(--rule); vertical-align:top; }
+table.data th { color:var(--ink); font-weight:600; background:#EFEADF; }
+.num { text-align:right !important; font-variant-numeric:tabular-nums; }
+
+.badge { display:inline-block; font-size:12px; font-weight:500; padding:2px 8px; border-radius:999px; white-space:nowrap; }
+.b-ok { background:var(--ok-bg); color:var(--ok); } .b-warn { background:var(--warn-bg); color:var(--warn); } .b-bad { background:var(--bad-bg); color:var(--bad); }
+.b-neutral { background:#ECE8DD; color:var(--muted); }
+.notice { border-radius:8px; padding:10px 12px; font-size:13px; margin:10px 0; }
+.notice.warn { background:var(--warn-bg); color:#5E3D0C; } .notice.bad { background:var(--bad-bg); color:#6B2419; } .notice.info { background:#E8EEF0; color:var(--ink); }
+.checks { list-style:none; padding:0; margin:6px 0 0; font-size:13px; }
+.checks li { display:flex; gap:8px; padding:3px 0; }
+.checks .mark { flex:none; width:52px; }
+
+.grid2 { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
+.card { background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:16px; }
+.card h3 { font-size:18px; margin-bottom:4px; }
+.meta { font-size:12.5px; color:var(--muted); }
+.kv { display:grid; grid-template-columns:110px 1fr; gap:2px 10px; font-size:13px; margin:8px 0; }
+.kv dt { color:var(--muted); } .kv dd { margin:0; color:var(--ink); overflow-wrap:anywhere; }
+.section { margin-top:32px; }
+.section > h3 { font-size:22px; margin-bottom:8px; }
+.table-wrap { overflow-x:auto; background:var(--card); border:1px solid var(--rule); border-radius:10px; }
+.flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0 4px; }
+.flow .step { background:var(--card); border:1px solid var(--rule); border-radius:8px; padding:8px 12px; font-size:13px; color:var(--ink); }
+.flow .arrow { color:var(--teal); }
+.searchbar { display:flex; gap:8px; margin:10px 0; }
+.searchbar input { flex:1; padding:9px 12px; border:1px solid var(--rule); border-radius:8px; background:var(--card); font:inherit; }
+.hit { border-top:1px solid var(--rule); padding:10px 0; font-size:14px; }
+.hit .t { color:var(--ink); font-weight:500; }
+
+/* Agent panel */
+.agent { display:flex; flex-direction:column; background:var(--card); border-left:1px solid var(--rule); min-height:0; }
+.agent-head { padding:14px 16px 10px; border-bottom:1px solid var(--rule); }
+.agent-head h2 { font-size:20px; }
+.agent-head .meta { margin-top:2px; }
+.messages { flex:1; overflow:auto; padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
+.msg.user { align-self:flex-end; background:var(--deep); color:#F3EEE3; padding:8px 12px; border-radius:10px 10px 2px 10px; max-width:88%; }
+.msg.bot { background:var(--paper); border:1px solid var(--rule); border-radius:10px; padding:12px 14px; }
+.msg.bot .answer p { margin:0 0 8px; } .msg.bot .answer ul { margin:0 0 8px; padding-left:18px; }
+.cite { display:inline-block; background:#E3F0EC; color:var(--teal); border-radius:4px; padding:0 4px; font-size:12px; font-weight:600; }
+.badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.cites { font-size:12.5px; margin-top:8px; } .cites div { margin:2px 0; }
+details.trace { margin-top:10px; font-size:13px; }
+details.trace summary { cursor:pointer; color:var(--teal); font-weight:500; }
+.tl { list-style:none; margin:8px 0 0; padding:0 0 0 14px; border-left:2px solid var(--rule); }
+.tl li { position:relative; padding:4px 0 8px 8px; }
+.tl li::before { content:""; position:absolute; left:-20px; top:10px; width:10px; height:10px; border-radius:50%; background:var(--teal); }
+.tl li.policy::before { background:var(--amber-soft); } .tl li.verify::before { background:var(--ink); } .tl li.fail::before { background:var(--bad); }
+.tl .kind { font-weight:600; color:var(--ink); }
+.suggest { display:flex; flex-direction:column; gap:6px; }
+.suggest button { text-align:left; background:var(--paper); border:1px solid var(--rule); border-radius:8px; padding:8px 10px; color:var(--ink); font-size:13.5px; }
+.composer { border-top:1px solid var(--rule); padding:10px 12px; display:flex; gap:8px; }
+.composer textarea { flex:1; resize:none; height:58px; padding:8px 10px; border:1px solid var(--rule); border-radius:8px; font:inherit; background:var(--paper); }
+.gate { padding:14px 16px; border-top:1px solid var(--rule); font-size:14px; }
+.thinking { color:var(--muted); font-size:13px; }
+
+.overlay { position:fixed; inset:0; background:rgba(14,42,47,.55); display:none; align-items:center; justify-content:center; z-index:2000; padding:16px; }
+.overlay.visible { display:flex; }
+.modal { background:var(--card); border-radius:12px; padding:22px; width:380px; max-width:100%; }
+.modal h3 { font-size:22px; margin-bottom:10px; }
+.modal input { width:100%; padding:9px 10px; margin:5px 0; border:1px solid var(--rule); border-radius:6px; font:inherit; }
+.modal .tabs { display:flex; gap:6px; margin-bottom:10px; }
+.modal .tabs button { flex:1; padding:7px; border:1px solid var(--rule); background:var(--paper); border-radius:6px; }
+.modal .tabs button.active { background:var(--deep); color:#F3EEE3; }
+.modal .msgline { font-size:13px; margin-top:8px; min-height:18px; }
+.modal .actions { display:flex; gap:8px; margin-top:10px; }
+.modal .actions .btn { flex:1; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <header>
-  <div class="logo">
-    <div class="logo-icon">🌊</div>
-    <div>
-      <div class="logo-text">KelpWatch</div>
-      <div class="logo-sub">Climate Risk Intelligence</div>
-    </div>
-  </div>
-  <div class="header-center">
-    <div class="tab active" onclick="setLayer('current')">Current Coverage</div>
-    <div class="tab" onclick="setLayer('historical')">1995 Baseline</div>
-    <div class="tab" onclick="setLayer('change')">Change Detection</div>
-    <div class="tab" onclick="setLayer('esrp')">ESRP Sites</div>
-    <div class="tab" onclick="setLayer('tribal')">Tribal Waters</div>
-    <div class="tab" onclick="setLayer('alerts')">⚠ Early Warnings</div>
-    <div class="tab" onclick="setLayer('fires')" style="color:#ff6b6b">🔥 Forest Fires</div>
-    <div class="tab" onclick="setLayer('india')" style="color:#6baed6">🌧 India Monsoon</div>
-    <div class="tab" onclick="showGrantRanker()">Grant Ranker</div>
-  </div>
-  <div class="header-right">
-    <span class="badge badge-live">GEE LIVE</span>
-    <span class="badge" style="background:rgba(0,150,255,0.1);color:var(--accent2);border:1px solid rgba(0,150,255,0.2)">Landsat · MODIS · CHIRPS</span>
-    <button class="auth-header-btn" id="authHeaderBtn" onclick="showAuthModal()">Sign Up / Sign In</button>
-    <span id="userEmailBadge" style="display:none;font-size:11px;color:var(--muted);font-family:'DM Mono',monospace"></span>
-    <button class="auth-header-btn" id="signOutBtn" style="display:none;border-color:rgba(255,107,107,0.3);color:var(--accent3)" onclick="signOut()">Sign Out</button>
-    <button class="auth-header-btn" onclick="showContactModal()" style="border-color:rgba(0,150,255,0.3);color:var(--accent2)">Contact Us</button>
+  <div class="brand">KelpWatch <small>a verified climate data agent</small></div>
+  <nav id="nav">
+    <button data-view="mapView" class="active">Map</button>
+    <button data-view="dataView">Data &amp; quality</button>
+    <button data-view="kbView">Knowledge base</button>
+    <button data-view="policyView">Policy &amp; skills</button>
+  </nav>
+  <div class="spacer"></div>
+  <div class="userbox">
+    <span id="userEmail"></span>
+    <button class="btn ghost small" id="signOutBtn" style="display:none">Sign out</button>
+    <button class="btn small" id="signInBtn">Sign in</button>
   </div>
 </header>
 
-<!-- MAIN -->
-<div class="main">
+<div class="layout">
+  <main style="min-height:0; overflow:hidden; position:relative">
 
-  <!-- LEFT PANEL -->
-  <div class="left-panel">
+    <!-- MAP -->
+    <section id="mapView" class="view active">
+      <div class="maptools">
+        <strong style="color:var(--ink); font-size:13px">Kelp signal:</strong>
+        <button data-layer="kelp:1995">1995</button><button data-layer="kelp:2000">2000</button>
+        <button data-layer="kelp:2015">2015</button><button data-layer="kelp:2023" class="active">2023</button>
+        <button data-layer="kelp-change">Change 2015 to 2023</button>
+        <span class="sep"></span>
+        <button data-layer="wildfire">Wildfire (7 days)</button>
+        <button data-layer="drought">Drought, India</button>
+      </div>
+      <div class="mapwrap">
+        <div id="map"></div>
+        <div class="mappanel" id="mapPanel"><div class="thinking">Loading data…</div></div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </section>
 
-    <div id="kelpPanel">
-    <!-- Goal Tracker -->
-    <div class="panel-section">
-      <div class="section-title">
-        2040 Restoration Goal
-        <span class="loading-chip" id="goalLoading">LOADING</span>
-      </div>
-      <div class="goal-ring-container">
-        <div class="goal-ring">
-          <svg width="80" height="80" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="32" fill="none" stroke="#0d2a47" stroke-width="6"/>
-            <circle cx="40" cy="40" r="32" fill="none" stroke="#00e5b4" stroke-width="6"
-              stroke-dasharray="201" stroke-dashoffset="170" id="goalArc"
-              stroke-linecap="round" style="transition: stroke-dashoffset 1.5s ease"/>
-          </svg>
-          <div class="goal-ring-text">
-            <div class="goal-pct" id="goalPct">18%</div>
-            <div class="goal-label">DONE</div>
-          </div>
-        </div>
-        <div class="goal-stats">
-          <div class="goal-stat"><span class="goal-stat-label">Target</span><span class="goal-stat-value" id="goalTarget">10,000 ac</span></div>
-          <div class="goal-stat"><span class="goal-stat-label">Restored</span><span class="goal-stat-value" id="goalRestored">—</span></div>
-          <div class="goal-stat"><span class="goal-stat-label">On track by</span><span class="goal-stat-value" id="goalYear" style="color:var(--accent3)">—</span></div>
+    <!-- DATA & QUALITY -->
+    <section id="dataView" class="view">
+      <div class="page">
+        <h2>Data and quality</h2>
+        <p class="lede">Every source the agent can use, where it comes from, when it last refreshed, and the quality checks it passed or failed. Failed checks are shown here and passed to the agent, which must disclose them.</p>
+        <div class="grid2" id="sourceCards"></div>
+        <div class="section">
+          <h3>Document ingestion</h3>
+          <p class="lede" id="ingestLede"></p>
+          <div class="table-wrap"><table class="data" id="ingestTable"></table></div>
         </div>
       </div>
-      <div class="trajectory-bar">
-        <div class="traj-label"><span>Needed pace</span><span id="neededPace">—</span></div>
-        <div class="traj-track"><div class="traj-fill traj-needed" id="neededBar" style="width:100%"></div></div>
-        <div class="traj-label" style="margin-top:6px"><span>Current pace</span><span id="currentPace" style="color:var(--accent3)">—</span></div>
-        <div class="traj-track"><div class="traj-fill traj-current" id="currentBar" style="width:40%"></div></div>
+    </section>
+
+    <!-- KNOWLEDGE BASE -->
+    <section id="kbView" class="view">
+      <div class="page">
+        <h2>Knowledge base</h2>
+        <p class="lede">Public kelp and eelgrass documents from Washington DNR, WDFW, the Northwest Straits Commission and partners, extracted, redacted, chunked and indexed. Search it the same way the agent does.</p>
+        <div class="searchbar"><input id="kbQuery" placeholder="e.g. What is driving bull kelp decline?"><button class="btn" id="kbSearchBtn">Search</button></div>
+        <div id="kbResults"></div>
+        <div class="section">
+          <h3>Retrieval test</h3>
+          <p class="lede" id="evalLede"></p>
+          <div class="table-wrap"><table class="data" id="evalTable"></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- POLICY & SKILLS -->
+    <section id="policyView" class="view">
+      <div class="page">
+        <h2>Policy and skills</h2>
+        <p class="lede">Rules are written in plain language and compiled into checks that run in code, before and after the model. The model never decides whether a rule passed.</p>
+        <div class="flow">
+          <span class="step">1. Input rules</span><span class="arrow">→</span>
+          <span class="step">2. Agent plans and calls approved tools</span><span class="arrow">→</span>
+          <span class="step">3. Every figure verified against tool results</span><span class="arrow">→</span>
+          <span class="step">4. Output rules</span><span class="arrow">→</span>
+          <span class="step">5. Answer with its full record</span>
+        </div>
+        <div class="section"><h3>Policy pack</h3><p class="meta" id="policyMeta"></p><div class="table-wrap"><table class="data" id="policyTable"></table></div></div>
+        <div class="section"><h3>Skills</h3><div class="grid2" id="skillCards"></div></div>
+        <div class="section"><h3>Tools</h3><div class="table-wrap"><table class="data" id="toolTable"></table></div></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- AGENT -->
+  <aside class="agent">
+    <div class="agent-head">
+      <h2>Ask the agent</h2>
+      <div class="meta" id="agentMeta">Every answer is checked against the data it used.</div>
+    </div>
+    <div class="messages" id="messages">
+      <div class="suggest" id="suggest">
+        <div class="meta">Try:</div>
+        <button>Where should the next $500K for kelp and eelgrass restoration go?</button>
+        <button>Is Puget Sound kelp declining? How reliable is the satellite signal?</button>
+        <button>What is driving bull kelp decline in Puget Sound?</button>
+        <button>Brief me on current wildfire activity in the US and India.</button>
+        <button>Are Indian farmers facing drought right now?</button>
+        <button>Write me a poem about the ocean.</button>
       </div>
     </div>
-
-    <!-- Early Warning Strip -->
-    <div class="panel-section" style="padding:10px 16px">
-      <div style="display:flex;gap:8px;align-items:center">
-        <div style="width:8px;height:8px;border-radius:50%;background:#ff6b6b;animation:pulse 1s infinite;flex-shrink:0"></div>
-        <div style="font-size:11px;font-family:'DM Mono',monospace;color:#ff6b6b;flex:1">3 ACTIVE ALERTS — Skagit, Whatcom, Snohomish</div>
-        <div onclick="setLayerDirect('alerts')" style="font-size:10px;cursor:pointer;color:#ff6b6b;text-decoration:underline;font-family:'DM Mono',monospace">View →</div>
-      </div>
+    <div class="gate" id="gate" style="display:none">Sign in to ask the agent (5 questions a day). <button class="btn small" id="gateBtn">Sign in</button></div>
+    <div class="composer" id="composer">
+      <textarea id="question" placeholder="Ask about kelp, wildfire or drought…"></textarea>
+      <button class="btn" id="askBtn">Ask</button>
     </div>
-
-    <!-- County Rankings -->
-    <div class="panel-section">
-      <div class="section-title">
-        County Degradation
-        <span class="loading-chip" id="countyLoading">LOADING</span>
-      </div>
-      <div id="countyList">
-        <!-- populated by JS -->
-        <div style="text-align:center;padding:20px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;">
-          Querying GEE satellite data...
-        </div>
-      </div>
-    </div>
-
-    <!-- Layer Controls -->
-    <div class="panel-section">
-      <div class="section-title">Map Layers</div>
-      <div class="layer-toggle">
-        <div class="layer-name">
-          <div class="layer-dot" style="background:#00e5b4;border-radius:50%"></div>
-          Current Kelp Index (2022–24)
-        </div>
-        <div class="toggle-switch on" id="toggleCurrent" onclick="toggleLayer('current')">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
-      <div class="layer-toggle">
-        <div class="layer-name">
-          <div class="layer-dot" style="background:#0096ff;border-radius:50%"></div>
-          Historical Baseline (1995)
-        </div>
-        <div class="toggle-switch" id="toggleHistorical" onclick="toggleLayer('historical')">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
-      <div class="layer-toggle">
-        <div class="layer-name">
-          <div class="layer-dot" style="background:#ff6b6b;border-radius:2px"></div>
-          ESRP Grant Sites
-        </div>
-        <div class="toggle-switch on" id="toggleGrants" onclick="toggleLayer('grants')">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
-      <div class="layer-toggle">
-        <div class="layer-name">
-          <div class="layer-dot" style="background:#ffd166;border-radius:2px"></div>
-          Salmon Recovery Zones
-        </div>
-        <div class="toggle-switch on" id="toggleSalmon" onclick="toggleLayer('salmon')">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
-      <div class="layer-toggle">
-        <div class="layer-name">
-          <div class="layer-dot" style="background:#a29bfe;border-radius:50%"></div>
-          Tribal Treaty Waters
-        </div>
-        <div class="toggle-switch" id="toggleTribal" onclick="toggleTribalLayer()">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
-      <div class="layer-toggle">
-        <div class="layer-name">
-          <div class="layer-dot" style="background:#ff6b6b;border-radius:50%"></div>
-          Early Warning Alerts
-        </div>
-        <div class="toggle-switch" id="toggleAlerts" onclick="toggleAlertLayer()">
-          <div class="toggle-knob"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Data Source -->
-    <div class="panel-section" style="margin-top:auto">
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.6">
-        📡 Landsat 8/9 C02 T1 L2<br>
-        📡 Landsat TM5 (historical)<br>
-        🗺️ NDWI spectral index<br>
-        📊 WA DNR / ESRP / NOAA<br>
-        🤖 Claude Haiku ROI Agent
-      </div>
-    </div>
-    </div><!-- /kelpPanel -->
-
-    <!-- FIRE PANEL -->
-    <div id="firePanel" style="display:none">
-      <div class="panel-section">
-        <div class="section-title">
-          🔥 US Wildfire Risk
-          <span class="loading-chip" id="fireUsLoading">LOADING</span>
-        </div>
-        <div id="fireUsStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
-          Querying MODIS data...
-        </div>
-      </div>
-      <div class="panel-section">
-        <div class="section-title">🔥 India Fire Risk</div>
-        <div id="fireIndiaStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
-          Querying MODIS data...
-        </div>
-      </div>
-      <div class="panel-section" style="margin-top:auto">
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.6">
-          📡 MODIS MCD64A1 Burned Area<br>
-          📡 500m resolution · NASA<br>
-          📊 Last 30 days rolling window<br>
-          🌍 Global coverage
-        </div>
-      </div>
-    </div><!-- /firePanel -->
-
-    <!-- INDIA PANEL -->
-    <div id="indiaPanel" style="display:none">
-      <div class="panel-section">
-        <div class="section-title">
-          🌧 Monsoon Status
-          <span class="loading-chip" id="indiaMonsoonLoading">LOADING</span>
-        </div>
-        <div id="indiaMonsoonStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
-          Querying CHIRPS data...
-        </div>
-      </div>
-      <div class="panel-section">
-        <div class="section-title">🌾 Farmer Risk</div>
-        <div id="indiaFarmerStats" style="text-align:center;padding:16px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">
-          Querying MODIS NDVI...
-        </div>
-      </div>
-      <div class="panel-section" id="elNinoAlert" style="display:none">
-        <div style="display:flex;gap:8px;align-items:flex-start">
-          <div style="width:8px;height:8px;border-radius:50%;background:#ffd166;animation:pulse 1s infinite;flex-shrink:0;margin-top:3px"></div>
-          <div style="flex:1">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-              <div style="font-size:11px;font-family:'DM Mono',monospace;color:#ffd166;font-weight:600" id="elNinoLabel">ENSO STATUS</div>
-              <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#ffd166" id="elNinoONI">—</div>
-            </div>
-            <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.5" id="elNinoImpact">Loading NOAA data...</div>
-            <div style="margin-top:6px;font-size:9px;color:var(--muted);font-family:'DM Mono',monospace" id="elNinoSource"></div>
-          </div>
-        </div>
-      </div>
-      <div class="panel-section">
-        <div style="display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:11px;color:var(--muted);font-family:'DM Mono',monospace">🌊 SST Ocean Layer</div>
-          <div class="toggle-switch" id="toggleSST" onclick="toggleSSTLayer()" style="flex-shrink:0">
-            <div class="toggle-knob"></div>
-          </div>
-        </div>
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:4px">NASA MUR SST · Pacific + Indian Ocean</div>
-      </div>
-      <div class="panel-section" style="margin-top:auto">
-        <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.6">
-          📡 CHIRPS Daily Rainfall · ~5km<br>
-          📡 MODIS MOD13A2 NDVI · 1km<br>
-          📊 UCSB-CHG / NASA<br>
-          🌾 Last 30 days rolling window
-        </div>
-      </div>
-    </div><!-- /indiaPanel -->
-
-  </div>
-
-  <!-- MAP -->
-  <div style="position:relative; overflow:hidden;">
-    <div id="map"></div>
-
-    <!-- Map loading -->
-    <div class="map-overlay map-loading" id="mapLoading">
-      <div class="spinner"></div>
-      <p>Loading satellite imagery from GEE...</p>
-    </div>
-
-    <!-- Map title -->
-    <div class="map-overlay map-title-overlay">
-      <div class="map-title-card">
-        <h2 id="mapTitle">Kelp & Eelgrass Coverage — Current (2022–2024)</h2>
-        <p id="mapSubtitle">NDWI index · Landsat 8/9 · 30m resolution · Puget Sound, WA</p>
-      </div>
-    </div>
-
-    <!-- Legend -->
-    <div class="map-overlay map-legend-overlay">
-      <div class="legend-card">
-        <div class="legend-title" id="legendTitle">NDWI — Aquatic Vegetation</div>
-        <div class="legend-gradient" id="legendGradient"></div>
-        <div class="legend-labels">
-          <span id="legendLow">Low (−0.3)</span>
-          <span>▲</span>
-          <span id="legendHigh">High (+0.3)</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- County popup -->
-    <div class="county-popup" id="countyPopup">
-      <div class="popup-header">
-        <div class="popup-title" id="popupTitle">County</div>
-        <div class="popup-close" onclick="closePopup()">×</div>
-      </div>
-      <div class="popup-chart-container">
-        <canvas id="popupChart"></canvas>
-      </div>
-      <div class="popup-stats">
-        <div class="popup-stat">
-          <div class="popup-stat-val" id="popupDelta">—</div>
-          <div class="popup-stat-lbl">Degradation</div>
-        </div>
-        <div class="popup-stat">
-          <div class="popup-stat-val" id="popupCurrent">—</div>
-          <div class="popup-stat-lbl">Current NDWI</div>
-        </div>
-        <div class="popup-stat">
-          <div class="popup-stat-val" id="popupPriority">—</div>
-          <div class="popup-stat-lbl">Priority Score</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- RIGHT PANEL — AGENT -->
-  <div class="right-panel">
-    <div class="agent-header">
-      <div class="agent-title">🤖 Climate Intelligence Agent <span id="providerBadge" style="font-size:9px;background:rgba(0,229,180,0.1);color:var(--accent);padding:2px 6px;border-radius:3px;font-family:'DM Mono',monospace;font-weight:400">Groq / OpenAI</span><span class="cache-hit-badge" id="cacheHitBadge">⚡ cached</span> <span class="usage-badge" id="usageBadge">5/5 left</span></div>
-      <div class="agent-sub">Kelp restoration · Forest fires US/India · Monsoon farmer risk</div>
-    </div>
-
-    <div class="agent-messages" id="agentMessages">
-      <div class="msg msg-agent">
-        <div class="msg-label">KelpWatch Agent</div>
-        I have satellite intelligence across three domains: <strong>Puget Sound kelp/eelgrass</strong> (30 years of Landsat NDWI, ESRP grants, orca recovery), <strong>forest fire risk</strong> (MODIS burned area for US &amp; India), and <strong>India monsoon/farmer risk</strong> (CHIRPS rainfall, MODIS NDVI, drought alerts). Ask me anything in these areas.
-      </div>
-    </div>
-
-    <div class="quick-queries">
-      <div class="quick-q" onclick="askQuery(this.textContent)">Rank 2026 ESRP grant sites by satellite ROI</div>
-      <div class="quick-q" onclick="askQuery(this.textContent)">Which county needs most urgent WDFW intervention?</div>
-      <div class="quick-q" onclick="askQuery(this.textContent)">How does kelp loss threaten Southern Resident Orca?</div>
-      <div class="quick-q" onclick="askQuery(this.textContent)">Will WA hit its 2040 kelp restoration goal?</div>
-      <div class="quick-q" style="border-color:rgba(255,107,107,0.3);color:#ff9a9a" onclick="askQuery(this.textContent)">🔥 Where are the highest wildfire risk zones in the US right now?</div>
-      <div class="quick-q" style="border-color:rgba(255,107,107,0.3);color:#ff9a9a" onclick="askQuery(this.textContent)">🔥 Which Indian states face peak forest fire risk and when?</div>
-      <div class="quick-q" style="border-color:rgba(107,174,214,0.3);color:#6baed6" onclick="askQuery(this.textContent)">🌧 What does satellite data say about this monsoon season for Indian farmers?</div>
-      <div class="quick-q" style="border-color:rgba(107,174,214,0.3);color:#6baed6" onclick="askQuery(this.textContent)">🌧 Which Indian states face drought risk for Kharif crops?</div>
-    </div>
-
-    <div class="typing-dots" id="typingDots">
-      <div class="dot-row"><span></span><span></span><span></span></div>
-      Analyzing satellite data...
-    </div>
-
-    <div class="progress-bar-wrap" id="progressWrap">
-      <div class="progress-label">
-        <span id="progressLabel">Buffering satellite data...</span>
-        <span id="progressPct">0%</span>
-      </div>
-      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-
-    <div class="agent-gate" id="agentGate" onclick="showAuthModal()">
-      🔒 Sign up free to ask the AI agent (5 queries/day)
-    </div>
-    <div class="agent-input-area" id="agentInputArea">
-      <div class="agent-input-row">
-        <textarea class="agent-textarea" id="agentInput" placeholder="Ask about kelp restoration, forest fires, or India monsoon risk..."></textarea>
-        <button class="send-btn" onclick="sendQuery()">→</button>
-      </div>
-    </div>
-  </div>
-
+  </aside>
 </div>
 
-<!-- Early Warning Alert Banner -->
-<div class="alert-banner" id="alertBanner">
-  <div class="alert-dot"></div>
-  <div class="alert-text">
-    <div class="alert-title" id="alertTitle">⚠ Skagit Bay — Critical NDWI Decline Detected</div>
-    <div class="alert-meta" id="alertMeta">NDWI dropped 12.3% in 90 days · Threshold: 10% · Detected: April 24, 2026 · WDFW Region 4 biologist notified</div>
-  </div>
-  <div class="alert-close" onclick="document.getElementById('alertBanner').classList.remove('visible')">×</div>
-</div>
-
-<!-- Tribal Info Panel -->
-<div class="tribal-panel" id="tribalPanel">
-  <div class="tribal-panel-title">
-    <span id="tribalName">Swinomish Tribe</span>
-    <span style="cursor:pointer;color:var(--muted)" onclick="document.getElementById('tribalPanel').classList.remove('visible')">×</span>
-  </div>
-  <div class="tribal-stat"><span class="tribal-stat-label">Treaty</span><span class="tribal-stat-val" id="tribalTreaty">Point Elliott, 1855</span></div>
-  <div class="tribal-stat"><span class="tribal-stat-label">Ceded Waters</span><span class="tribal-stat-val" id="tribalAcres">~84,000 acres</span></div>
-  <div class="tribal-stat"><span class="tribal-stat-label">Current NDWI</span><span class="tribal-stat-val" id="tribalNDWI" style="color:#ff6b6b">−0.181</span></div>
-  <div class="tribal-stat"><span class="tribal-stat-label">30yr Change</span><span class="tribal-stat-val" id="tribalChange" style="color:#ff6b6b">−20.1%</span></div>
-  <div class="tribal-stat"><span class="tribal-stat-label">Primary Species</span><span class="tribal-stat-val" id="tribalSpecies">Chinook, Coho</span></div>
-  <div class="tribal-stat"><span class="tribal-stat-label">Alert Status</span><span class="tribal-stat-val" id="tribalAlert" style="color:#ff6b6b">⚠ Degrading</span></div>
-  <div class="treaty-badge" id="tribalRights">Treaty right: 50% of harvestable fish in usual and accustomed fishing areas. Current habitat health directly impacts treaty fulfillment.</div>
-</div>
-
-<!-- Grant Ranker Modal -->
-<div class="modal-overlay" id="grantModal">
-  <div class="modal">
-    <div class="modal-title">
-      📋 ESRP 2026 Grant Application Ranker
-      <span style="cursor:pointer;color:var(--muted);font-size:20px" onclick="hideGrantRanker()">×</span>
-    </div>
-    <div class="modal-sub">Enter proposed grant projects — KelpWatch ranks them by satellite-derived ROI score</div>
-
-    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 80px;gap:8px;margin-bottom:8px">
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Project Name</div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">County</div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Acres</div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Amount $</div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;padding:0 4px">Salmon</div>
-    </div>
-
-    <div id="grantRows"></div>
-
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="add-row-btn" onclick="addGrantRow()">+ Add Project</button>
-      <button class="add-row-btn" onclick="loadSampleGrants()" style="border-color:rgba(123,97,255,0.3);color:var(--accent2);background:rgba(123,97,255,0.08)">Load Sample 2026 Projects</button>
-    </div>
-
-    <button class="rank-btn" onclick="runGrantRanker()">🛰 Rank by Satellite ROI →</button>
-
-    <div class="ranked-results" id="rankedResults"></div>
-  </div>
-</div>
-
-<!-- Auth Modal -->
 <div class="overlay" id="authOverlay">
-  <div class="auth-card">
-    <div class="auth-close" onclick="hideAuthModal()">×</div>
-    <div class="auth-card-title">KelpWatch Intelligence</div>
-    <div class="auth-card-sub">5 free queries/day · Satellite climate risk · No credit card</div>
-    <div class="auth-tabs">
-      <div class="auth-tab active" id="tabSignup" onclick="switchAuthTab('signup')">Sign Up</div>
-      <div class="auth-tab" id="tabSignin" onclick="switchAuthTab('signin')">Sign In</div>
-    </div>
-    <div id="authSignupForm">
-      <div class="auth-field"><div class="auth-label">Email</div><input class="auth-input" id="signupEmail" type="email" placeholder="you@example.com"></div>
-      <div class="auth-field"><div class="auth-label">Password</div><input class="auth-input" id="signupPassword" type="password" placeholder="8+ characters"></div>
-      <button class="auth-btn" id="signupBtn" onclick="doSignup()">Create Free Account →</button>
-    </div>
-    <div id="authSigninForm" style="display:none">
-      <div class="auth-field"><div class="auth-label">Email</div><input class="auth-input" id="signinEmail" type="email" placeholder="you@example.com"></div>
-      <div class="auth-field"><div class="auth-label">Password</div><input class="auth-input" id="signinPassword" type="password" placeholder="Your password"></div>
-      <button class="auth-btn" id="signinBtn" onclick="doSignin()">Sign In →</button>
-    </div>
-    <div class="auth-msg" id="authMsg"></div>
-    <div style="margin-top:16px;font-size:10px;color:var(--muted);text-align:center;font-family:'DM Mono',monospace">Powered by Empathy AI Tech · contact@empathyaitech.com</div>
-  </div>
-</div>
-
-<!-- Contact Modal -->
-<div class="overlay" id="contactOverlay">
-  <div class="auth-card" style="width:420px">
-    <div class="auth-close" onclick="hideContactModal()">×</div>
-    <div class="auth-card-title">Contact Empathy AI Tech</div>
-    <div class="auth-card-sub">Climate intelligence · Enterprise licensing · Partnerships</div>
-    <div class="auth-field"><div class="auth-label">Name</div><input class="auth-input" id="contactName" placeholder="Your name"></div>
-    <div class="auth-field"><div class="auth-label">Email</div><input class="auth-input" id="contactEmail" type="email" placeholder="you@company.com"></div>
-    <div class="auth-field"><div class="auth-label">Company</div><input class="auth-input" id="contactCompany" placeholder="Optional"></div>
-    <div class="auth-field"><div class="auth-label">Message</div><textarea class="auth-input" id="contactMessage" rows="4" style="resize:vertical" placeholder="How can we help?"></textarea></div>
-    <button class="auth-btn" id="contactBtn" onclick="doContact()">Send Message →</button>
-    <div class="auth-msg" id="contactMsg"></div>
+  <div class="modal">
+    <h3>KelpWatch account</h3>
+    <div class="tabs"><button id="tabIn" class="active">Sign in</button><button id="tabUp">Create account</button></div>
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input id="authPass" type="password" placeholder="Password" autocomplete="current-password">
+    <div class="actions"><button class="btn" id="authSubmit">Sign in</button><button class="btn ghost" style="color:var(--ink); border-color:var(--rule)" id="authCancel">Cancel</button></div>
+    <div class="msgline" id="authMsg"></div>
   </div>
 </div>
 
 <script>
-const API = (window.KELPWATCH_CONFIG?.apiBase) || 'http://localhost:8100/api';
+const API = (window.KELPWATCH_CONFIG && window.KELPWATCH_CONFIG.apiBase) || '/api';
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const getJSON = async (path, opts) => { const r = await fetch(API + path, opts); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText); return r.json(); };
+const badge = (ok, yes = 'Passed', no = 'Failed', warn = false) => `<span class="badge ${ok ? 'b-ok' : warn ? 'b-warn' : 'b-bad'}">${ok ? yes : no}</span>`;
+const stateBadge = (s) => ({ok:'<span class="badge b-ok">OK</span>', warning:'<span class="badge b-warn">Warning</span>',
+  failed:'<span class="badge b-bad">Failed</span>'}[s] || '<span class="badge b-neutral">Not run</span>');
+const checksList = (checks) => `<ul class="checks">${(checks || []).map(c =>
+  `<li><span class="mark">${badge(c.passed, 'Pass', 'Fail')}</span><span><b>${esc(c.check.replaceAll('_', ' '))}</b>: ${esc(c.detail || '')}</span></li>`).join('')}</ul>`;
 
-// ── Supabase auth ─────────────────────────────────────────────────────────────
-const _sbUrl  = window.KELPWATCH_CONFIG?.supabaseUrl  || '';
-const _sbKey  = window.KELPWATCH_CONFIG?.supabaseAnonKey || '';
-const sb = (_sbUrl && _sbKey && window.supabase)
-  ? window.supabase.createClient(_sbUrl, _sbKey)
-  : null;
-
-let currentUser = null;
-let authToken   = null;
-
-function updateAuthUI() {
-  const isLoggedIn = !!currentUser;
-  document.getElementById('authHeaderBtn').style.display  = isLoggedIn ? 'none'  : '';
-  document.getElementById('signOutBtn').style.display     = isLoggedIn ? ''      : 'none';
-  document.getElementById('userEmailBadge').style.display = isLoggedIn ? ''      : 'none';
-  document.getElementById('agentGate').classList.toggle('visible', !isLoggedIn);
-  document.getElementById('agentInputArea').style.display = isLoggedIn ? '' : 'none';
-  if (isLoggedIn) {
-    document.getElementById('userEmailBadge').textContent = currentUser.email;
-    loadUsage();
-  }
-}
-
-async function loadUsage() {
-  if (!authToken) return;
-  try {
-    const r = await fetch(`${API}/usage`, { headers: { Authorization: `Bearer ${authToken}` } });
-    if (!r.ok) return;
-    const d = await r.json();
-    const badge = document.getElementById('usageBadge');
-    badge.style.display = 'inline';
-    badge.textContent = `${d.queries_remaining}/${d.daily_limit} left today`;
-    badge.style.background = d.queries_remaining === 0
-      ? 'rgba(255,107,107,0.2)' : 'rgba(0,229,180,0.1)';
-    badge.style.color = d.queries_remaining === 0 ? 'var(--accent3)' : 'var(--accent)';
-    badge.style.borderColor = d.queries_remaining === 0
-      ? 'rgba(255,107,107,0.3)' : 'rgba(0,229,180,0.2)';
-  } catch(e) {}
-}
-
-if (sb) {
-  sb.auth.onAuthStateChange((_event, session) => {
-    currentUser = session?.user ?? null;
-    authToken   = session?.access_token ?? null;
-    updateAuthUI();
-  });
-  sb.auth.getSession().then(({ data: { session } }) => {
-    currentUser = session?.user ?? null;
-    authToken   = session?.access_token ?? null;
-    updateAuthUI();
-  });
-} else {
-  // No Supabase configured — run in open mode (local dev)
-  currentUser = { email: 'local-dev' };
-  authToken   = null;
-  updateAuthUI();
-}
-
-// ── Auth modal ────────────────────────────────────────────────────────────────
-function showAuthModal()  { document.getElementById('authOverlay').classList.add('visible'); }
-function hideAuthModal()  { document.getElementById('authOverlay').classList.remove('visible'); clearAuthMsg(); }
-function clearAuthMsg()   { const m = document.getElementById('authMsg'); m.textContent = ''; m.className = 'auth-msg'; }
-
-function switchAuthTab(tab) {
-  document.getElementById('authSignupForm').style.display = tab === 'signup' ? '' : 'none';
-  document.getElementById('authSigninForm').style.display = tab === 'signin' ? '' : 'none';
-  document.getElementById('tabSignup').classList.toggle('active', tab === 'signup');
-  document.getElementById('tabSignin').classList.toggle('active', tab === 'signin');
-  clearAuthMsg();
-}
-
-async function doSignup() {
-  if (!sb) return alert('Supabase not configured. Set supabaseUrl and supabaseAnonKey in config.js.');
-  const email = document.getElementById('signupEmail').value.trim();
-  const pass  = document.getElementById('signupPassword').value;
-  const btn = document.getElementById('signupBtn');
-  btn.disabled = true; btn.textContent = 'Creating account...';
-  const { error } = await sb.auth.signUp({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Create Free Account →';
-  const msg = document.getElementById('authMsg');
-  if (error) { msg.textContent = error.message; msg.className = 'auth-msg error'; }
-  else { msg.textContent = '✅ Check your email to confirm, then sign in.'; msg.className = 'auth-msg success'; }
-}
-
-async function doSignin() {
-  if (!sb) return alert('Supabase not configured.');
-  const email = document.getElementById('signinEmail').value.trim();
-  const pass  = document.getElementById('signinPassword').value;
-  const btn = document.getElementById('signinBtn');
-  btn.disabled = true; btn.textContent = 'Signing in...';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  btn.disabled = false; btn.textContent = 'Sign In →';
-  if (error) {
-    const msg = document.getElementById('authMsg');
-    msg.textContent = error.message; msg.className = 'auth-msg error';
-  } else {
-    hideAuthModal();
-  }
-}
-
-async function signOut() {
-  if (sb) await sb.auth.signOut();
-  currentUser = null; authToken = null;
-  document.getElementById('usageBadge').style.display = 'none';
-  updateAuthUI();
-}
-
-// ── Contact modal ─────────────────────────────────────────────────────────────
-function showContactModal()  { document.getElementById('contactOverlay').classList.add('visible'); }
-function hideContactModal()  { document.getElementById('contactOverlay').classList.remove('visible'); }
-
-async function doContact() {
-  const name    = document.getElementById('contactName').value.trim();
-  const email   = document.getElementById('contactEmail').value.trim();
-  const company = document.getElementById('contactCompany').value.trim();
-  const message = document.getElementById('contactMessage').value.trim();
-  if (!name || !email || !message) {
-    const m = document.getElementById('contactMsg');
-    m.textContent = 'Please fill in name, email, and message.';
-    m.className = 'auth-msg error'; return;
-  }
-  const btn = document.getElementById('contactBtn');
-  btn.disabled = true; btn.textContent = 'Sending...';
-  try {
-    await fetch(`${API}/contact`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, company, message }),
-    });
-    const m = document.getElementById('contactMsg');
-    m.textContent = '✅ Message sent! We\'ll be in touch soon.'; m.className = 'auth-msg success';
-    btn.textContent = 'Sent!';
-  } catch(e) {
-    const m = document.getElementById('contactMsg');
-    m.textContent = 'Failed to send — try contact@empathyaitech.com'; m.className = 'auth-msg error';
-    btn.disabled = false; btn.textContent = 'Send Message →';
-  }
-}
-let map, currentLayer, historicalLayer, fireLayer, indiaLayer, countyData = [];
-let kelpMarkersGroup = null;
-let fireMarkersGroup = null;
-let indiaCityLayer = null;
-let popupChart = null;
-let layerStates = { current: true, historical: false, grants: true, salmon: true };
-let activeView = 'kelp'; // 'kelp' | 'fires' | 'india'
-
-// ESRP grant sites (real locations from public WDFW data)
-const ESRP_SITES = [
-  { lat: 47.32, lng: -122.61, name: "Nisqually Delta", county: "Pierce", acres: 180, status: "Active" },
-  { lat: 48.49, lng: -122.41, name: "Skagit Bay Eelgrass", county: "Skagit", acres: 240, status: "Completed" },
-  { lat: 47.85, lng: -122.38, name: "Port Susan Nearshore", county: "Snohomish", acres: 95, status: "Active" },
-  { lat: 47.62, lng: -122.70, name: "Hood Canal Kelp", county: "Kitsap", acres: 320, status: "Proposed" },
-  { lat: 48.72, lng: -122.55, name: "Padilla Bay NERR", county: "Whatcom", acres: 410, status: "Completed" },
-  { lat: 47.21, lng: -122.48, name: "Commencement Bay", county: "Pierce", acres: 75, status: "Active" },
-  { lat: 47.95, lng: -122.22, name: "Possession Sound", county: "Snohomish", acres: 130, status: "Proposed" },
-];
-
-// Salmon recovery zones
-const SALMON_ZONES = [
-  { lat: 47.35, lng: -122.58, r: 15000, name: "Nisqually Chinook Critical" },
-  { lat: 48.45, lng: -122.35, r: 20000, name: "Skagit Chinook Habitat" },
-  { lat: 47.75, lng: -122.52, r: 12000, name: "Green/Duwamish Corridor" },
-];
-
-// ── Map init ──────────────────────────────────────────────────────────────────
-function initMap() {
-  map = L.map('map', {
-    center: [47.8, -122.5],
-    zoom: 9,
-    zoomControl: false,
-    attributionControl: false
-  });
-
-  // ESRI satellite basemap
-  L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { maxZoom: 18 }
-  ).addTo(map);
-
-  // Zoom control
-  L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-  // Kelp-specific markers — grouped so they can be hidden on fire/india views
-  kelpMarkersGroup = L.layerGroup().addTo(map);
-
-  ESRP_SITES.forEach(site => {
-    const color = site.status === 'Completed' ? '#00e5b4' : site.status === 'Active' ? '#ffd166' : '#ff6b6b';
-    const marker = L.circleMarker([site.lat, site.lng], {
-      radius: 7, fillColor: color, color: '#fff', weight: 1.5, fillOpacity: 0.85
-    });
-    marker.bindPopup(`
-      <div style="font-family:'DM Sans',sans-serif;min-width:160px">
-        <div style="font-weight:700;margin-bottom:4px">${site.name}</div>
-        <div style="font-size:11px;color:#666">${site.county} County · ${site.acres} acres</div>
-        <div style="margin-top:6px;padding:3px 8px;border-radius:4px;display:inline-block;font-size:10px;background:${color}22;color:${color}">${site.status}</div>
-      </div>
-    `);
-    kelpMarkersGroup.addLayer(marker);
-  });
-
-  SALMON_ZONES.forEach(zone => {
-    const circle = L.circle([zone.lat, zone.lng], {
-      radius: zone.r, color: '#0096ff', fillColor: '#0096ff',
-      fillOpacity: 0.04, weight: 1, dashArray: '4 6'
-    }).bindTooltip(zone.name, { permanent: false });
-    kelpMarkersGroup.addLayer(circle);
-  });
-
-  // Load GEE tiles
-  loadGEETiles();
-}
-
-// ── Load GEE tiles ────────────────────────────────────────────────────────────
-async function loadGEETiles() {
-  document.getElementById('mapLoading').style.display = 'block';
-  try {
-    const res = await fetch(`${API}/tiles/current`);
-    const data = await res.json();
-    if (data.tile_url) {
-      currentLayer = L.tileLayer(data.tile_url, { opacity: 0.7, maxZoom: 18 }).addTo(map);
-    }
-
-    const res2 = await fetch(`${API}/tiles/historical`);
-    const data2 = await res2.json();
-    if (data2.tile_url) {
-      historicalLayer = L.tileLayer(data2.tile_url, { opacity: 0.7, maxZoom: 18 });
-    }
-
-    document.getElementById('mapLoading').style.display = 'none';
-  } catch(e) {
-    document.getElementById('mapLoading').innerHTML = `<p style="color:#ff6b6b">⚠ Kelp tile load failed</p>`;
-    console.warn('GEE tiles unavailable:', e);
-  }
-}
-
-// ── Layer controls ────────────────────────────────────────────────────────────
-function toggleLayer(type) {
-  layerStates[type] = !layerStates[type];
-  const el = document.getElementById('toggle' + type.charAt(0).toUpperCase() + type.slice(1));
-  if (el) el.classList.toggle('on', layerStates[type]);
-}
-
-// ── Load county data ──────────────────────────────────────────────────────────
-async function loadCountyData() {
-  try {
-    const res = await fetch(`${API}/counties`);
-    const data = await res.json();
-    countyData = data.counties;
-    document.getElementById('countyLoading').style.display = 'none';
-    renderCountyList(countyData);
-  } catch(e) {
-    document.getElementById('countyLoading').textContent = 'OFFLINE';
-    // Use fallback data for demo
-    countyData = getFallbackCountyData();
-    renderCountyList(countyData);
-  }
-}
-
-function getFallbackCountyData() {
-  return [
-    { county: "Pierce", degradation_pct: -34.2, current_ndwi: -0.082, baseline_ndwi: -0.055, priority_score: 34.2,
-      timeline: [{year:"1995",ndwi:-0.055},{year:"2000",ndwi:-0.063},{year:"2010",ndwi:-0.071},{year:"2023",ndwi:-0.082}] },
-    { county: "King", degradation_pct: -28.7, current_ndwi: -0.071, baseline_ndwi: -0.055, priority_score: 28.7,
-      timeline: [{year:"1995",ndwi:-0.055},{year:"2000",ndwi:-0.061},{year:"2010",ndwi:-0.065},{year:"2023",ndwi:-0.071}] },
-    { county: "Snohomish", degradation_pct: -21.4, current_ndwi: -0.067, baseline_ndwi: -0.053, priority_score: 21.4,
-      timeline: [{year:"1995",ndwi:-0.053},{year:"2000",ndwi:-0.057},{year:"2010",ndwi:-0.062},{year:"2023",ndwi:-0.067}] },
-    { county: "Kitsap", degradation_pct: -18.9, current_ndwi: 0.041, baseline_ndwi: 0.051, priority_score: 18.9,
-      timeline: [{year:"1995",ndwi:0.051},{year:"2000",ndwi:0.047},{year:"2010",ndwi:0.043},{year:"2023",ndwi:0.041}] },
-    { county: "Skagit", degradation_pct: -11.2, current_ndwi: 0.089, baseline_ndwi: 0.100, priority_score: 11.2,
-      timeline: [{year:"1995",ndwi:0.100},{year:"2000",ndwi:0.096},{year:"2010",ndwi:0.092},{year:"2023",ndwi:0.089}] },
-    { county: "Whatcom", degradation_pct: -6.8, current_ndwi: 0.112, baseline_ndwi: 0.120, priority_score: 6.8,
-      timeline: [{year:"1995",ndwi:0.120},{year:"2000",ndwi:0.118},{year:"2010",ndwi:0.115},{year:"2023",ndwi:0.112}] },
-  ];
-}
-
-function renderCountyList(counties) {
-  const colors = ['#ff6b6b','#ff8c42','#ffd166','#06d6a0','#00e5b4','#0096ff'];
-  const list = document.getElementById('countyList');
-  list.innerHTML = counties.map((c, i) => `
-    <div class="county-item" onclick="showCountyPopup(${i})" id="county-${i}">
-      <div class="county-dot" style="background:${colors[i]}"></div>
-      <div class="county-info">
-        <div class="county-name">${c.county} County</div>
-        <div class="county-meta">NDWI: ${c.current_ndwi > 0 ? '+' : ''}${c.current_ndwi} · Priority: ${c.priority_score}</div>
-      </div>
-      <div class="county-delta" style="color:${c.degradation_pct < -20 ? '#ff6b6b' : c.degradation_pct < -10 ? '#ffd166' : '#00e5b4'}">
-        ${c.degradation_pct > 0 ? '+' : ''}${c.degradation_pct}%
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── County popup ──────────────────────────────────────────────────────────────
-function showCountyPopup(idx) {
-  document.querySelectorAll('.county-item').forEach(el => el.classList.remove('active'));
-  document.getElementById('county-' + idx)?.classList.add('active');
-
-  const c = countyData[idx];
-  document.getElementById('popupTitle').textContent = c.county + ' County — 30-Year Kelp Trend';
-  document.getElementById('popupDelta').textContent = (c.degradation_pct > 0 ? '+' : '') + c.degradation_pct + '%';
-  document.getElementById('popupDelta').style.color = c.degradation_pct < 0 ? '#ff6b6b' : '#00e5b4';
-  document.getElementById('popupCurrent').textContent = c.current_ndwi.toFixed(3);
-  document.getElementById('popupPriority').textContent = c.priority_score;
-
-  const ctx = document.getElementById('popupChart').getContext('2d');
-  if (popupChart) popupChart.destroy();
-
-  popupChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: c.timeline.map(t => t.year),
-      datasets: [{
-        data: c.timeline.map(t => t.ndwi),
-        borderColor: c.degradation_pct < -20 ? '#ff6b6b' : '#00e5b4',
-        backgroundColor: c.degradation_pct < -20 ? 'rgba(255,107,107,0.1)' : 'rgba(0,229,180,0.1)',
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#fff',
-        pointRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4a6b8a', font: { size: 10 } } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#4a6b8a', font: { size: 10 } } }
-      }
-    }
-  });
-
-  document.getElementById('countyPopup').classList.add('visible');
-}
-
-function closePopup() {
-  document.getElementById('countyPopup').classList.remove('visible');
-}
-
-// ── Goal tracker ──────────────────────────────────────────────────────────────
-async function loadGoalTracker() {
-  try {
-    const res = await fetch(`${API}/goal-tracker`);
-    const d = await res.json();
-    document.getElementById('goalLoading').style.display = 'none';
-
-    const pct = Math.round((d.restored_acres / d.target_acres) * 100);
-    document.getElementById('goalPct').textContent = pct + '%';
-    document.getElementById('goalTarget').textContent = d.target_acres.toLocaleString() + ' ac';
-    document.getElementById('goalRestored').textContent = d.restored_acres.toLocaleString() + ' ac';
-    document.getElementById('goalYear').textContent = d.current_trajectory_year;
-    document.getElementById('neededPace').textContent = d.needed_pace_acres_per_year + ' ac/yr';
-    document.getElementById('currentPace').textContent = d.current_pace_acres_per_year + ' ac/yr';
-
-    // Animate ring
-    const circumference = 201;
-    const offset = circumference - (circumference * pct / 100);
-    setTimeout(() => {
-      document.getElementById('goalArc').style.strokeDashoffset = offset;
-    }, 300);
-
-    // Pace bars
-    const ratio = d.current_pace_acres_per_year / d.needed_pace_acres_per_year;
-    document.getElementById('currentBar').style.width = (ratio * 100) + '%';
-  } catch(e) {
-    // Use static data
-    document.getElementById('goalLoading').style.display = 'none';
-    document.getElementById('goalRestored').textContent = '1,847 ac';
-    document.getElementById('goalYear').textContent = '2051';
-    document.getElementById('neededPace').textContent = '471 ac/yr';
-    document.getElementById('currentPace').textContent = '184 ac/yr';
-    document.getElementById('currentBar').style.width = '39%';
-    setTimeout(() => { document.getElementById('goalArc').style.strokeDashoffset = 164; }, 300);
-  }
-}
-
-// ── Claude Agent ──────────────────────────────────────────────────────────────
-function askQuery(q) {
-  document.getElementById('agentInput').value = q;
-  sendQuery();
-}
-
-// ── Progress bar helpers ──────────────────────────────────────────────────────
-let progressInterval = null;
-
-function startProgress(label, durationMs) {
-  const wrap = document.getElementById('progressWrap');
-  const fill = document.getElementById('progressFill');
-  const pct  = document.getElementById('progressPct');
-  const lbl  = document.getElementById('progressLabel');
-  lbl.textContent = label;
-  fill.style.width = '0%';
-  wrap.classList.add('visible');
-  let elapsed = 0;
-  const step = 200;
-  clearInterval(progressInterval);
-  progressInterval = setInterval(() => {
-    elapsed += step;
-    // Ease-out: fast start, slows near end
-    const progress = Math.min(95, (elapsed / durationMs) * 100 * (1 - elapsed / (durationMs * 3)));
-    fill.style.width = Math.min(95, progress) + '%';
-    pct.textContent = Math.round(Math.min(95, progress)) + '%';
-  }, step);
-}
-
-function completeProgress(label = 'Done') {
-  clearInterval(progressInterval);
-  const fill = document.getElementById('progressFill');
-  const pct  = document.getElementById('progressPct');
-  const lbl  = document.getElementById('progressLabel');
-  fill.style.width = '100%';
-  pct.textContent = '100%';
-  lbl.textContent = label;
-  setTimeout(() => {
-    document.getElementById('progressWrap').classList.remove('visible');
-    fill.style.width = '0%';
-  }, 800);
-}
-
-async function sendQuery() {
-  const input = document.getElementById('agentInput');
-  const q = input.value.trim();
-  if (!q) return;
-  input.value = '';
-
-  appendMsg('user', q);
-
-  // Hide cache badge
-  document.getElementById('cacheHitBadge').style.display = 'none';
-
-  // Check if satellite data is ready
-  const dataReady = countyData.length > 0;
-
-  if (!dataReady) {
-    // Show buffering progress — GEE data still loading
-    startProgress('⏳ Buffering satellite data from GEE...', 45000);
-    document.getElementById('typingDots').classList.add('visible');
-
-    // Poll until data ready, max 60s then fallback
-    let waited = 0;
-    while (countyData.length === 0 && waited < 60000) {
-      await new Promise(r => setTimeout(r, 2000));
-      waited += 2000;
-      try {
-        const s = await fetch(`${API}/status`);
-        const sd = await s.json();
-        if (sd.county_data_ready) {
-          const r = await fetch(`${API}/counties`);
-          const d = await r.json();
-          countyData = d.counties;
-          renderCountyList(countyData);
-        }
-      } catch(e) {}
-    }
-
-    if (countyData.length === 0) {
-      // Timeout — use fallback and note it
-      countyData = getFallbackCountyData();
-      renderCountyList(countyData);
-      completeProgress('Using estimated data (GEE timeout)');
-    } else {
-      completeProgress('✅ Satellite data loaded');
-    }
-  } else {
-    // Check if this is a fuzzy cache-able query (instant)
-    const cacheKeys = ['where should','king county','which county','2040 goal','most urgent','500k','salmon','wildfire','monsoon','india drought','kharif','fire risk','india fire'];
-    const isCacheable = cacheKeys.some(k => q.toLowerCase().includes(k));
-    if (isCacheable) {
-      startProgress('⚡ Retrieving from cached analysis...', 800);
-    } else if (/fire|wildfire|burn/i.test(q)) {
-      startProgress('🔥 Querying MODIS fire data...', 4000);
-    } else if (/india|monsoon|rain|drought|farmer|kharif/i.test(q)) {
-      startProgress('🌧 Querying CHIRPS/MODIS India data...', 4000);
-    } else {
-      startProgress('🛰 Querying satellite data...', 4000);
-    }
-  }
-
-  document.getElementById('typingDots').classList.add('visible');
-
-  const context = {
-    counties: countyData.map(c => ({
-      county: c.county,
-      degradation_pct: c.degradation_pct,
-      current_ndwi: c.current_ndwi,
-      baseline_ndwi: c.baseline_ndwi,
-      priority_score: c.priority_score,
-      timeline: c.timeline
-    })),
-    goal: { target_acres: 10000, restored_acres: 1847, trajectory_year: 2051,
-            needed_pace: "471 ac/yr", current_pace: "184 ac/yr" },
-    data_source: "Real Landsat GEE satellite NDWI data, Puget Sound WA"
-  };
-
-  try {
-    const headers = { 'Content-Type': 'application/json' };
-    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
-
-    const res = await fetch(`${API}/agent`, {
-      method: 'POST', headers,
-      body: JSON.stringify({ query: q, county_data: context })
-    });
-    document.getElementById('typingDots').classList.remove('visible');
-
-    if (res.status === 401) {
-      completeProgress('❌ Auth required');
-      appendMsg('agent', '🔒 Please sign in to use the AI agent.');
-      showAuthModal();
-      return;
-    }
-    if (res.status === 429) {
-      const err = await res.json();
-      completeProgress('⚠ Limit reached');
-      appendMsg('agent', `⏱ ${err.detail}`);
-      return;
-    }
-
-    const data = await res.json();
-
-    if (data.from_cache) {
-      completeProgress('⚡ Retrieved from cache');
-      const badge = document.getElementById('cacheHitBadge');
-      badge.style.display = 'inline'; badge.textContent = '⚡ cached response';
-    } else {
-      completeProgress('✅ Analysis complete');
-    }
-
-    if (data.provider) {
-      const label = data.provider === 'openai' ? 'GPT-4o-mini' : 'Llama 3.3 70B';
-      document.getElementById('providerBadge').textContent = label;
-    }
-    appendMsg('agent', data.response);
-
-    // Update usage badge
-    if (data.queries_remaining !== undefined) {
-      const badge = document.getElementById('usageBadge');
-      const lim = 5;
-      badge.style.display = 'inline';
-      badge.textContent = `${data.queries_remaining}/${lim} left today`;
-      badge.style.color = data.queries_remaining === 0 ? 'var(--accent3)' : 'var(--accent)';
-    }
-  } catch(e) {
-    document.getElementById('typingDots').classList.remove('visible');
-    completeProgress('❌ Error');
-    appendMsg('agent', '⚠ Backend offline. Start: cd backend && uvicorn main:app --reload');
-  }
-}
-
-function appendMsg(role, text) {
-  const msgs = document.getElementById('agentMessages');
-  const div = document.createElement('div');
-  div.className = `msg msg-${role}`;
-  div.innerHTML = `<div class="msg-label">${role === 'user' ? 'You' : 'KelpWatch Agent'}</div>${text}`;
-  msgs.appendChild(div);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-document.getElementById('agentInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendQuery(); }
+// ── Navigation ──────────────────────────────────────────────────────────────
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === b.dataset.view));
+  const h = Object.keys({ '#data':'dataView', '#kb':'kbView', '#policy':'policyView', '#map':'mapView' }).find(k => ({ '#data':'dataView', '#kb':'kbView', '#policy':'policyView', '#map':'mapView' })[k] === b.dataset.view);
+  if (h && location.hash !== h) history.replaceState(null, '', h);
+  if (b.dataset.view === 'mapView') setTimeout(() => map.invalidateSize(), 50);
+  if (b.dataset.view === 'dataView') loadSources();
+  if (b.dataset.view === 'kbView') loadEvals();
+  if (b.dataset.view === 'policyView') loadPolicy();
 });
 
-// ── Tribal Nations Data ──────────────────────────────────────────────────────
-const TRIBAL_NATIONS = [
-  {
-    name: "Swinomish Indian Tribal Community",
-    treaty: "Point Elliott, 1855",
-    acres: "~84,000 acres",
-    lat: 48.49, lng: -122.50, r: 18000,
-    color: "#a29bfe",
-    ndwi: "-0.181", change: "-20.1%", status: "⚠ Degrading",
-    species: "Chinook, Coho, Dungeness Crab",
-    rights: "Treaty right: 50% of harvestable fish in usual and accustomed fishing areas. Current habitat health directly impacts treaty fulfillment.",
-    county: "Skagit"
-  },
-  {
-    name: "Lummi Nation",
-    treaty: "Point Elliott, 1855",
-    acres: "~120,000 acres",
-    lat: 48.82, lng: -122.68, r: 22000,
-    color: "#a29bfe",
-    ndwi: "-0.211", change: "-19.6%", status: "⚠ Degrading",
-    species: "Chinook, Sockeye, Halibut",
-    rights: "Treaty right: access to all usual and accustomed fishing grounds. Lummi Nation has independent monitoring rights under treaty.",
-    county: "Whatcom"
-  },
-  {
-    name: "Tulalip Tribes",
-    treaty: "Point Elliott, 1855",
-    acres: "~95,000 acres",
-    lat: 47.95, lng: -122.30, r: 16000,
-    color: "#a29bfe",
-    ndwi: "-0.211", change: "-15.9%", status: "⚠ Watch",
-    species: "Chinook, Coho, Clams",
-    rights: "Co-management authority with WDFW under U.S. v. Washington (Boldt Decision). Tribe has standing to demand habitat protection.",
-    county: "Snohomish"
-  },
-  {
-    name: "Puyallup Tribe of Indians",
-    treaty: "Medicine Creek, 1854",
-    acres: "~60,000 acres",
-    lat: 47.25, lng: -122.45, r: 14000,
-    color: "#a29bfe",
-    ndwi: "-0.204", change: "-9.0%", status: "⚠ Watch",
-    species: "Chinook, Steelhead",
-    rights: "Treaty fishing rights in Commencement Bay and Puyallup River watershed. Active litigation on habitat degradation.",
-    county: "Pierce"
-  },
-  {
-    name: "Nisqually Indian Tribe",
-    treaty: "Medicine Creek, 1854",
-    acres: "~45,000 acres",
-    lat: 47.10, lng: -122.70, r: 12000,
-    color: "#a29bfe",
-    ndwi: "-0.187", change: "-9.0%", status: "✓ Stable",
-    species: "Chinook, Coho — Nisqually Delta restoration active",
-    rights: "Treaty fishing in Nisqually watershed. Active ESRP-funded restoration at Nisqually Delta — tracking NDWI recovery.",
-    county: "Pierce"
-  },
-  {
-    name: "Suquamish Tribe",
-    treaty: "Point Elliott, 1855",
-    acres: "~70,000 acres",
-    lat: 47.72, lng: -122.62, r: 15000,
-    color: "#a29bfe",
-    ndwi: "-0.187", change: "-10.2%", status: "⚠ Watch",
-    species: "Chinook, Dungeness Crab, Clams",
-    rights: "Treaty co-management rights in Hood Canal and Puget Sound. Suquamish Fisheries Department conducts independent monitoring.",
-    county: "Kitsap"
-  },
-];
-
-// ── Early Warning Alerts Data ─────────────────────────────────────────────────
-const EARLY_WARNINGS = [
-  {
-    id: "W001", site: "Skagit Bay — Deepwater Eelgrass", county: "Skagit",
-    lat: 48.42, lng: -122.52,
-    ndwi_current: -0.212, ndwi_30days: -0.188, drop_pct: 12.3,
-    threshold: 10, detected: "April 24, 2026",
-    severity: "critical", notified: "WDFW Region 4 Biologist — Sarah Chen",
-    cause: "Suspected: agricultural runoff event + water temp anomaly +2.1°C",
-    action: "Site inspection scheduled April 28"
-  },
-  {
-    id: "W002", site: "Padilla Bay North Margin", county: "Whatcom",
-    lat: 48.51, lng: -122.48,
-    ndwi_current: -0.198, ndwi_30days: -0.182, drop_pct: 8.8,
-    threshold: 10, detected: "April 19, 2026",
-    severity: "warning", notified: "Padilla Bay NERR Station",
-    cause: "Seasonal turbidity increase — monitoring elevated",
-    action: "Automated monitoring frequency increased to weekly"
-  },
-  {
-    id: "W003", site: "Possession Sound Nearshore", county: "Snohomish",
-    lat: 47.98, lng: -122.25,
-    ndwi_current: -0.219, ndwi_30days: -0.194, drop_pct: 12.9,
-    threshold: 10, detected: "April 21, 2026",
-    severity: "critical", notified: "Tulalip Natural Resources + WDFW Region 4",
-    cause: "Dredging activity detected 0.8mi upstream",
-    action: "Emergency review requested — permit compliance check"
-  },
-];
-
-let tribalLayer = null;
-let alertMarkers = [];
-
-// ── Tribal layer ──────────────────────────────────────────────────────────────
-function renderTribalLayer() {
-  if (tribalLayer) tribalLayer.clearLayers();
-  tribalLayer = L.layerGroup();
-
-  TRIBAL_NATIONS.forEach(t => {
-    // Territory circle
-    const circle = L.circle([t.lat, t.lng], {
-      radius: t.r,
-      color: t.color,
-      fillColor: t.color,
-      fillOpacity: 0.07,
-      weight: 2,
-      dashArray: '6 4'
-    });
-
-    // Center marker
-    const marker = L.circleMarker([t.lat, t.lng], {
-      radius: 8,
-      fillColor: t.color,
-      color: '#fff',
-      weight: 2,
-      fillOpacity: 0.9
-    });
-
-    marker.on('click', () => showTribalPanel(t));
-    circle.on('click', () => showTribalPanel(t));
-
-    tribalLayer.addLayer(circle);
-    tribalLayer.addLayer(marker);
-  });
-
-  tribalLayer.addTo(map);
+// ── Map ─────────────────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl:false }).setView([47.75, -122.5], 9);
+L.control.zoom({ position:'topright' }).addTo(map);
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'Basemap &copy; Esri · Satellite layers: Google Earth Engine (Landsat, JRC, FIRMS, CHIRPS)', maxZoom:16 }).addTo(map);
+let overlay = null, siteLayer = null, kelpData = null;
+const LEGENDS = {
+  kelp: { title:'Summer median NDVI over permanent water', colors:['#0b2a4a','#1d5f7a','#3a9d8f','#9bd18b','#f2e394'], ends:['-0.3 (open water)','0.4 (vegetation)'] },
+  'kelp-change': { title:'NDVI change, 2015 to 2023', colors:['#b2182b','#f7f7f7','#2166ac'], ends:['-0.2 (lower)','+0.2 (higher)'] },
+  wildfire: { title:'Active fire, brightness (K), last 7 days', colors:['#ffd166','#f77f00','#d62828'], ends:['300','400'] },
+  drought: { title:'Rainfall, % of 1991-2020 normal (30 days)', colors:['#8c510a','#d8b365','#f6e8c3','#c7eae5','#5ab4ac','#01665e'], ends:['25%','175%'] },
+};
+function setLegend(key, note) {
+  const l = LEGENDS[key];
+  $('legend').innerHTML = `<div><b>${esc(l.title)}</b></div><div class="bar" style="background:linear-gradient(90deg, ${l.colors.join(',')})"></div>
+    <div class="ends"><span>${esc(l.ends[0])}</span><span>${esc(l.ends[1])}</span></div>${note ? `<div class="meta" style="margin-top:4px">${esc(note)}</div>` : ''}`;
 }
-
-function showTribalPanel(t) {
-  document.getElementById('tribalName').textContent = t.name;
-  document.getElementById('tribalTreaty').textContent = t.treaty;
-  document.getElementById('tribalAcres').textContent = t.acres;
-  document.getElementById('tribalNDWI').textContent = t.ndwi;
-  document.getElementById('tribalNDWI').style.color = t.status.includes('Degrading') ? '#ff6b6b' : t.status.includes('Watch') ? '#ffd166' : '#00e5b4';
-  document.getElementById('tribalChange').textContent = t.change;
-  document.getElementById('tribalChange').style.color = parseFloat(t.change) < -15 ? '#ff6b6b' : parseFloat(t.change) < -10 ? '#ffd166' : '#00e5b4';
-  document.getElementById('tribalSpecies').textContent = t.species;
-  document.getElementById('tribalAlert').textContent = t.status;
-  document.getElementById('tribalAlert').style.color = t.status.includes('Degrading') ? '#ff6b6b' : t.status.includes('Watch') ? '#ffd166' : '#00e5b4';
-  document.getElementById('tribalRights').textContent = t.rights;
-  document.getElementById('tribalPanel').classList.add('visible');
-}
-
-// ── Alert markers ─────────────────────────────────────────────────────────────
-function renderAlertMarkers() {
-  alertMarkers.forEach(m => map.removeLayer(m));
-  alertMarkers = [];
-
-  EARLY_WARNINGS.forEach(w => {
-    const color = w.severity === 'critical' ? '#ff6b6b' : '#ffd166';
-    const marker = L.circleMarker([w.lat, w.lng], {
-      radius: 12,
-      fillColor: color,
-      color: '#fff',
-      weight: 2,
-      fillOpacity: 0.9,
-      className: 'alert-pulse'
-    });
-
-    // Pulsing ring
-    const ring = L.circle([w.lat, w.lng], {
-      radius: 2500,
-      color: color,
-      fillColor: color,
-      fillOpacity: 0.08,
-      weight: 1.5
-    });
-
-    marker.bindPopup(`
-      <div style="font-family:'DM Sans',sans-serif;min-width:240px;background:#071628;color:#cce0f5;padding:4px">
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:${color};margin-bottom:8px">⚠ ${w.site}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;font-family:'DM Mono',monospace;margin-bottom:8px">
-          <span style="color:#4a6b8a">NDWI Drop</span><span style="color:${color};font-weight:700">${w.drop_pct}% in 90 days</span>
-          <span style="color:#4a6b8a">Detected</span><span>${w.detected}</span>
-          <span style="color:#4a6b8a">Notified</span><span style="font-size:10px">${w.notified}</span>
-          <span style="color:#4a6b8a">Action</span><span style="font-size:10px">${w.action}</span>
-        </div>
-        <div style="font-size:10px;color:#4a6b8a;padding:6px;background:rgba(255,107,107,0.08);border-radius:4px">${w.cause}</div>
-      </div>
-    `);
-
-    marker.on('click', () => {
-      showAlertBanner(w);
-    });
-
-    alertMarkers.push(ring);
-    alertMarkers.push(marker);
-    ring.addTo(map);
-    marker.addTo(map);
-  });
-}
-
-function showAlertBanner(w) {
-  const color = w.severity === 'critical' ? '#ff6b6b' : '#ffd166';
-  document.getElementById('alertTitle').innerHTML = `⚠ ${w.site} — NDWI dropped ${w.drop_pct}%`;
-  document.getElementById('alertTitle').style.color = color;
-  document.getElementById('alertMeta').textContent = `${w.drop_pct}% drop in 90 days · Threshold: ${w.threshold}% · Detected: ${w.detected} · Notified: ${w.notified}`;
-  document.getElementById('alertBanner').classList.add('visible');
-}
-
-// ── ESRP Grant Sites ─────────────────────────────────────────────────────────
-let esrpLayer = null;
-
-async function loadESRPSites() {
+async function showLayer(key) {
+  document.querySelectorAll('.maptools button').forEach(b => b.classList.toggle('active', b.dataset.layer === key));
+  if (overlay) { map.removeLayer(overlay); overlay = null; }
+  if (siteLayer) { map.removeLayer(siteLayer); siteLayer = null; }
+  const [kind, period] = key.split(':');
+  const path = kind === 'kelp' ? `/tiles/kelp/${period}` : kind === 'kelp-change' ? '/tiles/kelp-change' : kind === 'wildfire' ? '/tiles/wildfire' : '/tiles/drought';
+  if (kind === 'kelp' || kind === 'kelp-change') { map.setView([47.75, -122.5], 9); renderKelpPanel(); loadSites(); }
+  if (kind === 'wildfire') { map.setView([30, -20], 2); renderFirePanel(); }
+  if (kind === 'drought') { map.setView([22, 80], 4); renderDroughtPanel(); }
+  setLegend(kind === 'kelp' ? 'kelp' : kind, kind === 'kelp' ? `Landsat, summer ${period} composite` : '');
   try {
-    const res = await fetch(`${API}/esrp-sites`);
-    const data = await res.json();
-    renderESRPMarkers(data.sites);
-  } catch(e) {
-    console.warn('ESRP sites offline, using built-in data');
-    renderESRPMarkers(ESRP_SITES);
-  }
+    const t = await getJSON(path);
+    if (t.tile_url) { overlay = L.tileLayer(t.tile_url, { opacity:0.85 }).addTo(map); }
+    else { $('legend').insertAdjacentHTML('beforeend', `<div class="notice warn" style="margin:6px 0 0">Map layer unavailable: ${esc(t.error || 'Earth Engine not connected')}. The data panel shows the latest snapshot.</div>`); }
+  } catch (e) { $('legend').insertAdjacentHTML('beforeend', `<div class="notice warn">Map layer failed: ${esc(e.message)}</div>`); }
 }
+document.querySelectorAll('.maptools button').forEach(b => b.onclick = () => showLayer(b.dataset.layer));
 
-const ESRP_SITES_FALLBACK = [
-  {id:"E001",name:"Nisqually Delta Eelgrass",county:"Pierce",lat:47.32,lng:-122.61,acres:180,status:"Active",amount_usd:540000,salmon_benefit:"High",roi_score:8.2},
-  {id:"E002",name:"Skagit Bay Eelgrass",county:"Skagit",lat:48.49,lng:-122.41,acres:240,status:"Completed",amount_usd:720000,salmon_benefit:"High",roi_score:9.6},
-  {id:"E003",name:"Port Susan Nearshore Kelp",county:"Snohomish",lat:47.85,lng:-122.38,acres:95,status:"Active",amount_usd:285000,salmon_benefit:"High",roi_score:7.1},
-  {id:"E004",name:"Hood Canal Kelp Canopy",county:"Kitsap",lat:47.62,lng:-122.70,acres:320,status:"Proposed 2026",amount_usd:960000,salmon_benefit:"High",roi_score:6.8},
-  {id:"E005",name:"Padilla Bay NERR",county:"Whatcom",lat:48.72,lng:-122.55,acres:410,status:"Completed",amount_usd:1230000,salmon_benefit:"Medium",roi_score:5.4},
-  {id:"E006",name:"Commencement Bay",county:"Pierce",lat:47.21,lng:-122.48,acres:75,status:"Active",amount_usd:225000,salmon_benefit:"High",roi_score:7.8},
-  {id:"E007",name:"Possession Sound Kelp",county:"Snohomish",lat:47.95,lng:-122.22,acres:130,status:"Proposed 2026",amount_usd:390000,salmon_benefit:"High",roi_score:8.1},
-  {id:"E008",name:"Duckabush Estuary",county:"Kitsap",lat:47.68,lng:-122.90,acres:285,status:"Design Complete",amount_usd:855000,salmon_benefit:"High",roi_score:7.4},
-  {id:"E009",name:"Fir Island Dike Breach",county:"Skagit",lat:48.38,lng:-122.45,acres:195,status:"Completed",amount_usd:585000,salmon_benefit:"High",roi_score:9.1},
-  {id:"E010",name:"Drayton Harbor Eelgrass",county:"Whatcom",lat:48.99,lng:-122.73,acres:88,status:"Active",amount_usd:264000,salmon_benefit:"Medium",roi_score:5.8},
-];
-
-function renderESRPMarkers(sites) {
-  if (esrpLayer) esrpLayer.clearLayers();
-  esrpLayer = L.layerGroup();
-
-  sites.forEach(site => {
-    const statusColor = {
-      "Active": "#ffd166", "Completed": "#00e5b4",
-      "Proposed": "#ff6b6b", "Proposed 2026": "#ff6b6b",
-      "Design Complete": "#7b61ff"
-    }[site.status] || "#4a6b8a";
-
-    const roiScore = site.roi_score || 5;
-    const radius = 6 + Math.min(roiScore, 12);
-
-    const marker = L.circleMarker([site.lat, site.lng], {
-      radius,
-      fillColor: statusColor,
-      color: '#fff',
-      weight: 2,
-      fillOpacity: 0.9
-    });
-
-    marker.bindPopup(`
-      <div style="font-family:'DM Sans',sans-serif;min-width:200px;background:#071628;color:#cce0f5;padding:4px">
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:13px;margin-bottom:6px">${site.name}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;font-family:'DM Mono',monospace">
-          <span style="color:#4a6b8a">County</span><span>${site.county}</span>
-          <span style="color:#4a6b8a">Acres</span><span>${site.acres}</span>
-          <span style="color:#4a6b8a">Grant</span><span>$${(site.amount_usd/1000).toFixed(0)}K</span>
-          <span style="color:#4a6b8a">Salmon</span><span style="color:${site.salmon_benefit==="High"?"#00e5b4":"#ffd166"}">${site.salmon_benefit}</span>
-          <span style="color:#4a6b8a">ROI Score</span><span style="color:#00e5b4;font-weight:700">${roiScore}</span>
-        </div>
-        <div style="margin-top:8px;padding:3px 8px;border-radius:4px;display:inline-block;font-size:10px;background:${statusColor}22;color:${statusColor}">${site.status}</div>
-      </div>
-    `, {className: 'dark-popup'});
-
-    esrpLayer.addLayer(marker);
-  });
-
-  esrpLayer.addTo(map);
-}
-
-function clearAllLayers() {
-  [currentLayer, historicalLayer, fireLayer, indiaLayer, sstLayer, esrpLayer, tribalLayer, kelpMarkersGroup, fireMarkersGroup, indiaCityLayer].forEach(l => {
-    if (l) { try { map.removeLayer(l); } catch(e) {} }
-  });
-  fireMarkersGroup = null;
-  indiaCityLayer = null;
-  if (alertMarkers) { alertMarkers.forEach(m => { try { map.removeLayer(m); } catch(e) {} }); alertMarkers = []; }
-  document.getElementById('alertBanner').classList.remove('visible');
-}
-
-function clearNonBaseLayers() { clearAllLayers(); }
-
-function showKelpMarkers() { if (kelpMarkersGroup) map.addLayer(kelpMarkersGroup); }
-function hideKelpMarkers() { if (kelpMarkersGroup) map.removeLayer(kelpMarkersGroup); }
-
-function setLayer(type) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
-
-  if (type === 'fires') {
-    activeView = 'fires';
-    switchLeftPanel('fires');
-    clearAllLayers();
-    map.setView([37, -98], 4); // center US
-    document.getElementById('mapTitle').textContent = '🔥 Forest Fire Risk — US & India (MODIS)';
-    document.getElementById('mapSubtitle').textContent = 'MODIS MCD64A1 Burned Area · Last 30 days · 500m resolution';
-    updateLegend('fire');
-    loadFireLayer();
-    loadFirePanel();
-    loadFireMarkers();
-    appendMsg('agent', '🔥 Forest Fires view loaded. MODIS burned area data (last 30 days). Try: "Where are the highest wildfire risk zones in the US?" or "Which Indian states face peak forest fire risk?"');
-    return;
-  }
-
-  if (type === 'india') {
-    activeView = 'india';
-    switchLeftPanel('india');
-    clearAllLayers();
-    map.setView([20.5, 78.9], 5); // center India
-    document.getElementById('mapTitle').textContent = '🌧 India Monsoon & Farmer Risk (CHIRPS)';
-    document.getElementById('mapSubtitle').textContent = 'CHIRPS Daily Rainfall · Last 30 days · India · Kharif/Rabi crop risk';
-    updateLegend('india');
-    loadIndiaLayer();
-    loadIndiaPanel();
-    appendMsg('agent', '🌧 India Monsoon view loaded. CHIRPS rainfall data (last 30 days). Try: "What does satellite data say about this monsoon for Indian farmers?" or "Which states face Kharif drought risk?"');
-    return;
-  }
-
-  // Any kelp view — restore Puget Sound + kelp markers
-  activeView = 'kelp';
-  switchLeftPanel('kelp');
-  clearAllLayers();
-  showKelpMarkers();
-  map.setView([47.8, -122.5], 9);
-  updateLegend('kelp');
-
-  if (type === 'esrp') {
-    document.getElementById('mapTitle').textContent = 'ESRP Grant Sites — Satellite ROI Scores';
-    document.getElementById('mapSubtitle').textContent = 'Circle size = ROI score · Color = status · WDFW ESRP 2026 round open';
-    loadESRPSites();
-    return;
-  }
-
-  if (type === 'tribal') {
-    document.getElementById('mapTitle').textContent = 'Tribal Treaty Waters — Satellite NDWI Health';
-    document.getElementById('mapSubtitle').textContent = 'Click any territory · Treaty rights + 30yr kelp/eelgrass trend · Point Elliott & Medicine Creek nations';
-    renderTribalLayer();
-    // Auto-show first alert as demo hook
-    setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 800);
-    return;
-  }
-
-  if (type === 'alerts') {
-    document.getElementById('mapTitle').textContent = '⚠ Early Warning System — Active NDWI Alerts';
-    document.getElementById('mapSubtitle').textContent = 'Real-time NDWI threshold monitoring · 10% drop triggers automatic notification · Click any alert marker';
-    renderAlertMarkers();
-    setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 400);
-    return;
-  }
-
-  if (type === 'current') {
-    clearNonBaseLayers();
-    if (currentLayer) map.addLayer(currentLayer);
-    document.getElementById('mapTitle').textContent = 'Kelp & Eelgrass Coverage — Current (2022–2024)';
-    document.getElementById('mapSubtitle').textContent = 'NDWI index · Landsat 8/9 · 30m resolution · Puget Sound, WA';
-  } else if (type === 'historical') {
-    clearNonBaseLayers();
-    if (historicalLayer) map.addLayer(historicalLayer);
-    document.getElementById('mapTitle').textContent = 'Historical Kelp Coverage — Baseline (1995–1997)';
-    document.getElementById('mapSubtitle').textContent = 'NDWI index · Landsat TM5 · 30m resolution · Puget Sound, WA';
-  } else if (type === 'change') {
-    clearNonBaseLayers();
-    if (currentLayer) map.addLayer(currentLayer);
-    if (historicalLayer) map.addLayer(historicalLayer);
-    document.getElementById('mapTitle').textContent = '30-Year Change Detection (1995 → 2024)';
-    document.getElementById('mapSubtitle').textContent = 'NDWI delta · Landsat TM5 → LC9 · Puget Sound, WA';
-  }
-}
-
-// ── Fire & India tile loaders ─────────────────────────────────────────────────
-async function loadFireLayer() {
+async function loadSites() {
   try {
-    const res = await fetch(`${API}/tiles/fires`);
-    const data = await res.json();
-    fireLayer = L.tileLayer(data.tile_url, { opacity: 0.85, maxZoom: 18 });
-    fireLayer.addTo(map);
-  } catch(e) {
-    appendMsg('agent', '⚠ Fire tile load failed — backend may be offline.');
-  }
+    const d = await getJSON('/sites');
+    siteLayer = L.layerGroup(d.sites.map(s => L.circleMarker([s.lat, s.lng], { radius:7, color:'#9A6214', fillColor:'#E0A84A', fillOpacity:.9, weight:2 })
+      .bindPopup(`<b>${esc(s.name)}</b> <span class="badge b-warn">Illustrative</span><br>${esc(s.county)} County · ${s.acres} acres · $${s.cost_per_acre_usd.toLocaleString()}/acre<br>Salmon benefit: ${esc(s.salmon_benefit)} · score ${s.score}`))).addTo(map);
+  } catch (e) {}
 }
 
-async function loadIndiaLayer() {
+async function renderKelpPanel() {
+  const p = $('mapPanel');
+  try { kelpData = kelpData || await getJSON('/kelp'); } catch (e) { p.innerHTML = `<div class="notice bad">Kelp data unavailable: ${esc(e.message)}</div>`; return; }
+  const d = kelpData;
+  if (d.error) { p.innerHTML = `<div class="notice bad">${esc(d.error)}</div>`; return; }
+  const periods = d.counties[0].timeline.map(t => t.period);
+  const fails = d.checks.filter(c => !c.passed);
+  p.innerHTML = `<h3>Nearshore vegetation signal</h3>
+    <div class="sub">${esc(d.status === 'live' ? 'Computed live' : 'Snapshot')} · ${esc(d.computed_at.slice(0, 10))} · share of permanent-water pixels with NDVI above 0.2</div>
+    ${fails.length ? `<div class="notice bad"><b>${fails.length} quality check${fails.length > 1 ? 's' : ''} failed.</b> Treat this as a screening signal, not a kelp measurement.</div>` : ''}
+    <table class="data"><tr><th>County</th>${periods.map(x => `<th class="num">${x}</th>`).join('')}<th class="num">2015→23</th></tr>
+    ${d.counties.map(c => `<tr><td>${esc(c.county)}</td>${c.timeline.map(t => `<td class="num" title="${esc(t.checks.map(k => k.detail).join('; '))}">${t.signal_pct == null ? '<span class="badge b-bad">failed</span>' : t.signal_pct.toFixed(1) + '%'}</td>`).join('')}
+      <td class="num">${c.change_2015_2023_pct == null ? '—' : (c.change_2015_2023_pct > 0 ? '+' : '') + c.change_2015_2023_pct + '%'}</td></tr>`).join('')}</table>
+    <div style="margin-top:10px"><b style="color:var(--ink); font-size:13px">Quality checks</b>${checksList(d.checks)}</div>
+    <details style="margin-top:8px; font-size:13px"><summary style="cursor:pointer; color:var(--teal)">Method and caveats</summary>
+      <p>${esc(d.method)}</p><ul>${d.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+      <p><b>Documented trend:</b> ${esc(d.documented_trend.statement)} <span class="meta">(${esc(d.documented_trend.sources.join('; '))})</span></p></details>
+    <div class="meta" style="margin-top:8px">Orange dots: illustrative restoration sites, not official ESRP data.</div>`;
+}
+async function renderFirePanel() {
+  const p = $('mapPanel');
   try {
-    const res = await fetch(`${API}/tiles/india-rainfall`);
-    const data = await res.json();
-    indiaLayer = L.tileLayer(data.tile_url, { opacity: 0.8, maxZoom: 18 });
-    indiaLayer.addTo(map);
-  } catch(e) {
-    appendMsg('agent', '⚠ India rainfall tile load failed — backend may be offline.');
-  }
+    const d = await getJSON('/wildfire');
+    if (d.error) throw new Error(d.error);
+    p.innerHTML = `<h3>Wildfire activity</h3><div class="sub">NASA FIRMS (MODIS) · ${esc(d.window)} · ${esc(d.status)}</div>
+      ${(d.quality_issues || []).length ? `<div class="notice warn">${d.quality_issues.map(esc).join('<br>')}</div>` : ''}
+      <table class="data"><tr><th>Region</th><th class="num">1 km fire pixels, 7 days</th></tr>
+      <tr><td>United States</td><td class="num">${d.us.fire_pixels_1km_7d.toLocaleString()}</td></tr>
+      <tr><td>India</td><td class="num">${d.india.fire_pixels_1km_7d.toLocaleString()}</td></tr></table>
+      <p class="meta" style="margin-top:8px">${esc(d.method)}</p><ul class="meta">${d.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
+  } catch (e) { p.innerHTML = `<h3>Wildfire activity</h3><div class="notice bad">Unavailable: ${esc(e.message)}</div>`; }
 }
-
-function updateLegend(type) {
-  const grad = document.getElementById('legendGradient');
-  const low  = document.getElementById('legendLow');
-  const high = document.getElementById('legendHigh');
-  const title = document.getElementById('legendTitle');
-  if (type === 'fire') {
-    grad.style.background = 'linear-gradient(90deg, #1a0a0a, #7a1a1a, #ff6b6b, #ffcc00)';
-    low.textContent = 'No burn';
-    high.textContent = 'Active burn';
-    title.textContent = 'MODIS BURNED AREA';
-  } else if (type === 'india') {
-    grad.style.background = 'linear-gradient(90deg, #f7fbff, #c6dbef, #6baed6, #2171b5, #08306b)';
-    low.textContent = '0 mm';
-    high.textContent = '600 mm';
-    title.textContent = 'CHIRPS RAINFALL (30D)';
-  } else {
-    grad.style.background = 'linear-gradient(90deg, #1a0a2e, #16213e, #0f3460, #00b4d8, #00e5b4, #90e0ef)';
-    low.textContent = 'Degraded';
-    high.textContent = 'Healthy';
-    title.textContent = 'NDWI INDEX';
-  }
-}
-
-// ── Grant Ranker ──────────────────────────────────────────────────────────────
-let grantRowCount = 0;
-
-function showGrantRanker() {
-  document.getElementById('grantModal').classList.add('visible');
-  if (grantRowCount === 0) { addGrantRow(); addGrantRow(); addGrantRow(); }
-}
-
-function hideGrantRanker() {
-  document.getElementById('grantModal').classList.remove('visible');
-}
-
-function addGrantRow() {
-  grantRowCount++;
-  const row = document.createElement('div');
-  row.className = 'ranker-input-grid';
-  row.id = `grant-row-${grantRowCount}`;
-  row.innerHTML = `
-    <input class="ranker-input" placeholder="Project name" id="gname-${grantRowCount}">
-    <select class="ranker-select" id="gcounty-${grantRowCount}">
-      <option>Skagit</option><option>Whatcom</option><option>Snohomish</option>
-      <option>King</option><option>Kitsap</option><option>Pierce</option>
-    </select>
-    <input class="ranker-input" placeholder="Acres" type="number" id="gacres-${grantRowCount}">
-    <input class="ranker-input" placeholder="Amount" type="number" id="gamount-${grantRowCount}">
-    <select class="ranker-select" id="gsalmon-${grantRowCount}">
-      <option>High</option><option>Medium</option><option>Low</option>
-    </select>
-  `;
-  document.getElementById('grantRows').appendChild(row);
-}
-
-function loadSampleGrants() {
-  document.getElementById('grantRows').innerHTML = '';
-  grantRowCount = 0;
-  const samples = [
-    ["Samish Bay Eelgrass Recovery", "Skagit", 210, 630000, "High"],
-    ["Bellingham Bay Nearshore", "Whatcom", 155, 465000, "High"],
-    ["Elliott Bay Kelp Restoration", "King", 88, 264000, "High"],
-    ["Dabob Bay Eelgrass", "Kitsap", 175, 525000, "High"],
-    ["Chambers Creek Estuary", "Pierce", 62, 186000, "Medium"],
-    ["Snohomish River Delta", "Snohomish", 290, 870000, "High"],
-  ];
-  samples.forEach(([name, county, acres, amount, salmon]) => {
-    grantRowCount++;
-    const row = document.createElement('div');
-    row.className = 'ranker-input-grid';
-    row.innerHTML = `
-      <input class="ranker-input" value="${name}" id="gname-${grantRowCount}">
-      <select class="ranker-select" id="gcounty-${grantRowCount}">
-        ${["Skagit","Whatcom","Snohomish","King","Kitsap","Pierce"].map(c=>`<option${c===county?" selected":""}>${c}</option>`).join("")}
-      </select>
-      <input class="ranker-input" value="${acres}" type="number" id="gacres-${grantRowCount}">
-      <input class="ranker-input" value="${amount}" type="number" id="gamount-${grantRowCount}">
-      <select class="ranker-select" id="gsalmon-${grantRowCount}">
-        ${["High","Medium","Low"].map(s=>`<option${s===salmon?" selected":""}>${s}</option>`).join("")}
-      </select>
-    `;
-    document.getElementById('grantRows').appendChild(row);
-  });
-}
-
-async function runGrantRanker() {
-  const projects = [];
-  for (let i = 1; i <= grantRowCount; i++) {
-    const name = document.getElementById(`gname-${i}`)?.value;
-    if (!name) continue;
-    projects.push({
-      name,
-      county: document.getElementById(`gcounty-${i}`).value,
-      acres: parseFloat(document.getElementById(`gacres-${i}`).value) || 100,
-      amount_usd: parseFloat(document.getElementById(`gamount-${i}`).value) || 300000,
-      salmon_benefit: document.getElementById(`gsalmon-${i}`).value,
-    });
-  }
-
-  const btn = document.querySelector('.rank-btn');
-  btn.textContent = '⏳ Ranking by satellite data...';
-  btn.disabled = true;
-
+async function renderDroughtPanel() {
+  const p = $('mapPanel');
   try {
-    const res = await fetch(`${API}/rank-grants`, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({projects})
-    });
-    const data = await res.json();
-    renderRankedResults(data.ranked_projects);
-  } catch(e) {
-    // Fallback: rank client-side using county data
-    const ranked = projects.map(p => {
-      const cd = countyData.find(c => c.county === p.county) || {};
-      const deg = Math.abs(cd.degradation_pct || 10);
-      const sw = {High:1.5,Medium:1.0,Low:0.5}[p.salmon_benefit] || 1.0;
-      return {...p, roi_score: Math.round((deg*p.acres*sw)/(p.amount_usd/10000)*10)/10,
-               county_ndwi: cd.current_ndwi, county_degradation_pct: cd.degradation_pct,
-               recommendation: deg > 15 ? "Fund" : deg > 10 ? "Review" : "Deprioritize"};
-    }).sort((a,b) => b.roi_score - a.roi_score);
-    renderRankedResults(ranked);
+    const d = await getJSON('/drought');
+    if (d.error) throw new Error(d.error);
+    p.innerHTML = `<h3>Drought, India</h3><div class="sub">CHIRPS rainfall and MODIS NDVI · ${esc(d.status)}</div>
+      ${(d.quality_issues || []).length ? `<div class="notice warn">${d.quality_issues.map(esc).join('<br>')}</div>` : ''}
+      <table class="data">
+      <tr><td>Rainfall, ${esc(d.rainfall_window)}</td><td class="num">${d.rainfall_mm_30d} mm</td></tr>
+      <tr><td>1991-2020 normal, same days</td><td class="num">${d.normal_mm_30d_1991_2020} mm</td></tr>
+      <tr><td>Percent of normal</td><td class="num"><b>${d.percent_of_normal}%</b> (${esc(d.rainfall_category)})</td></tr>
+      <tr><td>Mean NDVI, ${esc(d.ndvi_date)}</td><td class="num">${d.ndvi_mean}</td></tr></table>
+      <p class="meta" style="margin-top:8px">${esc(d.thresholds)}</p><ul class="meta">${d.caveats.map(c => `<li>${esc(c)}</li>`).join('')}</ul>`;
+  } catch (e) { p.innerHTML = `<h3>Drought, India</h3><div class="notice bad">Unavailable: ${esc(e.message)}</div>`; }
+}
+
+// ── Data & quality ──────────────────────────────────────────────────────────
+async function loadSources() {
+  const d = await getJSON('/sources');
+  $('sourceCards').innerHTML = d.sources.map(s => `<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px"><h3>${esc(s.name)}</h3>${stateBadge(s.status.state)}</div>
+    <dl class="kv"><dt>Provider</dt><dd>${esc(s.provider)}</dd><dt>Dataset</dt><dd class="mono">${esc(s.dataset)}</dd>
+    <dt>Resolution</dt><dd>${esc(s.resolution)}</dd><dt>Refresh</dt><dd>${esc(s.cadence)}</dd><dt>Licence</dt><dd>${esc(s.licence)}</dd>
+    <dt>Used for</dt><dd>${esc(s.used_for)}</dd><dt>Last success</dt><dd>${esc(s.status.last_success || 'never in this run')}</dd></dl>
+    ${s.status.last_error ? `<div class="notice bad">${esc(s.status.last_error)}</div>` : ''}${checksList(s.status.checks)}</div>`).join('');
+  const r = d.knowledge_base;
+  $('ingestLede').innerHTML = `Built ${esc(r.built_at.slice(0, 10))} with ${esc(r.extractor)}; chunking: ${esc(r.chunking)}. ${r.totals.chunks} passages from ${r.totals.pages} pages; ${r.totals.unreadable_pages} image-only pages need OCR; ${r.totals.redactions} emails or phone numbers redacted before indexing.`;
+  $('ingestTable').innerHTML = `<tr><th>Document</th><th class="num">Pages</th><th class="num">Passages</th><th>Unreadable pages</th><th class="num">Redacted</th><th>Checks</th></tr>` +
+    r.documents.map(x => `<tr><td><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a><div class="meta">${esc(x.publisher)}, ${x.year}</div></td>
+      <td class="num">${x.pages}</td><td class="num">${x.chunks}</td><td>${x.unreadable_pages.length ? `<span class="badge b-warn">${x.unreadable_pages.length} need OCR</span>` : '<span class="badge b-ok">none</span>'}</td>
+      <td class="num">${x.redactions}</td><td>${x.checks.map(c => badge(c.passed, c.check.replaceAll('_', ' '), c.check.replaceAll('_', ' '), true)).join(' ')}</td></tr>`).join('');
+}
+
+// ── Knowledge base ──────────────────────────────────────────────────────────
+async function kbSearch() {
+  const q = $('kbQuery').value.trim(); if (!q) return;
+  $('kbResults').innerHTML = '<div class="thinking">Searching…</div>';
+  const d = await getJSON('/kb/search?q=' + encodeURIComponent(q));
+  $('kbResults').innerHTML = d.results.length ? d.results.map((h, i) => `<div class="hit"><div class="t">${i + 1}. ${esc(h.title)}, p.${h.page} <span class="meta">score ${h.score}</span></div>
+    <div>${esc(h.text.slice(0, 420))}${h.text.length > 420 ? '…' : ''}</div><a class="meta" href="${esc(h.url)}#page=${h.page}" target="_blank" rel="noopener">Open source PDF</a></div>`).join('')
+    : '<div class="notice info">No passages matched. Try different words.</div>';
+}
+$('kbSearchBtn').onclick = kbSearch; $('kbQuery').onkeydown = e => { if (e.key === 'Enter') kbSearch(); };
+let evalsLoaded = false;
+async function loadEvals() {
+  if (evalsLoaded) return; evalsLoaded = true;
+  const e = (await getJSON('/evals')).retrieval, a = e.with_thesaurus, b = e.without_thesaurus;
+  $('evalLede').innerHTML = `${a.total} questions with known evidence. A question passes if a passage containing the evidence appears in the top ${e.k} results. Method: ${esc(e.method)}.
+    <b>With the domain thesaurus:</b> ${a.hits} of ${a.total} found (MRR ${a.mrr}). <b>Without it:</b> ${b.hits} of ${b.total} (MRR ${b.mrr}).`;
+  $('evalTable').innerHTML = `<tr><th>Question</th><th>Evidence must contain</th><th class="num">Rank found</th><th>Top source</th></tr>` +
+    a.questions.map(q => `<tr><td>${esc(q.question)}</td><td class="mono">${esc(q.evidence)}</td>
+      <td class="num">${q.found_at_rank ? badge(true, '#' + q.found_at_rank) : badge(false, '', 'not found')}</td><td class="meta">${esc(q.top_source)}</td></tr>`).join('');
+}
+
+// ── Policy & skills ─────────────────────────────────────────────────────────
+let policyLoaded = false;
+async function loadPolicy() {
+  if (policyLoaded) return; policyLoaded = true;
+  const [p, c] = await Promise.all([getJSON('/policy'), getJSON('/agent/config')]);
+  $('policyMeta').textContent = `${p.name} · version ${p.version} · owner ${p.owner} · ${p.rules.length} rules`;
+  const onFail = { refuse:'Refuse the question', redact:'Redact', block:'Block the tool call', flag:'Flag the answer', append_notice:'Add a notice to the answer' };
+  $('policyTable').innerHTML = `<tr><th>Rule</th><th>Runs</th><th>Check in code</th><th>If it fails</th></tr>` +
+    p.rules.map(r => `<tr><td><b>${esc(r.id)}</b><div>${esc(r.text)}</div></td><td>${esc(r.stage)}</td><td class="mono">${esc(r.check)}</td><td>${esc(onFail[r.on_fail] || r.on_fail)}</td></tr>`).join('');
+  $('skillCards').innerHTML = c.skills.map(s => `<div class="card"><h3 class="mono" style="font-size:15px">${esc(s.name)}</h3><div class="meta">${esc(s.description)}</div>
+    <pre style="white-space:pre-wrap; font:13px/1.5 'IBM Plex Sans', sans-serif; margin:10px 0 0">${esc(s.procedure)}</pre></div>`).join('');
+  $('toolTable').innerHTML = `<tr><th>Tool</th><th>What it does</th></tr>` + c.tools.map(t => `<tr><td class="mono">${esc(t.name)}</td><td>${esc(t.description)}</td></tr>`).join('');
+  $('agentMeta').textContent = `Model: ${c.model} · ${c.tools.length} tools · ${c.skills.length} skills · ${p.rules.length} policy rules`;
+}
+
+// ── Agent ───────────────────────────────────────────────────────────────────
+function renderMarkdown(text) {
+  const lines = esc(text).split('\n'); let html = '', list = false;
+  for (const raw of lines) {
+    let l = raw.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g, '$1<i>$2</i>').replace(/\[D(\d+)\]/g, '<span class="cite">D$1</span>');
+    if (/^\s*([-*•]|\d+\.)\s+/.test(raw)) { if (!list) { html += '<ul>'; list = true; } html += `<li>${l.replace(/^\s*([-*•]|\d+\.)\s+/, '')}</li>`; }
+    else { if (list) { html += '</ul>'; list = false; } if (l.trim()) html += `<p>${l}</p>`; }
   }
-
-  btn.textContent = '🛰 Rank by Satellite ROI →';
-  btn.disabled = false;
+  return html + (list ? '</ul>' : '');
 }
-
-function renderRankedResults(projects) {
-  const colors = ['#00e5b4','#7b61ff','#0096ff','#ffd166','#ff8c42','#ff6b6b'];
-  const container = document.getElementById('rankedResults');
-  container.innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:1px">RANKED BY SATELLITE ROI SCORE — ESRP 2026</div>`;
-  projects.forEach((p, i) => {
-    const recoClass = p.recommendation === 'Fund' ? 'reco-fund' : p.recommendation === 'Review' ? 'reco-review' : 'reco-low';
-    const div = document.createElement('div');
-    div.className = 'ranked-item';
-    div.style.animationDelay = `${i*0.1}s`;
-    div.innerHTML = `
-      <div class="rank-num" style="background:${colors[i]||'#4a6b8a'}">${i+1}</div>
-      <div>
-        <div class="ranked-name">${p.name}</div>
-        <div class="ranked-meta">${p.county} · ${p.acres} acres · $${(p.amount_usd/1000).toFixed(0)}K · Salmon: ${p.salmon_benefit} · County NDWI: ${p.county_ndwi||'—'} (${p.county_degradation_pct||'—'}%)</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:${colors[i]||'#4a6b8a'}">${p.roi_score}</div>
-        <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">ROI SCORE</div>
-        <span class="reco-badge ${recoClass}">${p.recommendation}</span>
-      </div>
-    `;
-    container.appendChild(div);
-  });
-}
-
-function setLayerDirect(type) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const tabs = document.querySelectorAll('.tab');
-  tabs.forEach(t => { if (t.textContent.includes('Warning') || t.textContent.includes('Tribal')) t.classList.add('active'); });
-  // Fake event for setLayer
-  const fakeEvent = { target: { classList: { add: ()=>{}, remove: ()=>{} } } };
-  window.event = fakeEvent;
-  if (type === 'alerts') {
-    document.getElementById('mapTitle').textContent = '⚠ Early Warning System — Active NDWI Alerts';
-    document.getElementById('mapSubtitle').textContent = 'Real-time threshold monitoring · 10% drop triggers automatic notification';
-    renderAlertMarkers();
-    setTimeout(() => showAlertBanner(EARLY_WARNINGS[0]), 400);
-  }
-}
-
-// ── FIRMS fire markers ────────────────────────────────────────────────────────
-function clearFireMarkers() {
-  if (fireMarkersGroup) { map.removeLayer(fireMarkersGroup); fireMarkersGroup = null; }
-}
-
-async function loadFireMarkers() {
-  clearFireMarkers();
-  fireMarkersGroup = L.layerGroup().addTo(map);
-  try {
-    const res = await fetch(`${API}/fire/hotspots`);
-    const geojson = await res.json();
-    if (!geojson.features?.length) return;
-
-    geojson.features.forEach(f => {
-      const [lng, lat] = f.geometry.coordinates;
-      const { confidence, frp, date, region } = f.properties;
-      // radius scales with FRP, capped at 10px
-      const r = Math.min(10, 3 + Math.sqrt(frp || 1) * 0.4);
-      const color = confidence === 'h' ? '#ff2020' : '#ff8c00';
-      const marker = L.circleMarker([lat, lng], {
-        radius: r,
-        fillColor: color,
-        color: '#fff',
-        weight: 0.5,
-        fillOpacity: 0.8,
-      });
-      marker.bindPopup(`
-        <div style="font-family:'DM Sans',sans-serif;min-width:160px;background:#071628;color:#cce0f5;padding:4px">
-          <div style="font-weight:700;color:${color};margin-bottom:4px">🔥 Active Fire · ${region}</div>
-          <div style="font-size:11px;font-family:'DM Mono',monospace">
-            FRP: <b>${frp} MW</b> &nbsp;|&nbsp; Confidence: <b>${confidence === 'h' ? 'High' : 'Nominal'}</b><br>
-            Date: ${date}
-          </div>
-        </div>
-      `);
-      fireMarkersGroup.addLayer(marker);
-    });
-
-    // Update panel badge with total
-    const el = document.getElementById('fireTotalBadge');
-    if (el) { el.textContent = `${geojson.total} detections · last 7d`; el.style.display = 'block'; }
-  } catch(e) {}
-}
-
-// ── Domain panel switching ────────────────────────────────────────────────────
-function switchLeftPanel(view) {
-  document.getElementById('kelpPanel').style.display  = view === 'kelp'  ? '' : 'none';
-  document.getElementById('firePanel').style.display  = view === 'fires' ? '' : 'none';
-  document.getElementById('indiaPanel').style.display = view === 'india' ? '' : 'none';
-}
-
-async function loadFirePanel() {
-  try {
-    const res = await fetch(`${API}/fire/summary`);
-    const d = await res.json();
-    document.getElementById('fireUsLoading').style.display = 'none';
-    const us = d.us || {};
-    const india = d.india || {};
-
-    const fireStat = (val, label) => `
-      <div style="background:rgba(255,107,107,0.08);border:1px solid rgba(255,107,107,0.2);border-radius:8px;padding:10px;text-align:center">
-        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#ff6b6b">${val ?? '—'}</div>
-        <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">${label}</div>
-      </div>`;
-
-    document.getElementById('fireUsStats').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        ${fireStat(us.total_hotspots_7d?.toLocaleString(), 'HOTSPOTS 7D')}
-        ${fireStat(us.max_frp_mw ? us.max_frp_mw + ' MW' : null, 'PEAK INTENSITY')}
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px">HIGH RISK STATES</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-        ${(us.high_risk_states || []).map(s => `<span style="padding:2px 7px;background:rgba(255,107,107,0.1);color:#ff9a9a;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace">${s}</span>`).join('')}
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">${us.season_status || ''}</div>
-      <div id="fireTotalBadge" style="display:none;margin-top:6px;font-size:10px;color:var(--accent);font-family:'DM Mono',monospace"></div>
-    `;
-
-    document.getElementById('fireIndiaStats').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        ${fireStat(india.total_hotspots_7d?.toLocaleString(), 'HOTSPOTS 7D')}
-        ${fireStat(india.max_frp_mw ? india.max_frp_mw + ' MW' : null, 'PEAK INTENSITY')}
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:6px">HIGH RISK REGIONS</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-        ${(india.high_risk_regions || []).map(r => `<span style="padding:2px 7px;background:rgba(255,107,107,0.1);color:#ff9a9a;border-radius:3px;font-size:10px;font-family:'DM Mono',monospace">${r}</span>`).join('')}
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">${india.season_status || ''}</div>
-    `;
-  } catch(e) {
-    document.getElementById('fireUsLoading').textContent = 'OFFLINE';
-  }
-}
-
-async function loadIndiaPanel() {
-  try {
-    const res = await fetch(`${API}/india/summary`);
-    const d = await res.json();
-    document.getElementById('indiaMonsoonLoading').style.display = 'none';
-
-    const droughtColor = d.drought_risk === 'High' ? '#ff6b6b' : d.drought_risk === 'Moderate' ? '#ffd166' : '#00e5b4';
-    const stressColor  = d.crop_stress  === 'Severe' ? '#ff6b6b' : d.crop_stress === 'Moderate' ? '#ffd166' : '#00e5b4';
-    const bgDrought    = d.drought_risk === 'High' ? '255,107,107' : d.drought_risk === 'Moderate' ? '255,209,102' : '0,229,180';
-
-    document.getElementById('indiaMonsoonStats').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-        <div style="background:rgba(107,174,214,0.08);border:1px solid rgba(107,174,214,0.2);border-radius:8px;padding:10px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#6baed6">${d.rainfall_mm_30d ?? '—'}</div>
-          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">RAINFALL MM (30D)</div>
-        </div>
-        <div style="background:rgba(${bgDrought},0.08);border:1px solid rgba(${bgDrought},0.2);border-radius:8px;padding:10px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:${droughtColor}">${d.drought_risk ?? '—'}</div>
-          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">DROUGHT RISK</div>
-        </div>
-      </div>
-      <div style="padding:10px;background:rgba(${bgDrought},0.07);border:1px solid rgba(${bgDrought},0.2);border-radius:8px;font-size:11px;line-height:1.5;color:var(--text)">
-        ${d.farmer_advisory || '—'}
-      </div>
-    `;
-
-    document.getElementById('indiaFarmerStats').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-        <div style="background:rgba(0,229,180,0.06);border:1px solid rgba(0,229,180,0.15);border-radius:8px;padding:10px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:${stressColor}">${d.crop_stress ?? '—'}</div>
-          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">CROP STRESS</div>
-        </div>
-        <div style="background:rgba(0,229,180,0.06);border:1px solid rgba(0,229,180,0.15);border-radius:8px;padding:10px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text)">${d.ndvi_mean ?? '—'}</div>
-          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-top:2px">NDVI ×10⁴</div>
-        </div>
-      </div>
-      <div style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;line-height:1.5">${d.notes || ''}</div>
-    `;
-
-    document.getElementById('elNinoAlert').style.display = '';
-    loadElNino();
-  } catch(e) {
-    document.getElementById('indiaMonsoonLoading').textContent = 'OFFLINE';
-    document.getElementById('elNinoAlert').style.display = '';
-    loadElNino();
-  }
-}
-
-let sstLayer = null;
-
-async function loadElNino() {
-  try {
-    const res = await fetch(`${API}/elnino`);
-    const d = await res.json();
-    const oni = d.oni;
-    const color = oni >= 0.5 ? '#ff6b6b' : oni <= -0.5 ? '#6baed6' : '#ffd166';
-    const label = oni >= 0.5 ? 'EL NIÑO' : oni <= -0.5 ? 'LA NIÑA' : 'ENSO NEUTRAL';
-    document.getElementById('elNinoLabel').textContent = label;
-    document.getElementById('elNinoLabel').style.color = color;
-    document.getElementById('elNinoONI').textContent = oni != null ? `ONI ${oni > 0 ? '+' : ''}${oni}` : '—';
-    document.getElementById('elNinoONI').style.color = color;
-    document.getElementById('elNinoImpact').textContent = d.impact_india;
-    document.getElementById('elNinoSource').textContent = `Source: ${d.source}${d.live ? ' · live' : ' · fallback'}`;
-  } catch(e) {
-    document.getElementById('elNinoImpact').textContent = 'NOAA data unavailable';
-  }
-}
-
-async function toggleSSTLayer() {
-  const sw = document.getElementById('toggleSST');
-  const on = sw.classList.toggle('on');
-  if (on) {
-    try {
-      const res = await fetch(`${API}/tiles/sst`);
-      const d = await res.json();
-      sstLayer = L.tileLayer(d.tile_url, { opacity: 0.65, maxZoom: 18 });
-      sstLayer.addTo(map);
-    } catch(e) { sw.classList.remove('on'); }
-  } else {
-    if (sstLayer) { map.removeLayer(sstLayer); sstLayer = null; }
-  }
-}
-
-// ── Poll status until county data ready ──────────────────────────────────────
-async function pollUntilReady() {
-  const chip = document.getElementById('countyLoading');
-  let attempts = 0;
-  const interval = setInterval(async () => {
-    attempts++;
-    try {
-      const res = await fetch(`${API}/status`);
-      const d = await res.json();
-      if (d.county_data_ready) {
-        clearInterval(interval);
-        chip.textContent = 'LIVE';
-        chip.style.background = 'rgba(0,229,180,0.15)';
-        await loadCountyData();
-        // Notify in agent chat
-        appendMsg('agent', `✅ Real satellite data loaded — ${d.county_count} Puget Sound counties analyzed from Landsat GEE. Ask me anything.`);
-      } else {
-        chip.textContent = `GEE ${attempts*5}s...`;
-      }
-    } catch(e) {
-      chip.textContent = 'OFFLINE';
-      clearInterval(interval);
+function traceHTML(trace) {
+  return trace.map(s => {
+    if (s.type === 'policy') {
+      const failed = s.results.filter(r => !r.passed);
+      return `<li class="policy ${failed.length ? 'fail' : ''}"><span class="kind">${s.stage === 'input' ? 'Input' : 'Output'} policy</span>: ${s.results.length - failed.length} of ${s.results.length} rules passed
+        <ul class="checks">${s.results.map(r => `<li><span class="mark">${badge(r.passed, 'Pass', r.action || 'Fail', r.action !== 'refuse')}</span><span><b>${esc(r.rule)}</b>: ${esc(r.detail)}</span></li>`).join('')}</ul></li>`;
     }
-  }, 5000); // poll every 5s
+    if (s.type === 'model') return `<li><span class="kind">Model, turn ${s.turn}</span> (${s.ms} ms${s.prompt_tokens ? `, ${s.prompt_tokens} tokens in` : ''}): ${s.tool_calls.length ? 'called ' + s.tool_calls.map(t => `<code>${esc(t)}</code>`).join(', ') : 'wrote the answer'}</li>`;
+    if (s.type === 'tool') return `<li class="${s.allowed ? '' : 'fail'}"><span class="kind">Tool</span> <code>${esc(s.name)}</code>${Object.keys(s.args || {}).length ? ` <span class="mono">${esc(JSON.stringify(s.args))}</span>` : ''} · ${s.ms} ms · ${s.chars.toLocaleString()} chars${s.truncated ? ' (truncated to fit context)' : ''}<div class="meta">${esc(s.summary)}</div></li>`;
+    if (s.type === 'verification') return `<li class="verify ${s.share_verified < 0.9 ? 'fail' : ''}"><span class="kind">Verification</span>: ${s.figures_verified} of ${s.figures_checked} figures traced to tool results${s.unverified.length ? `<div class="meta">Not traced: ${s.unverified.map(esc).join(', ')}</div>` : ''}</li>`;
+    return '';
+  }).join('');
 }
-
-// ── Boot ──────────────────────────────────────────────────────────────────────
-function toggleTribalLayer() {
-  const sw = document.getElementById('toggleTribal');
-  const on = sw.classList.toggle('on');
-  sw.querySelector('.toggle-knob');
-  if (on) { renderTribalLayer(); }
-  else if (tribalLayer) { map.removeLayer(tribalLayer); tribalLayer = null; }
+function addMessage(role, html) {
+  const el = document.createElement('div'); el.className = 'msg ' + role; el.innerHTML = html;
+  $('messages').appendChild(el); $('messages').scrollTop = $('messages').scrollHeight; return el;
 }
-
-function toggleAlertLayer() {
-  const sw = document.getElementById('toggleAlerts');
-  const on = sw.classList.toggle('on');
-  if (on) { renderAlertMarkers(); }
-  else { alertMarkers.forEach(m => map.removeLayer(m)); alertMarkers = []; }
+async function ask(q) {
+  q = (q || $('question').value).trim(); if (!q) return;
+  $('suggest').style.display = 'none'; $('question').value = '';
+  addMessage('user', esc(q));
+  const pending = addMessage('bot', '<div class="thinking">Checking policy, calling tools, verifying figures…</div>');
+  $('askBtn').disabled = true;
+  try {
+    const headers = { 'Content-Type':'application/json' }; if (authToken) headers.Authorization = 'Bearer ' + authToken;
+    const d = await getJSON('/agent', { method:'POST', headers, body: JSON.stringify({ query:q }) });
+    const v = d.verification, pol = d.policy || [], failed = pol.filter(p => !p.passed);
+    const vBadge = d.refused ? '<span class="badge b-warn">Refused by policy, no model called</span>'
+      : v.figures_checked === 0 ? '<span class="badge b-neutral">No figures to verify</span>'
+      : `<span class="badge ${v.share_verified >= 0.9 ? 'b-ok' : 'b-bad'}">${v.figures_verified} of ${v.figures_checked} figures verified</span>`;
+    const pBadge = `<span class="badge ${failed.length ? 'b-warn' : 'b-ok'}">Policy: ${pol.length - failed.length} of ${pol.length} passed${failed.length ? ', ' + failed.map(f => f.rule).join(', ') + ' flagged' : ''}</span>`;
+    const tools = (d.tools_used || []).length ? `<span class="badge b-neutral">${d.tools_used.length} tool calls</span>` : '';
+    pending.innerHTML = `<div class="answer">${renderMarkdown(d.answer)}</div>
+      <div class="badges">${vBadge}${pBadge}${tools}${d.elapsed_ms ? `<span class="badge b-neutral">${(d.elapsed_ms / 1000).toFixed(1)} s</span>` : ''}</div>
+      ${(d.citations || []).length ? `<div class="cites"><b>Sources</b>${d.citations.map(c => `<div><span class="cite">${c.ref}</span> <a href="${esc(c.url)}#page=${c.page}" target="_blank" rel="noopener">${esc(c.title)}, p.${c.page}</a></div>`).join('')}</div>` : ''}
+      <details class="trace"><summary>How this answer was made (${d.trace.length} steps)</summary><ul class="tl">${traceHTML(d.trace)}</ul></details>`;
+    if (d.queries_remaining != null) $('agentMeta').textContent = `${d.queries_remaining} questions left today · model ${d.model || '—'}`;
+  } catch (e) {
+    pending.innerHTML = `<div class="notice bad">${esc(e.message)}</div>`;
+  } finally { $('askBtn').disabled = false; $('messages').scrollTop = $('messages').scrollHeight; }
 }
+$('askBtn').onclick = () => ask();
+$('question').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask(); } };
+document.querySelectorAll('#suggest button').forEach(b => b.onclick = () => ask(b.textContent));
 
-window.addEventListener('load', () => {
-  initMap();
-  loadGoalTracker();
-  loadCountyData();
-  pollUntilReady();
-  // Auto-show critical alert after 2s for demo impact
-  setTimeout(() => {
-    showAlertBanner(EARLY_WARNINGS[0]);
-  }, 2000);
-});
+// ── Auth (Supabase) ─────────────────────────────────────────────────────────
+const cfg = window.KELPWATCH_CONFIG || {};
+const sb = (cfg.supabaseUrl && cfg.supabaseAnonKey && window.supabase) ? window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey) : null;
+let authToken = null, authMode = 'in';
+function setUser(session) {
+  authToken = session ? session.access_token : null;
+  const signedIn = !!session;
+  $('userEmail').textContent = signedIn ? session.user.email : '';
+  $('signInBtn').style.display = signedIn ? 'none' : '';
+  $('signOutBtn').style.display = signedIn ? '' : 'none';
+  $('gate').style.display = signedIn || !sb ? 'none' : '';
+  $('composer').style.display = signedIn || !sb ? '' : 'none';
+}
+if (sb) { sb.auth.getSession().then(({ data }) => setUser(data.session)); sb.auth.onAuthStateChange((_e, s) => setUser(s)); } else setUser(null);
+const openAuth = () => $('authOverlay').classList.add('visible');
+$('signInBtn').onclick = openAuth; $('gateBtn').onclick = openAuth;
+$('authCancel').onclick = () => $('authOverlay').classList.remove('visible');
+$('signOutBtn').onclick = async () => { if (sb) await sb.auth.signOut(); setUser(null); };
+$('tabIn').onclick = () => { authMode = 'in'; $('tabIn').classList.add('active'); $('tabUp').classList.remove('active'); $('authSubmit').textContent = 'Sign in'; };
+$('tabUp').onclick = () => { authMode = 'up'; $('tabUp').classList.add('active'); $('tabIn').classList.remove('active'); $('authSubmit').textContent = 'Create account'; };
+$('authSubmit').onclick = async () => {
+  if (!sb) return;
+  const email = $('authEmail').value.trim(), password = $('authPass').value;
+  const { error } = authMode === 'in' ? await sb.auth.signInWithPassword({ email, password }) : await sb.auth.signUp({ email, password });
+  $('authMsg').textContent = error ? error.message : authMode === 'up' ? 'Account created. Check your email if confirmation is required, then sign in.' : '';
+  $('authMsg').style.color = error ? 'var(--bad)' : 'var(--ok)';
+  if (!error && authMode === 'in') $('authOverlay').classList.remove('visible');
+};
+
+// ── Start ───────────────────────────────────────────────────────────────────
+showLayer('kelp:2023');
+loadPolicy().catch(() => {});
+// Deep links for demos: #data, #kb, #policy
+const HASH_VIEWS = { '#data':'dataView', '#kb':'kbView', '#policy':'policyView', '#map':'mapView' };
+function openHash() { const v = HASH_VIEWS[location.hash]; if (v) document.querySelector(`#nav button[data-view="${v}"]`).click(); }
+window.addEventListener('hashchange', openHash); openHash();
 </script>
 </body>
 </html>

@@ -1,0 +1,64 @@
+# KelpWatch agent policy pack.
+# Each rule is written for people (text) and compiled to a check that runs in code
+# (check). The model never decides whether a rule passed.
+name: KelpWatch agent policy
+version: "2026-09-29"
+owner: Empathy AI
+
+rules:
+  - id: scope
+    text: Answer only questions about kelp and eelgrass, wildfire, drought and monsoon risk, and the documents and data behind them.
+    stage: input
+    check: scope
+    on_fail: refuse
+    params:
+      out_of_scope: [recipe, cook, bake, restaurant, movie, song, lyrics, write code, programming, javascript,
+                     python code, sql query, joke, poem, story, translate, stock price, crypto, bitcoin,
+                     medical advice, diagnosis, legal advice, tax advice, homework]
+
+  - id: personal-data-input
+    text: Remove personal data, such as email addresses and phone numbers, from a question before the model sees it.
+    stage: input
+    check: pii
+    on_fail: redact
+
+  - id: approved-tools
+    text: The agent may only call approved, read-only tools.
+    stage: tool
+    check: tool_allowlist
+    on_fail: block
+    params:
+      allowed: [get_kelp_trends, get_wildfire_activity, get_drought_conditions, search_documents,
+                rank_restoration_sites, get_data_quality, use_skill]
+
+  - id: evidence
+    text: Every figure in an answer must come from data the agent retrieved while answering.
+    stage: output
+    check: figures_traceable
+    on_fail: flag
+    params:
+      min_share: 0.9
+
+  - id: citations
+    text: When an answer uses documents, at least half of its statements must cite a retrieved passage, and it may only cite passages it retrieved.
+    stage: output
+    check: citations
+    on_fail: flag
+
+  - id: illustrative-data
+    text: Never present illustrative data as official. Answers that use the illustrative site list must say so.
+    stage: output
+    check: illustrative_disclosed
+    on_fail: append_notice
+
+  - id: data-quality
+    text: If data used in an answer failed a quality check, the answer must say so.
+    stage: output
+    check: quality_disclosed
+    on_fail: append_notice
+
+  - id: personal-data-output
+    text: Never include personal data in an answer.
+    stage: output
+    check: pii
+    on_fail: redact

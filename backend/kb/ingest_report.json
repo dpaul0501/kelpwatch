@@ -1,0 +1,236 @@
+{
+  "chunk_size_check": {
+    "rule": "chunks between 200 and 1500 characters",
+    "within_range": 714,
+    "total": 726,
+    "passed": true
+  },
+  "built_at": "2026-09-30T02:09:03+00:00",
+  "extractor": "pypdf (text layer only, no OCR)",
+  "chunking": "paragraph-aware, target 900 characters, never across pages",
+  "documents": [
+    {
+      "id": "kelp-plan-2020",
+      "title": "Puget Sound Kelp Conservation and Recovery Plan",
+      "publisher": "Northwest Straits Commission, NOAA Fisheries, Puget Sound Restoration Fund, WA DNR",
+      "year": 2020,
+      "url": "https://nwstraits.org/sites/default/files/2025-10/pugetsoundkelpconservationandrecoveryplan.pdf",
+      "pages": 63,
+      "chars": 131798,
+      "unreadable_pages": [],
+      "redactions": 1,
+      "chunks": 176,
+      "checks": [
+        {
+          "check": "is_pdf",
+          "passed": true
+        },
+        {
+          "check": "text_extracted",
+          "passed": true,
+          "detail": "63 of 63 pages have text"
+        },
+        {
+          "check": "no_unreadable_pages",
+          "passed": true,
+          "detail": "All pages readable"
+        },
+        {
+          "check": "personal_data_redacted",
+          "passed": true,
+          "detail": "1 emails or phone numbers redacted"
+        }
+      ]
+    },
+    {
+      "id": "kelp-plan-status-2023",
+      "title": "Puget Sound Kelp Conservation and Recovery Plan: Status Update",
+      "publisher": "Northwest Straits Commission",
+      "year": 2023,
+      "url": "https://nwstraits.org/media/3483/kelp-plan-status-update_2023oct.pdf",
+      "pages": 73,
+      "chars": 161667,
+      "unreadable_pages": [],
+      "redactions": 0,
+      "chunks": 220,
+      "checks": [
+        {
+          "check": "is_pdf",
+          "passed": true
+        },
+        {
+          "check": "text_extracted",
+          "passed": true,
+          "detail": "73 of 73 pages have text"
+        },
+        {
+          "check": "no_unreadable_pages",
+          "passed": true,
+          "detail": "All pages readable"
+        },
+        {
+          "check": "personal_data_redacted",
+          "passed": true,
+          "detail": "0 emails or phone numbers redacted"
+        }
+      ]
+    },
+    {
+      "id": "wdfw-kelp-review",
+      "title": "Puget Sound Kelp Forests: A Review of Natural History and Potential Impacts from Small Overwater Structures",
+      "publisher": "Washington Department of Fish and Wildlife",
+      "year": 2023,
+      "url": "https://wdfw.wa.gov/sites/default/files/publications/02415/wdfw02415.pdf",
+      "pages": 52,
+      "chars": 113107,
+      "unreadable_pages": [
+        44,
+        45
+      ],
+      "redactions": 17,
+      "chunks": 157,
+      "checks": [
+        {
+          "check": "is_pdf",
+          "passed": true
+        },
+        {
+          "check": "text_extracted",
+          "passed": true,
+          "detail": "50 of 52 pages have text"
+        },
+        {
+          "check": "no_unreadable_pages",
+          "passed": false,
+          "detail": "Pages [44, 45] have no extractable text (image-only); OCR needed"
+        },
+        {
+          "check": "personal_data_redacted",
+          "passed": true,
+          "detail": "17 emails or phone numbers redacted"
+        }
+      ]
+    },
+    {
+      "id": "dnr-sb5619-2022",
+      "title": "Kelp Forest and Eelgrass Meadow Health and Conservation (SB 5619 summary)",
+      "publisher": "Washington State Department of Natural Resources",
+      "year": 2022,
+      "url": "https://www.dnr.wa.gov/publications/em_leg_dnr_kelp_eelgrass_2022.pdf",
+      "pages": 2,
+      "chars": 4430,
+      "unreadable_pages": [],
+      "redactions": 4,
+      "chunks": 6,
+      "checks": [
+        {
+          "check": "is_pdf",
+          "passed": true
+        },
+        {
+          "check": "text_extracted",
+          "passed": true,
+          "detail": "2 of 2 pages have text"
+        },
+        {
+          "check": "no_unreadable_pages",
+          "passed": true,
+          "detail": "All pages readable"
+        },
+        {
+          "check": "personal_data_redacted",
+          "passed": true,
+          "detail": "4 emails or phone numbers redacted"
+        }
+      ]
+    },
+    {
+      "id": "dnr-kelp-monitoring-2026",
+      "title": "The Kelp Forest Monitoring Alliance of Washington State: State Summary",
+      "publisher": "Washington State Department of Natural Resources",
+      "year": 2026,
+      "url": "https://dnr.wa.gov/sites/default/files/2026-02/aqr_nrsh_kelp_state_sum.pdf",
+      "pages": 33,
+      "chars": 48087,
+      "unreadable_pages": [
+        1,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "redactions": 0,
+      "chunks": 67,
+      "checks": [
+        {
+          "check": "is_pdf",
+          "passed": true
+        },
+        {
+          "check": "text_extracted",
+          "passed": true,
+          "detail": "22 of 33 pages have text"
+        },
+        {
+          "check": "no_unreadable_pages",
+          "passed": false,
+          "detail": "Pages [1, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32] have no extractable text (image-only); OCR needed"
+        },
+        {
+          "check": "personal_data_redacted",
+          "passed": true,
+          "detail": "0 emails or phone numbers redacted"
+        }
+      ]
+    },
+    {
+      "id": "dnr-bull-kelp-monitoring-2026",
+      "title": "Washington State Bull Kelp Strategic Monitoring Recommendations",
+      "publisher": "Washington State Department of Natural Resources",
+      "year": 2026,
+      "url": "https://dnr.wa.gov/sites/default/files/2026-07/aqr_nrsh_kelp_resil.pdf",
+      "pages": 34,
+      "chars": 73697,
+      "unreadable_pages": [],
+      "redactions": 0,
+      "chunks": 100,
+      "checks": [
+        {
+          "check": "is_pdf",
+          "passed": true
+        },
+        {
+          "check": "text_extracted",
+          "passed": true,
+          "detail": "34 of 34 pages have text"
+        },
+        {
+          "check": "no_unreadable_pages",
+          "passed": true,
+          "detail": "All pages readable"
+        },
+        {
+          "check": "personal_data_redacted",
+          "passed": true,
+          "detail": "0 emails or phone numbers redacted"
+        }
+      ]
+    }
+  ],
+  "totals": {
+    "documents": 6,
+    "pages": 257,
+    "chunks": 726,
+    "unreadable_pages": 13,
+    "redactions": 22,
+    "chunk_chars_min": 69,
+    "chunk_chars_median": 779,
+    "chunk_chars_max": 1392
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "description": "Public documents ingested into the KelpWatch knowledge base. Run backend/ingest_docs.py to rebuild chunks.json and ingest_report.json.",
+  "documents": [
+    {
+      "id": "kelp-plan-2020",
+      "title": "Puget Sound Kelp Conservation and Recovery Plan",
+      "publisher": "Northwest Straits Commission, NOAA Fisheries, Puget Sound Restoration Fund, WA DNR",
+      "year": 2020,
+      "url": "https://nwstraits.org/sites/default/files/2025-10/pugetsoundkelpconservationandrecoveryplan.pdf",
+      "file": "pugetsoundkelpconservationandrecoveryplan.pdf"
+    },
+    {
+      "id": "kelp-plan-status-2023",
+      "title": "Puget Sound Kelp Conservation and Recovery Plan: Status Update",
+      "publisher": "Northwest Straits Commission",
+      "year": 2023,
+      "url": "https://nwstraits.org/media/3483/kelp-plan-status-update_2023oct.pdf",
+      "file": "kelp-plan-status-update_2023oct.pdf"
+    },
+    {
+      "id": "wdfw-kelp-review",
+      "title": "Puget Sound Kelp Forests: A Review of Natural History and Potential Impacts from Small Overwater Structures",
+      "publisher": "Washington Department of Fish and Wildlife",
+      "year": 2023,
+      "url": "https://wdfw.wa.gov/sites/default/files/publications/02415/wdfw02415.pdf",
+      "file": "wdfw02415.pdf"
+    },
+    {
+      "id": "dnr-sb5619-2022",
+      "title": "Kelp Forest and Eelgrass Meadow Health and Conservation (SB 5619 summary)",
+      "publisher": "Washington State Department of Natural Resources",
+      "year": 2022,
+      "url": "https://www.dnr.wa.gov/publications/em_leg_dnr_kelp_eelgrass_2022.pdf",
+      "file": "em_leg_dnr_kelp_eelgrass_2022.pdf"
+    },
+    {
+      "id": "dnr-kelp-monitoring-2026",
+      "title": "The Kelp Forest Monitoring Alliance of Washington State: State Summary",
+      "publisher": "Washington State Department of Natural Resources",
+      "year": 2026,
+      "url": "https://dnr.wa.gov/sites/default/files/2026-02/aqr_nrsh_kelp_state_sum.pdf",
+      "file": "aqr_nrsh_kelp_state_sum.pdf"
+    },
+    {
+      "id": "dnr-bull-kelp-monitoring-2026",
+      "title": "Washington State Bull Kelp Strategic Monitoring Recommendations",
+      "publisher": "Washington State Department of Natural Resources",
+      "year": 2026,
+      "url": "https://dnr.wa.gov/sites/default/files/2026-07/aqr_nrsh_kelp_resil.pdf",
+      "file": "aqr_nrsh_kelp_resil.pdf"
+    }
+  ]
+}

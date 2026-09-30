@@ -1,0 +1,549 @@
+{
+ "computed_at": "2026-09-30T02:48:44+00:00",
+ "metric": "nearshore vegetation signal (%)",
+ "method": "Share of permanent-water pixels (JRC surface water occurrence of 80% or more) whose summer (June to September) median NDVI exceeds 0.2, from cloud-masked, scaled Landsat surface reflectance.",
+ "caveats": [
+  "This is a screening signal, not a validated measure of kelp canopy area.",
+  "It includes any vegetation or algae at the surface, and exposed intertidal vegetation at low tide; tides are not controlled.",
+  "County areas are rough bounding boxes, not county boundaries.",
+  "1995 and 2000 use older sensors (TM, ETM+) than 2015 and 2023 (OLI), so only 2015 to 2023 is a like-for-like comparison."
+ ],
+ "documented_trend": {
+  "direction": "decline",
+  "statement": "Bull kelp in South and Central Puget Sound has declined by more than 90% over 150 years, and long-term canopy declines are documented in several areas.",
+  "sources": [
+   "Puget Sound Kelp Conservation and Recovery Plan (2020)",
+   "Washington DNR kelp and eelgrass plan"
+  ]
+ },
+ "counties": [
+  {
+   "county": "King",
+   "timeline": [
+    {
+     "period": "1995",
+     "sensor": "TM",
+     "scenes": 36,
+     "signal_pct": 2.51,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "36 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "881,066 of 881,066 water pixels usable"
+      }
+     ],
+     "seconds": 0.6
+    },
+    {
+     "period": "2000",
+     "sensor": "ETM+",
+     "scenes": 42,
+     "signal_pct": 4.24,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "42 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "881,066 of 881,066 water pixels usable"
+      }
+     ],
+     "seconds": 0.5
+    },
+    {
+     "period": "2015",
+     "sensor": "OLI",
+     "scenes": 74,
+     "signal_pct": 12.68,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "74 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "881,066 of 881,066 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    },
+    {
+     "period": "2023",
+     "sensor": "OLI",
+     "scenes": 142,
+     "signal_pct": 3.65,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "142 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "881,066 of 881,066 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    }
+   ],
+   "change_2015_2023_pct": -71.2,
+   "change_1995_2023_pct": 45.4,
+   "current_signal_pct": 3.65
+  },
+  {
+   "county": "Skagit",
+   "timeline": [
+    {
+     "period": "1995",
+     "sensor": "TM",
+     "scenes": 36,
+     "signal_pct": 1.18,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "36 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,158,774 of 1,158,774 water pixels usable"
+      }
+     ],
+     "seconds": 0.6
+    },
+    {
+     "period": "2000",
+     "sensor": "ETM+",
+     "scenes": 42,
+     "signal_pct": 1.3,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "42 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,158,774 of 1,158,774 water pixels usable"
+      }
+     ],
+     "seconds": 0.5
+    },
+    {
+     "period": "2015",
+     "sensor": "OLI",
+     "scenes": 74,
+     "signal_pct": 5.28,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "74 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,158,749 of 1,158,774 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    },
+    {
+     "period": "2023",
+     "sensor": "OLI",
+     "scenes": 142,
+     "signal_pct": 5.48,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "142 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,158,774 of 1,158,774 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    }
+   ],
+   "change_2015_2023_pct": 3.8,
+   "change_1995_2023_pct": 364.4,
+   "current_signal_pct": 5.48
+  },
+  {
+   "county": "Whatcom",
+   "timeline": [
+    {
+     "period": "1995",
+     "sensor": "TM",
+     "scenes": 36,
+     "signal_pct": 1.96,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "36 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,265,686 of 1,265,686 water pixels usable"
+      }
+     ],
+     "seconds": 0.6
+    },
+    {
+     "period": "2000",
+     "sensor": "ETM+",
+     "scenes": 42,
+     "signal_pct": 3.56,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "42 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,265,686 of 1,265,686 water pixels usable"
+      }
+     ],
+     "seconds": 0.5
+    },
+    {
+     "period": "2015",
+     "sensor": "OLI",
+     "scenes": 74,
+     "signal_pct": 4.5,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "74 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,265,685 of 1,265,686 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    },
+    {
+     "period": "2023",
+     "sensor": "OLI",
+     "scenes": 142,
+     "signal_pct": 4.79,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "142 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,265,686 of 1,265,686 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    }
+   ],
+   "change_2015_2023_pct": 6.4,
+   "change_1995_2023_pct": 144.4,
+   "current_signal_pct": 4.79
+  },
+  {
+   "county": "Kitsap",
+   "timeline": [
+    {
+     "period": "1995",
+     "sensor": "TM",
+     "scenes": 36,
+     "signal_pct": 6.55,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "36 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,164,526 of 1,164,526 water pixels usable"
+      }
+     ],
+     "seconds": 0.6
+    },
+    {
+     "period": "2000",
+     "sensor": "ETM+",
+     "scenes": 42,
+     "signal_pct": 6.34,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "42 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,164,526 of 1,164,526 water pixels usable"
+      }
+     ],
+     "seconds": 0.5
+    },
+    {
+     "period": "2015",
+     "sensor": "OLI",
+     "scenes": 74,
+     "signal_pct": 28.96,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "74 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,164,524 of 1,164,526 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    },
+    {
+     "period": "2023",
+     "sensor": "OLI",
+     "scenes": 142,
+     "signal_pct": 12.82,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "142 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "1,164,526 of 1,164,526 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    }
+   ],
+   "change_2015_2023_pct": -55.7,
+   "change_1995_2023_pct": 95.7,
+   "current_signal_pct": 12.82
+  },
+  {
+   "county": "Pierce",
+   "timeline": [
+    {
+     "period": "1995",
+     "sensor": "TM",
+     "scenes": 36,
+     "signal_pct": 3.69,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "36 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "485,070 of 485,070 water pixels usable"
+      }
+     ],
+     "seconds": 0.6
+    },
+    {
+     "period": "2000",
+     "sensor": "ETM+",
+     "scenes": 42,
+     "signal_pct": 8.53,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "42 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "485,070 of 485,070 water pixels usable"
+      }
+     ],
+     "seconds": 0.5
+    },
+    {
+     "period": "2015",
+     "sensor": "OLI",
+     "scenes": 74,
+     "signal_pct": 21.32,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "74 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "484,841 of 485,070 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    },
+    {
+     "period": "2023",
+     "sensor": "OLI",
+     "scenes": 142,
+     "signal_pct": 14.25,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "142 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "485,070 of 485,070 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    }
+   ],
+   "change_2015_2023_pct": -33.2,
+   "change_1995_2023_pct": 286.2,
+   "current_signal_pct": 14.25
+  },
+  {
+   "county": "Snohomish",
+   "timeline": [
+    {
+     "period": "1995",
+     "sensor": "TM",
+     "scenes": 36,
+     "signal_pct": 1.87,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "36 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "754,963 of 754,963 water pixels usable"
+      }
+     ],
+     "seconds": 0.6
+    },
+    {
+     "period": "2000",
+     "sensor": "ETM+",
+     "scenes": 42,
+     "signal_pct": 2.6,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "42 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "754,963 of 754,963 water pixels usable"
+      }
+     ],
+     "seconds": 0.5
+    },
+    {
+     "period": "2015",
+     "sensor": "OLI",
+     "scenes": 74,
+     "signal_pct": 5.41,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "74 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "754,942 of 754,963 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    },
+    {
+     "period": "2023",
+     "sensor": "OLI",
+     "scenes": 142,
+     "signal_pct": 2.7,
+     "status": "ok",
+     "checks": [
+      {
+       "check": "enough_scenes",
+       "passed": true,
+       "detail": "142 scenes under 20% cloud"
+      },
+      {
+       "check": "valid_pixels",
+       "passed": true,
+       "detail": "754,963 of 754,963 water pixels usable"
+      }
+     ],
+     "seconds": 0.4
+    }
+   ],
+   "change_2015_2023_pct": -50.1,
+   "change_1995_2023_pct": 44.4,
+   "current_signal_pct": 2.7
+  }
+ ]
+}
