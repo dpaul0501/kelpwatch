@@ -164,11 +164,30 @@ climate.record("documents", True, [
      "detail": f"{RETRIEVAL_EVAL['with_thesaurus']['hits']} of {RETRIEVAL_EVAL['with_thesaurus']['total']} test questions retrieved correctly in the top {RETRIEVAL_EVAL['k']}"},
 ])
 
+DEFAULT_GROQ_MODEL = "openai/gpt-oss-120b"
+MODEL_NOTE = ""
+
+def _groq_model() -> str:
+    """Use GROQ_MODEL if the key can reach it; otherwise fall back, so a retired model can't break the agent."""
+    global MODEL_NOTE
+    wanted = os.getenv("GROQ_MODEL") or DEFAULT_GROQ_MODEL
+    try:
+        available = {m.id for m in groq_client.models.list().data}
+    except Exception as e:
+        MODEL_NOTE = f"could not list Groq models ({type(e).__name__}); using {wanted}"
+        return wanted
+    if wanted in available:
+        return wanted
+    fallback = DEFAULT_GROQ_MODEL if DEFAULT_GROQ_MODEL in available else sorted(available)[0]
+    MODEL_NOTE = f"GROQ_MODEL {wanted} is not available on this key; using {fallback}"
+    print("⚠", MODEL_NOTE)
+    return fallback
+
 def _llm():
     """Any OpenAI-compatible chat API with tool calling. Choose with LLM_PROVIDER."""
     if LLM_PROVIDER == "openai":
         return openai_client, os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
-    return groq_client, os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+    return groq_client, _groq_model()
 
 def _compact_kelp(k: dict) -> dict:
     """What the agent needs from the kelp data, without per-cell check details (context budget)."""
@@ -241,7 +260,7 @@ def status():
     k = climate.kelp()
     return {"gee_available": _gee_available, "kelp_status": k.get("status"),
             "kelp_computed_at": k.get("computed_at"), "county_count": len(k.get("counties", [])),
-            "documents": KB.report["totals"]["documents"], "model": _model}
+            "documents": KB.report["totals"]["documents"], "model": _model, "model_note": MODEL_NOTE or None}
 
 @app.get("/api/kelp")
 def kelp_data(county: str | None = None):
@@ -333,7 +352,7 @@ def policy():
 
 @app.get("/api/agent/config")
 def agent_config():
-    return {"model": _model, "provider": LLM_PROVIDER, "tools": TOOL_SPECS,
+    return {"model": _model, "model_note": MODEL_NOTE or None, "provider": LLM_PROVIDER, "tools": TOOL_SPECS,
             "skills": [{"name": s["name"], "description": s["description"], "procedure": s["body"]}
                        for s in AGENT.skills.values()]}
 
