@@ -2,6 +2,7 @@ import datetime
 import ee
 import json
 import os
+import re
 import time
 import requests as http
 from contextlib import asynccontextmanager
@@ -19,6 +20,7 @@ load_dotenv()
 # ── GEE init — three paths: service account → oauth token → app-default ───────
 # Server starts even if all GEE auth fails; fire/India/El Niño work without GEE.
 _gee_available = False
+_gee_status = "not initialised"
 try:
     _gee_project = os.getenv("GEE_PROJECT", "kelpwatch-2026")
     _gee_sa_key  = os.getenv("GEE_SERVICE_ACCOUNT_KEY", "")
@@ -59,8 +61,15 @@ try:
         print("✅ GEE initialized via application-default credentials")
 
     _gee_available = True
+    _gee_status = "connected"
 except Exception as _gee_err:
-    print(f"⚠ GEE unavailable — kelp tiles degraded. Fix: set GEE_KEY_FILE (secret file) or GEE_SERVICE_ACCOUNT_KEY.\n  {_gee_err}")
+    # Diagnose without exposing the key: report which setting was used and the error type/message only.
+    _source = ("GEE_SERVICE_ACCOUNT_KEY" if os.getenv("GEE_SERVICE_ACCOUNT_KEY") else
+               f"GEE_KEY_FILE={os.getenv('GEE_KEY_FILE')}" if os.getenv("GEE_KEY_FILE") else
+               "GEE_CREDENTIALS_JSON" if os.getenv("GEE_CREDENTIALS_JSON") else "no key configured (application-default credentials)")
+    _msg = re.sub(r"-----BEGIN[^-]*-----.*?-----END[^-]*-----", "[key removed]", str(_gee_err), flags=re.S)[:300]
+    _gee_status = f"{_source}: {type(_gee_err).__name__}: {_msg}"
+    print(f"⚠ GEE unavailable — {_gee_status}")
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", ""))
 groq_client   = Groq(api_key=os.getenv("GROQ_API_KEY", ""))
@@ -258,7 +267,7 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 @app.get("/api/status")
 def status():
     k = climate.kelp()
-    return {"gee_available": _gee_available, "kelp_status": k.get("status"),
+    return {"gee_available": _gee_available, "gee_status": _gee_status, "kelp_status": k.get("status"),
             "kelp_computed_at": k.get("computed_at"), "county_count": len(k.get("counties", [])),
             "documents": KB.report["totals"]["documents"], "model": _model, "model_note": MODEL_NOTE or None}
 
